@@ -43,8 +43,6 @@
     var qsans = LatinSans+',' + CJKsans +','+qsig_hei+','+'sans-serif'; //To replace "sans-serif"
     var qserif = LatinSerif+','+ CJKserif+','+qsig_sun+','+'serif'; //To replace "serif"
     var qmono = LatinMono+','+qCJK+','+'monospace'; //qCJK comes with signature;
-    var full_font_list=qCJK+','+qSimSun+','+qHei+','+qBold+','+qsans+','+qserif+','+qmono;
-    var fl=full_font_list.split(',');
     var i=0;
     var max=all.length;
     var child = all[i].firstChild;
@@ -57,7 +55,7 @@
     var re_mono0=/^ ?mono ?$|^ ?monospace ?$/i;
     //Check if the font definitions are valid
     function check_fonts(font_var,fvname) {
-        fl=font_var.split(',');
+        var fl=font_var.split(',');
         for (i=0;i<fl.length;i++) {
             if (!(fl[i].match(/^[^" ][^"]+[^" ]$|^"[^ ][^"]+[^ ]"$/))) {
                 alert("Check your font definition: "+fl[i]+" in "+fvname);
