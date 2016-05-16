@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.8
+// @version      0.8.5
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
 // @author       stecue@gmail.com
 // @match        http://*/*
@@ -17,9 +17,9 @@
     var CJKsans='"Microsoft YaHei","Noto Sans CJK SC"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold='"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var LatinInSimSun='Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
-    var LatinSans='Open Sans'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinSans='Lato,"Open Sans",Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif='Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
-    var LatinMono='DejaVu Sans Mono'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinMono='Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var FixRegular=true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore=true; //Appendent CJK fonts to all elements. Might have side effects ?
     var FixPunct=false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Not implemented yet.
@@ -34,14 +34,17 @@
     var qsig_hei='"'+sig_hei +'"'; //Quoted sinagure;
     var qsig_bold='"'+sig_bold+'"';
     var qsig_default='"'+sig_default+'"';
-    var qpreCJK = '"' + CJKdefault + '"'; //Quoted "CJK font".
-    var qCJK = qpreCJK+','+qsig_default;
+    //var qpreCJK = '"' + CJKdefault + '"'; //Quoted "CJK font".
+    var qpreCJK=CJKdefault;
+    var qCJK = CJKdefault+','+qsig_default;
     var qSimSun = LatinInSimSun+','+CJKserif+','+qsig_sun;
     var qHei = LatinInSimSun+','+CJKsans+','+qsig_hei;
     var qBold = LatinInSimSun+','+CJKBold+','+qsig_bold;
     var qsans = LatinSans+',' + CJKsans +','+qsig_hei+','+'sans-serif'; //To replace "sans-serif"
     var qserif = LatinSerif+','+ CJKserif+','+qsig_sun+','+'serif'; //To replace "serif"
     var qmono = LatinMono+','+qCJK+','+'monospace'; //qCJK comes with signature;
+    var full_font_list=qCJK+','+qSimSun+','+qHei+','+qBold+','+qsans+','+qserif+','+qmono;
+    var fl=full_font_list.split(',');
     var i=0;
     var max=all.length;
     var child = all[i].firstChild;
@@ -52,6 +55,35 @@
     var re_sans0=/^ ?sans ?$|^ ?sans-serif ?$/i ;
     var re_serif=/^ ?serif ?$/i;
     var re_mono0=/^ ?mono ?$|^ ?monospace ?$/i;
+    //Check if the font definitions are valid
+    function check_fonts(font_var,fvname) {
+        fl=font_var.split(',');
+        for (i=0;i<fl.length;i++) {
+            if (!(fl[i].match(/^[^" ][^"]+[^" ]$|^"[^ ][^"]+[^ ]"$/))) {
+                alert("Check your font definition: "+fl[i]+" in "+fvname);
+                return false;
+            }
+        }
+        return true;
+    }
+    if (check_fonts(CJKdefault,'CJKdefault')===false)
+        return false;
+    else if (check_fonts(CJKserif,'CJKserif')===false)
+        return false;
+    else if (check_fonts(CJKsans,'CJKsans')===false)
+        return false;
+    else if (check_fonts(CJKBold,'CJKBold')===false)
+        return false;
+    else if (check_fonts(LatinInSimSun,'LatinInSimSun')===false)
+        return false;
+    else if (check_fonts(LatinSans,'LatinSans')===false)
+        return false;
+    else if (check_fonts(LatinSerif,'LatinSerif')===false)
+        return false;
+    else if (check_fonts(LatinMono,'LatinMono')===false)
+        return false;
+    else {
+    }
     //fucntion to check matches
     function list_has(font_str,family ) {
         var allfonts=font_str.split(',');
