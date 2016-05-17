@@ -26,6 +26,7 @@
     //Do not change following code unless you know the results!
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
+    var debugging = false; //Turn on colors while debugging.
     var sig_sun = 'RealCJKBold 宋'; // signature to check if change is sucssful or not.
     var sig_hei = 'RealCJKBold 黑'; // signature to check if change is sucssful or not.
     var sig_bold = 'RealCJKBold 粗'; // signature to check if change is sucssful or not.
@@ -36,13 +37,13 @@
     var qsig_default = '"' + sig_default + '"';
     //var qpreCJK = '"' + CJKdefault + '"'; //Quoted "CJK font".
     var qpreCJK = CJKdefault;
-    var qCJK = CJKdefault + ',' + qsig_default;
+    var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     var qSimSun = LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
     var qHei = LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
     var qserif = LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
-    var qmono = LatinMono + ',' + qCJK + ',' + 'monospace'; //qCJK comes with signature;
+    var qmono = LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     var i = 0;
     var max = all.length;
     var child = all[i].firstChild;
@@ -285,17 +286,20 @@
                 all[i].style.fontFamily = replace_font(font_str, re_mono0, qmono);
             }
             else {
-                //all[i].style.color='Fuchsia';
+                if (debugging === true) { all[i].style.color='Fuchsia'; }
                 if (font_str.match(re_simsun)) {
-                    //all[i].style.color='Fuchsia';
+                    if (debugging === true) {all[i].style.color='Sienna'; }
                     //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
                     all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
                 }
                 else {
-                    //all[i].style.color='Fuchsia';
+                    if (debugging === true) { all[i].style.color='Olive';}
                     all[i].style.fontFamily = font_str + ',' + qCJK + ',' + 'sans-serif';
                 }
             }
+        }
+        else {
+            //all[i].style.color="Silver"; //Signed-->Silver
         }
     }
     //alert('Timer Set!');
