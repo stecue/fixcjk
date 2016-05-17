@@ -137,7 +137,7 @@
         }
         return dequoted;
     }
-    /// First round: Replace all bold fonts to CJKBold ///
+    /// ===== First round: Replace all bold fonts to CJKBold ===== ///
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
         if_replace = false;
@@ -179,7 +179,7 @@
     if (FixRegular === false) {
         return false;
     }
-    /// Second Round: Deal with regular weight. ///
+    /// ===== Second Round: Deal with regular weight. ===== ///
     max = all.length;
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
@@ -263,7 +263,7 @@
             }
         }
     }
-    /// The final round: Add CJKdefault to all elements ///
+    /// ===== The final round: Add CJKdefault to all elements ===== ///
     if (FixMore === false) {
         return false;
     }
