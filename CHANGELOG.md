@@ -1,4 +1,4 @@
-## 0.9.3 (2016-05-19)
+## 0.9.3 (2016-05-18)
 Bugfixes:
   - Quotation marks followed by mixed CJK and Latin text are treated as CJK now.
   - (To do) Fix a bug leading to unclosed tags. 
