@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.3
+// @version      0.9.2
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -413,6 +413,8 @@
         }
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
+        //Add space/backspace between ">" and "“"
+        currHTML=currHTML.replace(/(>[\n]?)[ ]*(“)/mg,'$1\u0008$2');
         //alert(currHTML);
         //all[currpunc].innerHTML=currHTML; continue;
         //Now let's fix the punctions.
@@ -447,6 +449,7 @@
         //-----Use normal kerning for individual double quotation marks.---//
         psize=(-Number(fsize)/kern_ind_left_dq).toString();
         psize=psize+funit;
+        ////// Why do I need to start with non-space character?
         currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
         psize=(-Number(fsize)/kern_ind_right_dq).toString();
         psize=psize+funit;
@@ -460,7 +463,6 @@
         psize=psize+funit;
         currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、])([‘])([\n]?[\u3400-\u9FBF？！：；《》、]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
         currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([’])/g,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>');
-        //if (debug_04===true) {alert(currHTML);}
         all[currpunc].innerHTML=currHTML;
         if (debug_04===true) {all[currpunc].style.color="Pink";}
     }
