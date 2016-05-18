@@ -1,3 +1,8 @@
+## 0.9.3 (2016-05-19)
+Bugfixes:
+  - Quotation marks followed by mixed CJK and Latin text are treated as CJK now.
+  - Fix a bug leading to unclosed HTML tags. 
+
 ## 0.9.2 (2016-05-18)
 Features:
   - FixPunct now also delete extra blanck spaces after CJK punctuations
