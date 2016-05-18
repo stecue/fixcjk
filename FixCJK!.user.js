@@ -413,9 +413,10 @@
         psize=(-Number(fsize)/kern_punct).toString();
         psize=psize+funit;
         //End with '”' and NONE '“' after:
-        tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。？！：；][\n]?[”])([^“]|$)/mg,tmp_str);
-        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([”][，。？！：；])([^“]|$)/mg,tmp_str);
+        tmp_str='$1<span style="letter-spacing:'+psize+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$3</span>$4';
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。？！：；][\n]?)([”])([^“]|$)/mg,tmp_str);
+        tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3$4';
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([”])([，。？！：；])([^“]|$)/mg,tmp_str);
         //End with '”' and ONE '“' after:
         psize=(-Number(fsize)/1.5).toString();
         psize=psize+funit;
