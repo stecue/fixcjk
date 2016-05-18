@@ -365,7 +365,7 @@
                     puncnode.push(i);
                     break;
                 }
-                else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[][^ |$]/mg))) {
+                else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[ ][^ |$]/mg))) {
                     if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                     numnodes++;
                     puncnode.push(i);
@@ -409,7 +409,8 @@
         }
         //We need to strip the space before and after quotation marks before fixing punctions, but not \n
         if (delete_all_spaces===true) {
-            currHTML=currHTML.replace(/([，。？！：；》、][\n]?)[]([^ |$])/g,'$1$2');
+            if (debug_04===true) {all[currpunc].style.color='Grey';}
+            currHTML=currHTML.replace(/([，。？！：；》、][\n]?)[ ]([^ |$])/g,'$1$2');
         }
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
