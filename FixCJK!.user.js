@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function () {
     'use strict';
-    // You can change the the following fonts/settings until the "var all=" line.
+    // You can change the the following fonts/settings until the "var FixPunct=" line.
     var CJKdefault = 'SimSun,"WenQuanYi Zen Hei Sharp"'; //The default CJK font. Regular weight.
     var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Serif fonts for CJK. "SimSun" with regular weight will be replaced by the font specified here. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
     var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC"'; //Sans-serif fonts for CJK. Regular weight.
