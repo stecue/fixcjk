@@ -25,7 +25,7 @@
     var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore = true; //Appendent CJK fonts to all elements. Might have side effects ?
-    var FixPunct = false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Not implemented yet.
+    var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Not implemented yet.
     //Do not change following code unless you know the results!
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
