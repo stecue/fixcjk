@@ -1,6 +1,6 @@
 ## 0.9.0 (2016-05-18)
 Features:
-  - (Not Stable Yet!) Add an EXPERIMENTAL implementation to fix CJK quotation marks. Set "FixPunct" to "true" if you want to try.
+  - (Not Stable Yet!) Add an EXPERIMENTAL implementation to fix CJK quotation marks. Set "FixPunct" to "true" if you want to try. Turn off the script before entering editing area!
 
 Bugfixes:
   - Several regressions related to the quotation format of font-family lists are fixed.
