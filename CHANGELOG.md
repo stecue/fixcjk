@@ -1,4 +1,8 @@
-## 0.9.1 (2016-05-18)
+## 0.9.2 (2016-05-18)
+Features:
+  - FixPunct now also delete extra blanck spaces after CJK punctuations
+  - FixPunct seems to be stable enough to be turn on by default. Remember to disable the script while editing CJK text.
+
 Bugfixes:
   - Improvement on the "FixPunct" function. CJK quotation marks seems normal now.
 

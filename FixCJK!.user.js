@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.1
+// @version      0.9.2
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -25,7 +25,7 @@
     var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore = true; //Appendent CJK fonts to all elements. Might have side effects ?
-    var FixPunct = false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Not implemented yet.
+    var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Not implemented yet.
     //Do not change following code unless you know the results!
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
@@ -344,7 +344,7 @@
     all = document.getElementsByTagName('*');
     var puncnode=new Array('');
     var numnodes=0;
-    var delete_all_space=false;
+    var delete_all_spaces=true;
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
         if_replace = false;
@@ -365,7 +365,7 @@
                     puncnode.push(i);
                     break;
                 }
-                else if ((delete_all_space===true) && (child.data.match(/[，。？！：；《》、][\n]?[ ]|[\n]?[ ][，。？！：；《》、]/mg))) {
+                else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[ ][^ |$]/mg))) {
                     if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                     numnodes++;
                     puncnode.push(i);
@@ -408,8 +408,9 @@
             continue;
         }
         //We need to strip the space before and after quotation marks before fixing punctions, but not \n
-        if (delete_all_space===true) {
-            currHTML=currHTML.replace(/([^ ])[ ]?([，。？！：；])[ ]?([^ ])/g,'$1$2$3');
+        if (delete_all_spaces===true) {
+            if (debug_04===true) {all[currpunc].style.color='Grey';}
+            currHTML=currHTML.replace(/([，。？！：；》、][\n]?)[ ]([^ |$])/g,'$1$2');
         }
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
