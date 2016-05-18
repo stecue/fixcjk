@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.2
+// @version      0.9.3
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -365,7 +365,7 @@
                     puncnode.push(i);
                     break;
                 }
-                else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[ ][^ |$]/mg))) {
+                else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[][^ |$]/mg))) {
                     if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                     numnodes++;
                     puncnode.push(i);
@@ -409,8 +409,7 @@
         }
         //We need to strip the space before and after quotation marks before fixing punctions, but not \n
         if (delete_all_spaces===true) {
-            if (debug_04===true) {all[currpunc].style.color='Grey';}
-            currHTML=currHTML.replace(/([，。？！：；》、][\n]?)[ ]([^ |$])/g,'$1$2');
+            currHTML=currHTML.replace(/([，。？！：；》、][\n]?)[]([^ |$])/g,'$1$2');
         }
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
@@ -429,7 +428,7 @@
         tmp_str='$1<span style="letter-spacing:'+kern_other+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_end+';">$3</span>$4';
         currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([，。][\n]?)([”])([^“]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3$4';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([”])([，。？！：；])([^“]|$)/mg,tmp_str);
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([，。])([^“]|$)/mg,tmp_str);
         //--TWO PUNCTS: End with [，。] and ONE '“' (left mark) after:--//
         tmp_str='$1<span style="letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
         currHTML=currHTML.replace(/([^”]|^)([，。][\n]?)([“])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
@@ -439,11 +438,11 @@
         //--THREE PUNCTS: [，。]”“-//
         tmp_str='$1<span style="letter-spacing:'+kern_other+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$3</span>';
         tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。][\n]?)([”])([“][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][a-zA-Z_0-9]*[\n]?)([，。][\n]?)([”])([“][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
         //--THREE PUNCTS: ”[，。]“-//
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="letter-spacing:'+kern_dq_right_left+';">$3</span>';
         tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([”])([，。])([“][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([，。])([“][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
         ///---Done with conseqtive puncts--///
         //-----Use normal kerning for individual double quotation marks.---//
         psize=(-Number(fsize)/kern_ind_left_dq).toString();
@@ -451,10 +450,10 @@
         currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
         psize=(-Number(fsize)/kern_ind_right_dq).toString();
         psize=psize+funit;
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([”])([^“，。？！\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([^“，。\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
         psize=(-Number(fsize)/kern_ind_right_dq_tail).toString();
         psize=psize+funit;
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([”])([\n]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([\n]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
         ///--- User more negative spacing for single quotation marks. //
         // However, left quotation marks will overwrite the character on the left with too negative spacing.) ---///
         psize=(-Number(fsize)/kern_sq).toString();
