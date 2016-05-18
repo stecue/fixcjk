@@ -1,3 +1,7 @@
+## 0.9.1 (2016-05-18)
+Bugfixes:
+  - Improvement on the "FixPunct" function. CJK quotation marks seems normal now.
+
 ## 0.9.0 (2016-05-18)
 Features:
   - (Not Stable Yet!) Add an EXPERIMENTAL implementation to fix CJK quotation marks. Set "FixPunct" to "true" if you want to try. Turn off the script before entering editing area!
