@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.8.8
+// @version      0.9.0
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
 // @author       stecue@gmail.com
 // @license      GPLv3
 // @match        http://*/*
 // @match        https://*/*
+// @exclude      http://*action=edit*/*
+// @exclude      https://*action=edit*/*
 // @grant        none
 // ==/UserScript==
 (function () {
@@ -16,6 +18,7 @@
     var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Serif fonts for CJK. "SimSun" with regular weight will be replaced by the font specified here. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
     var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
+    var CJKPunct = 'SimHei,"WenQuanYi Micro Hei","Noto Sans CJK SC",SimSun'; //The font to use for CJK quotation marks.
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSans = 'Lato,"Open Sans",Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif = 'Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
@@ -26,7 +29,12 @@
     //Do not change following code unless you know the results!
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
-    var debugging = false; //Turn on colors while debugging.
+    var debug_00 = false;
+    var debug_01 = false; //Turn on colors while debug_01.
+    var debug_02 = false;
+    var debug_03 = false;
+    var debug_04 = false;
+    var debug_left = false; //debug what's left.
     var sig_sun = 'RealCJKBold 宋'; // signature to check if change is sucssful or not.
     var sig_hei = 'RealCJKBold 黑'; // signature to check if change is sucssful or not.
     var sig_bold = 'RealCJKBold 粗'; // signature to check if change is sucssful or not.
@@ -124,11 +132,10 @@
         /// Function to dequote non-standard font lists.
         var strl=font_str.split(','); //font list;
         for (var k=0;k < strl.length; k++) {
-            while ((strl[k].charAt(0) == '"') || (strl[k].charAt(0) == '\'' )) {
+            while (strl[k].charAt(0).match(/["' ]/)) {
                 strl[k]=strl[k].slice(1);
             }
-            var strlkl=strl[k].length;
-            while ((strl[k].charAt(strlkl-1) == '"') || (strl[k].charAt(strlkl-1) == '\'' )) {
+            while (strl[k].charAt(strl[k].length-1).match(/["' ]/)) {
                 strl[k]=strl[k].slice(0,-1);
             }
         }
@@ -138,6 +145,16 @@
         }
         return dequoted;
     }
+    if (debug_00===true) {alert(dequote('"SimSun","Times New Roman"""""'));}
+    qpreCJK = dequote(qpreCJK);
+    qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
+    qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
+    qHei = dequote(qHei);//LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
+    qBold = dequote(qBold);//LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
+    qsans = dequote(qsans);//LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
+    qserif = dequote(qserif);//LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
+    qmono = dequote(qmono);//LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
+    if (debug_00===true) {alert('Entering Loops...');}
     /// ===== First round: Replace all bold fonts to CJKBold ===== ///
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
@@ -148,7 +165,7 @@
         while (child) {
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
                 //Test if contains SimSun
-                //all[i].style.color="Blue"; //Bold-->Blue;
+                if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
                 if (font_str.match(re_simsun)) {
                     //all[i].style.color="Sienna"; //SimSun --> Sienna
                     all[i].style.fontFamily = font_str.replace(re_simsun, qBold);
@@ -209,7 +226,7 @@
                             if_replace = false;
                         }
                         else {
-                            //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
+                            if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
                             all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun);
                             if (all[i].style.fontFamily.length<1) {
                                 alert(font_str);alert(font_str.replace(re_simsun, qSimSun));
@@ -286,14 +303,14 @@
                 all[i].style.fontFamily = replace_font(font_str, re_mono0, qmono);
             }
             else {
-                if (debugging === true) { all[i].style.color='Fuchsia'; }
+                if (debug_03 === true) { all[i].style.color='Fuchsia'; }
                 if (font_str.match(re_simsun)) {
-                    if (debugging === true) {all[i].style.color='Sienna'; }
+                    if (debug_03 === true) {all[i].style.color='Sienna'; }
                     //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
                     all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
                 }
                 else {
-                    if (debugging === true) { all[i].style.color='Olive';}
+                    if (debug_03 === true) { all[i].style.color='Olive';}
                     all[i].style.fontFamily = font_str + ',' + qCJK + ',' + 'sans-serif';
                 }
             }
@@ -321,7 +338,112 @@
         return false;
     }
     else {
-        return true;
+        //return true;
     }
+    i=0;
+    all = document.getElementsByTagName('*');
+    var puncnode=new Array('');
+    var numnodes=0;
+    for (i = 0; i < max; i++) {
+        child = all[i].firstChild;
+        if_replace = false;
+        //Only change if current node (not child node) contains CJK characters.
+        //font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+        //fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
+        //alert(child.nodeType);
+        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+        while (child) {
+            if (child.nodeType == 3) {
+                //alert(child.data);
+                //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
+                if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF]+|[\u3400-\u9FBF][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
+                    //alert(i);
+                    //alert(all[i].innerHTML);
+                    if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
+                    numnodes++;
+                    puncnode.push(i);
+                    break;
+                }
+                else if (child.data.match(/[，。？！：；][\n]?[ ]|[\n]?[ ][，。？！：；]/mg)) {
+                    if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
+                    numnodes++;
+                    puncnode.push(i);
+                    break;
+                }
+                else {
+                }
+            }
+            child = child.nextSibling;
+        }
+    }
+    var currpunc=0;
+    var currHTML='';
+    var fsize = '';
+    var psize = '';
+    var funit = '';
+    var changhai_style=false;
+    var kern_punct=2.0;
+    var kern_dq=5.0;
+    var kern_sq=3.0;
+    var tmp_str='';
+    while(numnodes>0) {
+        numnodes--;
+        //Simply inserting blanck space, like changhai.org.
+        currpunc=puncnode.pop();
+        currHTML=all[currpunc].innerHTML;
+        if (changhai_style===true) {
+            currHTML=currHTML.replace(/([\u3400-\u9FBF]?)([“‘])([\u3400-\u9FBF]+)/g,'$1 $2$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF])([”’])([^，, ])/g,'$1$2 $3');
+            if (debug_04===true) {alert(currHTML);}
+            all[currpunc].innerHTML=currHTML;
+            continue;
+        }
+        //We need to strip the space before and after quotation marks before fixing punctions, but not \n
+        currHTML=currHTML.replace(/([^ ])[ ]?([，。？！：；])[ ]?([^ ])/g,'$1$2$3');
+        currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
+        currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
+        //alert(currHTML);
+        //all[currpunc].innerHTML=currHTML; continue;
+        //Now let's fix the punctions.
+        fsize=window.getComputedStyle(all[currpunc], null).getPropertyValue('font-size');
+        funit=fsize.replace(/^["']*[0-9.]+/,'');
+        fsize=fsize.replace(/[^0-9.]+$/,'');
+        fsize=fsize.replace(/[^0-9.]+$/,'');
+        //Use more negative kerning for consective punction marks.
+        psize=(-Number(fsize)/kern_punct).toString();
+        psize=psize+funit;
+        //End with '”' and NONE '“' after:
+        tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3';
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。？！：；][\n]?[”])([^“]|$)/mg,tmp_str);
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([”][，。？！：；])([^“]|$)/mg,tmp_str);
+        //End with '”' and ONE '“' after:
+        psize=(-Number(fsize)/1.5).toString();
+        psize=psize+funit;
+        tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>';
+        tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。？！：；]?[，”][，。？！：；]?)[ ]?([“][\n]?)([\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        //tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>';
+        //tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
+        //if (currHTML.match(/([\u3400-\u9FBF][\n]?)([，。？！]?[\n]?[”][，。？！]?)([“][\n]?)([\u3400-\u9FBF])/mg)) {
+        //    //alert(currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。？！]?[\n]?[”][，。？！]?)([“][\n]?)([\u3400-\u9FBF])/mg,tmp_str));
+        //}
+        //currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([，。？！]?[\n]?[”][，。？！]?)([“][\n]?)([\u3400-\u9FBF])/mg,tmp_str); all[currpunc].innerHTML=currHTML; continue;
+        //currHTML=currHTML.replace(/([”][，。？！])([^“]|$)/g,tmp_str);
+        //Use normal kerning for individual double quotation marks.
+        psize=(-Number(fsize)/kern_dq).toString();
+        psize=psize+funit;
+        currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][\n]?)([”])([^“，。？！]|$)/g,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
+        ///--- User more negative spacing for single quotation marks. //
+        // However, left quotation marks will overwrite the character on the left with too negative spacing.) ---///
+        psize=(-Number(fsize)/kern_sq).toString();
+        psize=psize+funit;
+        currHTML=currHTML.replace(/([\u3400-\u9FBF])([‘])([\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+        currHTML=currHTML.replace(/([\u3400-\u9FBF])([’])/g,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>');
+        //if (debug_04===true) {alert(currHTML);}
+        all[currpunc].innerHTML=currHTML;
+        if (debug_04===true) {all[currpunc].style.color="Pink";}
+    }
+    if (debug_left===true) {alert('Finished!');}
 }
 ) ();
