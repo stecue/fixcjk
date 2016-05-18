@@ -1,3 +1,10 @@
+## 0.9.0 (2016-05-18)
+Features:
+  - (Not Stable!) Add an EXPERIMENTAL implementation to fix CJK quotation marks. set "FixPunct" to "true" if you want to try.
+
+Bugfixes:
+  - Several regressions related to the quotation format of font-family lists are fixed.
+
 ## 0.8.8 (2016-05-17)
 Features:
   - (NOT for end users) Add a "debugging" flag to turn on/off font colors.
