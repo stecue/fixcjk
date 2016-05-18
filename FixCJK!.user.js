@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.0
+// @version      0.9.x
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
 // @author       stecue@gmail.com
 // @license      GPLv3
