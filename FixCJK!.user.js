@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.4
+// @version      0.9.5
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -345,6 +345,7 @@
     var puncnode=new Array('');
     var numnodes=0;
     var delete_all_spaces=true;
+    var SkippedTags=/^(TITLE)|(HEAD)$/i;
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
         if_replace = false;
@@ -357,9 +358,11 @@
             if (child.nodeType == 3) {
                 //console.log(child.data);
                 //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
+                if (all[i].nodeName.match(SkippedTags)) {
+                    if (debug_04===true) { console.log('Processing node '+i+'::'+all[i].nodeName); }
+                    i++;continue;
+                }
                 if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF？！：；《》、]+|[\u3400-\u9FBF？！：；《》、][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
-                    //console.log(i);
-                    //console.log(all[i].innerHTML);
                     if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                     numnodes++;
                     puncnode.push(i);
@@ -477,6 +480,6 @@
         all[currpunc].innerHTML=currHTML;
         if (debug_04===true) {all[currpunc].style.color="Pink";}
     }
-    if (debug_left===true) {console.log('Finished!');}
+    if (debug_left===true) {alert('Finished!');}
 }
 ) ();

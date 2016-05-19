@@ -1,3 +1,7 @@
+## 0.9.5 (2016-05-20)
+Bugfixes:
+  - Punctuation fixing skips HTML elements lik `TITLE` and `HEAD`.
+
 ## 0.9.4 (2016-05-19)
 Bugfixes:
   - Single and double quotation marks are treated as unified as possbile. Several inconsistency bugs are fixed.
