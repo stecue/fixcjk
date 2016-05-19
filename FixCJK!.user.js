@@ -2,7 +2,7 @@
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
 // @version      0.9.3
-// @description  1) Use real bold to replace synthetic SimSun bold; 2) Use Latin fonts for Latin part in Latin/CJK mixed texts; 3) Assign general CJK fonts.
+// @description  1) Use real bold to replace synthetic SimSun bold; 2) Override serif/sans settings in browser; 3) Use Latin fonts for Latin part in Latin/CJK mixed texts; 4) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
 // @author       stecue@gmail.com
 // @license      GPLv3
 // @match        http://*/*
