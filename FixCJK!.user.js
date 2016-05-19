@@ -2,7 +2,7 @@
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
 // @version      0.9.3
-// @description  1) Use real bold to replace synthetic SimSun bold; 2) Override serif/sans settings in browser; 3) Use Latin fonts for Latin part in Latin/CJK mixed texts; 4) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
+// @description  1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
 // @author       stecue@gmail.com
 // @license      GPLv3
 // @match        http://*/*
@@ -25,7 +25,7 @@
     var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore = true; //Appendent CJK fonts to all elements. Might have side effects ?
-    var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Not implemented yet.
+    var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     //Do not change following code unless you know the results!
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
