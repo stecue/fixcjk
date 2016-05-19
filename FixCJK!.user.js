@@ -477,6 +477,6 @@
         all[currpunc].innerHTML=currHTML;
         if (debug_04===true) {all[currpunc].style.color="Pink";}
     }
-    if (debug_left===true) {alert('Finished!');}
+    if (debug_left===true) {console.log('Finished!');}
 }
 ) ();
