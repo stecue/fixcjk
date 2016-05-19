@@ -145,7 +145,7 @@
         }
         return dequoted;
     }
-    if (debug_00===true) {alert(dequote('"SimSun","Times New Roman"""""'));}
+    if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     qpreCJK = dequote(qpreCJK);
     qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
@@ -188,7 +188,7 @@
                 else {
                     //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
                     all[i].style.fontFamily = font_str + ',' + qBold + ',' + '  sans-serif';
-                    //alert(all[i].style.fontFamily);
+                    //console.log(all[i].style.fontFamily);
                 }
             }
             child = child.nextSibling;
@@ -205,7 +205,7 @@
         //Only change if current node (not child node) contains CJK characters.
         font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-        //alert(child.nodeType);
+        //console.log(child.nodeType);
         while (child) {
             if (child.nodeType == 3) {
                 //all[i].style.color='Teal'; //text-->teal;
@@ -215,7 +215,7 @@
                     if (fweight == 'bold' || fweight > 500) {
                         //all[i].style.color="Grey";
                         if_replace = false;
-                        //alert(child.data);
+                        //console.log(child.data);
                         //return false;
                     }
                     else {
@@ -229,7 +229,7 @@
                             if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
                             all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun);
                             if (all[i].style.fontFamily.length<1) {
-                                alert(font_str);alert(font_str.replace(re_simsun, qSimSun));
+                                console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
                             }
                             if (!(has_genfam(all[i].style.fontFamily))) {
                                 all[i].style.fontFamily = all[i].style.fontFamily + ',' + 'sans-serif';
@@ -325,8 +325,8 @@
     //    var max_r=all_r.length;
     //    if (max!==max_r)
     //        {
-    //            alert(max);
-    //            alert(max_r);
+    //            console.log(max);
+    //            console.log(max_r);
     //            location.reload();
     //        }
     //}, 2*1000);
@@ -351,15 +351,15 @@
         //Only change if current node (not child node) contains CJK characters.
         //font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         //fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-        //alert(child.nodeType);
+        //console.log(child.nodeType);
         font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         while (child) {
             if (child.nodeType == 3) {
-                //alert(child.data);
+                //console.log(child.data);
                 //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
                 if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF？！：；《》、]+|[\u3400-\u9FBF？！：；《》、][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
-                    //alert(i);
-                    //alert(all[i].innerHTML);
+                    //console.log(i);
+                    //console.log(all[i].innerHTML);
                     if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                     numnodes++;
                     puncnode.push(i);
@@ -403,7 +403,7 @@
         if (changhai_style===true) {
             currHTML=currHTML.replace(/([\u3400-\u9FBF]?)([“‘])([\u3400-\u9FBF]+)/g,'$1 $2$3');
             currHTML=currHTML.replace(/([\u3400-\u9FBF])([”’])([^，, ])/g,'$1$2 $3');
-            if (debug_04===true) {alert(currHTML);}
+            if (debug_04===true) {console.log(currHTML);}
             all[currpunc].innerHTML=currHTML;
             continue;
         }
@@ -414,8 +414,11 @@
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
         //Add space/backspace between ">" and "“"
-        currHTML=currHTML.replace(/(>[\n]?)[ ]*(“)/mg,'$1\u0008$2');
-        //alert(currHTML);
+        if (currHTML.match(/(>[\n]?)[ ]*([“‘])/mg)) {
+            if (debug_04===true) {console.log('Before Replacement: '+currHTML);}
+            currHTML=currHTML.replace(/(>[\n]?)[ ]*([“‘])/mg,'$1\u0008$2');
+            if (debug_04===true) {console.log('After Replacement: '+currHTML);}
+        }
         //all[currpunc].innerHTML=currHTML; continue;
         //Now let's fix the punctions.
         fsize=window.getComputedStyle(all[currpunc], null).getPropertyValue('font-size');
@@ -428,23 +431,23 @@
         ///----[？！：；]“ does not need special treatment. Just compress [，。]---///
         //--TWO PUNCTS: End with '” (right mark)' and NONE '“' after:--//
         tmp_str='$1<span style="letter-spacing:'+kern_other+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_end+';">$3</span>$4';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([，。][\n]?)([”])([^“]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([，。][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3$4';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([，。])([^“]|$)/mg,tmp_str);
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([’”])([，。])([^“‘]|$)/mg,tmp_str);
         //--TWO PUNCTS: End with [，。] and ONE '“' (left mark) after:--//
         tmp_str='$1<span style="letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
-        currHTML=currHTML.replace(/([^”]|^)([，。][\n]?)([“])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
+        currHTML=currHTML.replace(/([^’”]|^)([，。][\n]?)([“‘])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
         //--TWO PUNCTS: ”“ (right-left)--//
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
-        currHTML=currHTML.replace(/([^”，。]|^)([\n]?[”])([“])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
+        currHTML=currHTML.replace(/([^’”，。]|^)([\n]?[’”])([“‘])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
         //--THREE PUNCTS: [，。]”“-//
         tmp_str='$1<span style="letter-spacing:'+kern_other+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$3</span>';
         tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF][a-zA-Z_0-9]*[\n]?)([，。][\n]?)([”])([“][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        currHTML=currHTML.replace(/([\u3400-\u9FBF][a-zA-Z_0-9]*[\n]?)([，。][\n]?)([’”])([“‘][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
         //--THREE PUNCTS: ”[，。]“-//
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="letter-spacing:'+kern_dq_right_left+';">$3</span>';
         tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([，。])([“][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([’”])([，。])([“‘][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
         ///---Done with conseqtive puncts--///
         //-----Use normal kerning for individual double quotation marks.---//
         psize=(-Number(fsize)/kern_ind_left_dq).toString();
@@ -457,12 +460,20 @@
         psize=(-Number(fsize)/kern_ind_right_dq_tail).toString();
         psize=psize+funit;
         currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([”])([\n]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
-        ///--- User more negative spacing for single quotation marks. //
+        ///===== User more negative spacing for single quotation marks. =====//
         // However, left quotation marks will overwrite the character on the left with too negative spacing.) ---///
         psize=(-Number(fsize)/kern_sq).toString();
         psize=psize+funit;
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、])([‘])([\n]?[\u3400-\u9FBF？！：；《》、]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\n]?)([’])/g,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>');
+        var Unified_Algo=true; //Unified replacement algorithm for double and single quotations.
+        if (Unified_Algo===true) {
+            currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([’])([^“，。\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][a-zA-Z_0-9]*[\n]?)([’])([\n]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>$3');
+        }
+        else {
+            currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；《》、])([‘])([\n]?[\u3400-\u9FBF？！：；《》、]+)/mg,'<span style="letter-spacing:'+psize+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；《》、][\n]?)([’])/g,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+psize+';">$2</span>');
+        }
         all[currpunc].innerHTML=currHTML;
         if (debug_04===true) {all[currpunc].style.color="Pink";}
     }
