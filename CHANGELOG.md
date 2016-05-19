@@ -1,5 +1,9 @@
 ## 0.9.3 (2016-05-19)
 Bugfixes:
+  - Single and double quotation marks are treated as unified as possbile. Several inconsistency bugs are fixed.
+
+## 0.9.3 (2016-05-19)
+Bugfixes:
   - Quotation marks followed by mixed CJK and Latin text are treated as CJK now.
   - Fix a bug leading to unclosed HTML tags. 
 
