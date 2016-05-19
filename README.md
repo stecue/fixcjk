@@ -6,4 +6,4 @@ This was orignally developed to workaround the [chromium bug](https://bugs.chrom
 Another goal of this script is to fix the CJK punctuations. Unicode assigns the same code for some CJK and Latin punctuations while they have different glyphs in CJK than in Latin. I call them "conflicting punctuations", and double and single curved quotation marks are among the most notable examples. Therefore simply using a single Latin/CJK font fallback list set in CSS cannot give the desired results. Currently the CJK quotation marks are identified and treated seperately from other CJK text using the font defined in variable `CJKPunct`. Other less-used conflicting CJK punctuations will be fixed in future versions.
 
 ## Usage
-Currently, just change variabl definations from `CJKdefault` to `FixPunct`.
+Currently, just change variable definitions from `CJKdefault` to `FixPunct`.
