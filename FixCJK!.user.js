@@ -482,7 +482,7 @@
         if (debug_04===true) {all[currpunc].style.color="Pink";}
     }
     var t_stop=performance.now();
-    console.log('FixCJK! took '+(t_stop-t_start)+' milliseconds.');
+    console.log('Fixing CJK fonts and punctuation marks took '+(t_stop-t_start)+' milliseconds.');
     if (debug_left===true) {alert('Finished!');}
 }
 ) ();
