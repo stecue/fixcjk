@@ -27,6 +27,7 @@
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     //Do not change following code unless you know the results!
+    var t_start = performance.now();
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
     var debug_00 = false;
@@ -480,6 +481,8 @@
         all[currpunc].innerHTML=currHTML;
         if (debug_04===true) {all[currpunc].style.color="Pink";}
     }
+    var t_stop=performance.now();
+    console.log('FixCJK! took '+(t_stop-t_start)+' milliseconds.');
     if (debug_left===true) {alert('Finished!');}
 }
 ) ();
