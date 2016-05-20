@@ -1,6 +1,7 @@
-## 0.9.5 (2016-05-20)
+## 0.9.6 (2016-05-20)
 Features:
   - Log execution time to console.
+
 Bugfixes:
   - Punctuation fixing skips HTML elements lik `TITLE` and `HEAD`.
 
