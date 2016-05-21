@@ -62,6 +62,14 @@
     var re_sans0 = /^ ?sans ?$|^ ?sans-serif ?$/i;
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
+    var kern_punct='-0.5em';
+    var kern_sq='-0.4em';
+    var kern_ind_left_dq='-0.3em';
+    var kern_ind_right_dq='-0.3em';
+    var kern_ind_right_dq_tail='-0.3em'; //different from above one b/c the possible extra \n (which will show as a space in most cases).
+    var kern_other='-0.3em'; //kern for ,. before right ”
+    var kern_dq_right_end='-0.5em';
+    var kern_dq_right_left='-0.5em';
     //Check if the font definitions are valid
     function check_fonts(font_var, fvname) {
         var fl = font_var.split(',');
@@ -384,18 +392,8 @@
     }
     var currpunc=0;
     var currHTML='';
-    var fsize = '';
-    var funit = '';
     var changhai_style=false;
-    var kern_punct='-0.5em';
-    var kern_sq='-0.4em';
     var tmp_str='';
-    var kern_ind_left_dq='-0.3em';
-    var kern_ind_right_dq='-0.3em';
-    var kern_ind_right_dq_tail='-0.3em'; //different from above one b/c the possible extra \n (which will show as a space in most cases).
-    var kern_other='-0.3em'; //kern for ,. before right ”
-    var kern_dq_right_end='-0.5em';
-    var kern_dq_right_left='-0.5em';
     //var kern_dq_right='-1px';
     //var kern_dq_right_tail='-5px';
     while(numnodes>0) {
@@ -427,10 +425,6 @@
         }
         //all[currpunc].innerHTML=currHTML; continue;
         //Now let's fix the punctions.
-        fsize=window.getComputedStyle(all[currpunc], null).getPropertyValue('font-size');
-        funit=fsize.replace(/^["']*[0-9.]+/,'');
-        fsize=fsize.replace(/[^0-9.]+$/,'');
-        fsize=fsize.replace(/[^0-9.]+$/,'');
         //Use more negative kerning for consective punction marks.
         ///----[？！：；]“ does not need special treatment. Just compress [，。]---///
         //--TWO PUNCTS: End with '” (right mark)' and NONE '“' after:--//
