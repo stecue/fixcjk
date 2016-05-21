@@ -1,4 +1,7 @@
 ## 0.9.7 (2016-05-20)
+Features:
+  - (Not for end user) Use relative letter-spacing.
+
 Bugfixes:
   - HTML symbols (`/&[^&;]+;/`) are correctly treated now.
 
