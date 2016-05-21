@@ -62,6 +62,7 @@
     var re_sans0 = /^ ?sans ?$|^ ?sans-serif ?$/i;
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
+    //letter-spacing options
     var kern_punct='-0.5em';
     var kern_sq='-0.4em';
     var kern_ind_left_dq='-0.3em';
