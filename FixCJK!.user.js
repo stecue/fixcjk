@@ -417,6 +417,8 @@
         }
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
+        //fix quotations followed by HTML symbols:
+        currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF，。？！：；])/g,'$1<span style="font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
         //Add space/backspace between ">" and "“"
         if (currHTML.match(/(>[\n]?)[ ]*([“‘])/mg)) {
             if (debug_04===true) {console.log('Before Replacement: '+currHTML);}
