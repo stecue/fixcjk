@@ -11,7 +11,7 @@
 // @exclude      https://*edit*/*
 // @exclude      http://*action=edit*
 // @exclude      https://*action=edit*
-// @grant        none
+// @grant        GM_addStyle
 // ==/UserScript==
 (function () {
     'use strict';
@@ -158,7 +158,19 @@
         }
         return dequoted;
     }
+    function FirstFontOnly(font_str) {
+        return ((dequote(font_str)).split(','))[0];
+    }
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
+    var LatinFirst1=FirstFontOnly(LatinInSimSun);
+    var LatinFirst2=FirstFontOnly(LatinSans);
+    var LatinFirst3=FirstFontOnly(LatinSerif);
+    var LatinFirst4=FirstFontOnly(LatinMono);
+    //GM_addStyle('@font-face { font-family: '+'Lato'+';\n src: local(SimHei);\n unicode-range: U+3000;}');
+    //GM_addStyle('@font-face { font-family: '+LatinFirst2+';\n src: local(SimHei);\n unicode-range: U+3000-303F,FF00-FFEF;}');
+    //GM_addStyle('@font-face { font-family: '+LatinFirst3+';\n src: local(SimHei);\n unicode-range: U+3000-303F,FF00-FFEF;}');
+    //GM_addStyle('@font-face { font-family: '+LatinFirst4+';\n src: local(SimHei);\n unicode-range: U+3000-303F,FF00-FFEF;}');
+
     qpreCJK = dequote(qpreCJK);
     qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
@@ -348,7 +360,7 @@
     var numnodes=0;
     var delete_all_spaces=true;
     var SkippedTags=/^(TITLE)|(HEAD)|(textarea)$/i; //to be fixed for github.
-    var AlsoChangeFullStop=true;
+    var AlsoChangeFullStop=false;
     var CompressInd=false;
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
@@ -510,20 +522,23 @@
         }
         all[currpunc].innerHTML=currHTML;
     }
-    //all=document.getElementsByTagName('*');
-    //for (i=0;i<all.length;i++) {
-    //    //currHTML=currHTML.replace(/([^>]|^)([？！：；、，。])([^<]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
-    //    child = all[i].firstChild;
-    //    while (child) {
-    //        if (child.nodeType == 3) {
-    //            if (child.data.match(/([？！：；、，。])/mg)) {
-    //                console.log(all[i].innerHTML.replace(/([？！：；、，。])/mg,'<span style="font-family:'+dequote(CJKPunct)+';">$1</span>'));
-    //            }
-    //            break;
-    //        }
-    //        child = child.nextSibling;
-    //    }
-    //}
+    var reload=false;
+    if (reload===true) {
+        all=document.getElementsByTagName('*');
+        for (i=0;i<all.length;i++) {
+            //currHTML=currHTML.replace(/([^>]|^)([？！：；、，。])([^<]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+            child = all[i].firstChild;
+            while (child) {
+                if (child.nodeType == 3) {
+                    if (child.data.match(/([？！：；、，。])/mg)) {
+                        console.log(all[i].innerHTML.replace(/([？！：；、，。])/mg,'<span style="font-family:'+dequote(CJKPunct)+';">$1</span>'));
+                    }
+                    break;
+                }
+                child = child.nextSibling;
+            }
+        }
+    }
     var t_stop=performance.now();
     console.log('FixCJK! execution time: '+((t_stop-t_start)/1000).toFixed(3)+' seconds');
     if (debug_left===true) {alert('Finished!');}
