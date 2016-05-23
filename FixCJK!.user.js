@@ -7,7 +7,10 @@
 // @license      GPLv3
 // @match        http://*/*
 // @match        https://*/*
+// @exclude      http://*edit*/*
 // @exclude      https://*edit*/*
+// @exclude      http://*action=edit*
+// @exclude      https://*action=edit*
 // @grant        none
 // ==/UserScript==
 (function () {
