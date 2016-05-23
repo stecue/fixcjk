@@ -7,8 +7,6 @@
 // @license      GPLv3
 // @match        http://*/*
 // @match        https://*/*
-// @exclude      http://*action=edit*/*
-// @exclude      https://*action=edit*/*
 // @grant        none
 // ==/UserScript==
 (function () {
@@ -345,7 +343,7 @@
     //var puncset=new Set();
     var numnodes=0;
     var delete_all_spaces=true;
-    var SkippedTags=/^(TITLE)|(HEAD)$/i;
+    var SkippedTags=/^(TITLE)|(HEAD)|(textarea)$/i;
     var AlsoChangeFullStop=true;
     var CompressInd=false;
     for (i = 0; i < max; i++) {
