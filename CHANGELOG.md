@@ -1,3 +1,11 @@
+## 0.9.8 (2016-05-23)
+Features:
+  - Change fonts for some other punctuation marks as well.
+  - Only consecutive punctuation marks are compressed by default.
+
+Bugfixes:
+  - Some minor bug fixes related to unicode.
+
 ## 0.9.7 (2016-05-20)
 Features:
   - (Not for end user) Use relative letter-spacing.
