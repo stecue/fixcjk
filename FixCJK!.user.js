@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.8
+// @version      0.9.9
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -11,7 +11,8 @@
 // @exclude      https://*edit*/*
 // @exclude      http://*action=edit*
 // @exclude      https://*action=edit*
-// @grant        none
+// @exclude      https://*jsfiddle.net*/*
+// @grant        GM_addStyle
 // ==/UserScript==
 (function () {
     'use strict';
@@ -48,6 +49,7 @@
     var qsig_bold = '"' + sig_bold + '"';
     var qsig_default = '"' + sig_default + '"';
     //var qpreCJK = '"' + CJKdefault + '"'; //Quoted "CJK font".
+    var genPunct='General Punct \uE137';
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     var qSimSun = LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
@@ -158,7 +160,19 @@
         }
         return dequoted;
     }
+    function FirstFontOnly(font_str) {
+        return ((dequote(font_str)).split(','))[0];
+    }
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
+    //Assign fonts for puncts:
+    var LatinFirst1=FirstFontOnly(LatinInSimSun);
+    var LatinFirst2=FirstFontOnly(LatinSans);
+    var LatinFirst3=FirstFontOnly(LatinSerif);
+    var LatinFirst4=FirstFontOnly(LatinMono);
+    var punctStyle='@font-face { font-family: '+genPunct+';\n src: local('+FirstFontOnly(CJKPunct)+');\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
+    //alert(punctStyle);
+    GM_addStyle(punctStyle);
+    ///----------------------------
     qpreCJK = dequote(qpreCJK);
     qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
@@ -182,26 +196,26 @@
                 if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
                 if (font_str.match(re_simsun)) {
                     //all[i].style.color="Sienna"; //SimSun --> Sienna
-                    all[i].style.fontFamily = font_str.replace(re_simsun, qBold);
+                    all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
                     if (!(has_genfam(all[i].style.fontFamily))) {
-                        all[i].style.fontFamily = all[i].style.fontFamily + ',' + 'sans-serif';
+                        all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
                     }
                 }        //Test if contains Sans
                 else if (list_has(font_str, re_sans0) !== false) {
                     //all[i].style.color="Salmon";
-                    all[i].style.fontFamily = LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
+                    all[i].style.fontFamily = genPunct+','+LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
                 }        //Test if contains serif
                 else if (list_has(font_str, re_serif) !== false) {
                     //all[i].style.color="SeaGreen";
-                    all[i].style.fontFamily = LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
+                    all[i].style.fontFamily = genPunct+','+LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
                 }        //Test if contains monospace
                 else if (list_has(font_str, re_mono0) !== false) {
                     //all[i].style.color="Maroon";
-                    all[i].style.fontFamily = LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
+                    all[i].style.fontFamily = genPunct+','+LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
                 }        //Just append the fonts to the font preference list.
                 else {
                     //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
-                    all[i].style.fontFamily = font_str + ',' + qBold + ',' + '  sans-serif';
+                    all[i].style.fontFamily = genPunct+','+font_str + ',' + qBold + ',' + '  sans-serif';
                     //console.log(all[i].style.fontFamily);
                 }
             }
@@ -241,12 +255,12 @@
                         }
                         else {
                             if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-                            all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun);
+                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun);
                             if (all[i].style.fontFamily.length<1) {
                                 console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
                             }
                             if (!(has_genfam(all[i].style.fontFamily))) {
-                                all[i].style.fontFamily = all[i].style.fontFamily + ',' + 'sans-serif';
+                                all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
                             }              //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
 
                             if_replace = false;
@@ -271,26 +285,26 @@
             //Test if contains Sans
             if (list_has(font_str, re_sans0) !== false) {
                 //all[i].style.color="Salmon";
-                all[i].style.fontFamily = replace_font(font_str, re_sans0, qsans);
+                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
             }      //Test if contains serif
             else if (list_has(font_str, re_serif) !== false) {
                 //all[i].style.color="SeaGreen";
-                all[i].style.fontFamily = replace_font(font_str, re_serif, qserif);
+                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
             }      //Test if contains monospace
             else if (list_has(font_str, re_mono0) !== false) {
                 //all[i].style.color="Maroon";
-                all[i].style.fontFamily = replace_font(font_str, re_mono0, qmono);
+                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
             }
             else {
                 //all[i].style.color='Fuchsia';
                 if (font_str.match(re_simsun)) {
                     //all[i].style.color='Fuchsia';
                     //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                    all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                    all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
                 }
                 else {
                     //all[i].style.color='Fuchsia';
-                    all[i].style.fontFamily = font_str + ',' + qCJK + ',' + 'sans-serif';
+                    all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                 }
             }
         }
@@ -306,26 +320,26 @@
         if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default))) {
             if (list_has(font_str, re_sans0) !== false) {
                 //all[i].style.color="Salmon";
-                all[i].style.fontFamily = replace_font(font_str, re_sans0, qsans);
+                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
             }      //Test if contains serif
             else if (list_has(font_str, re_serif) !== false) {
                 //all[i].style.color="SeaGreen";
-                all[i].style.fontFamily = replace_font(font_str, re_serif, qserif);
+                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
             }      //Test if contains monospace
             else if (list_has(font_str, re_mono0) !== false) {
                 //all[i].style.color="Maroon";
-                all[i].style.fontFamily = replace_font(font_str, re_mono0, qmono);
+                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
             }
             else {
                 if (debug_03 === true) { all[i].style.color='Fuchsia'; }
                 if (font_str.match(re_simsun)) {
                     if (debug_03 === true) {all[i].style.color='Sienna'; }
                     //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                    all[i].style.fontFamily = font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                    all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
                 }
                 else {
                     if (debug_03 === true) { all[i].style.color='Olive';}
-                    all[i].style.fontFamily = font_str + ',' + qCJK + ',' + 'sans-serif';
+                    all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                 }
             }
         }
@@ -348,7 +362,7 @@
     var numnodes=0;
     var delete_all_spaces=true;
     var SkippedTags=/^(TITLE)|(HEAD)|(textarea)$/i; //to be fixed for github.
-    var AlsoChangeFullStop=true;
+    var AlsoChangeFullStop=false;
     var CompressInd=false;
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
@@ -510,20 +524,23 @@
         }
         all[currpunc].innerHTML=currHTML;
     }
-    //all=document.getElementsByTagName('*');
-    //for (i=0;i<all.length;i++) {
-    //    //currHTML=currHTML.replace(/([^>]|^)([？！：；、，。])([^<]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
-    //    child = all[i].firstChild;
-    //    while (child) {
-    //        if (child.nodeType == 3) {
-    //            if (child.data.match(/([？！：；、，。])/mg)) {
-    //                console.log(all[i].innerHTML.replace(/([？！：；、，。])/mg,'<span style="font-family:'+dequote(CJKPunct)+';">$1</span>'));
-    //            }
-    //            break;
-    //        }
-    //        child = child.nextSibling;
-    //    }
-    //}
+    var reload=false;
+    if (reload===true) {
+        all=document.getElementsByTagName('*');
+        for (i=0;i<all.length;i++) {
+            //currHTML=currHTML.replace(/([^>]|^)([？！：；、，。])([^<]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+            child = all[i].firstChild;
+            while (child) {
+                if (child.nodeType == 3) {
+                    if (child.data.match(/([？！：；、，。])/mg)) {
+                        console.log(all[i].innerHTML.replace(/([？！：；、，。])/mg,'<span style="font-family:'+dequote(CJKPunct)+';">$1</span>'));
+                    }
+                    break;
+                }
+                child = child.nextSibling;
+            }
+        }
+    }
     var t_stop=performance.now();
     console.log('FixCJK! execution time: '+((t_stop-t_start)/1000).toFixed(3)+' seconds');
     if (debug_left===true) {alert('Finished!');}

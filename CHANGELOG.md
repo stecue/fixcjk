@@ -1,6 +1,6 @@
-## 0.9.8 (2016-05-23)
+## 0.9.9 (2016-05-23)
 Features:
-  - Change fonts for some other punctuation marks as well.
+  - Change fonts for some other punctuation marks as well using CSS unicode range (FF 44+).
   - Only consecutive punctuation marks are compressed by default.
 
 Bugfixes:
