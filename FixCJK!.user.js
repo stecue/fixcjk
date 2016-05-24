@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.9
+// @version      0.9.10
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -43,7 +43,7 @@
     var sig_hei = 'RealCJKBold 黑'; // signature to check if change is sucssful or not.
     var sig_bold = 'RealCJKBold 粗'; // signature to check if change is sucssful or not.
     var sig_default = 'RealCJKBold 默'; // signature to check if change is sucssful or not.
-    var sig_punct = '\uE137'; //will be attached to CJKPunct;
+    var sig_punct = '\uE135'; //will be attached to CJKPunct;
     var qsig_sun = '"' + sig_sun + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
     var qsig_bold = '"' + sig_bold + '"';
@@ -165,12 +165,14 @@
     }
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
-    var LatinFirst1=FirstFontOnly(LatinInSimSun);
-    var LatinFirst2=FirstFontOnly(LatinSans);
-    var LatinFirst3=FirstFontOnly(LatinSerif);
-    var LatinFirst4=FirstFontOnly(LatinMono);
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: local('+FirstFontOnly(CJKPunct)+');\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    //alert(punctStyle);
+    var useCSSforSimSun=false;
+    if (useCSSforSimSun===true) {
+        punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
+        punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
+        punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
+        punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
+    }
     GM_addStyle(punctStyle);
     ///----------------------------
     qpreCJK = dequote(qpreCJK);
@@ -226,6 +228,7 @@
         return false;
     }
     /// ===== Second Round: Deal with regular weight. ===== ///
+    var tmp_idx=0;
     max = all.length;
     for (i = 0; i < max; i++) {
         child = all[i].firstChild;
@@ -239,7 +242,7 @@
                 //all[i].style.color='Teal'; //text-->teal;
                 //Just check and fix the improper SimSun use
                 if (font_str.match(re_simsun)) {
-                    //all[i].style.color="Sienna";
+                    if (debug_02===true) {all[i].style.color="Sienna";}
                     if (fweight == 'bold' || fweight > 500) {
                         //all[i].style.color="Grey";
                         if_replace = false;
@@ -247,15 +250,18 @@
                         //return false;
                     }
                     else {
-                        //all[i].style.color="Orange";
-                        if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
+                        if (debug_02===true) {all[i].style.color="Orange";}
+                        if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/)) {
                             //do nothing if already replaced;
-                            //all[i].style.color="Grey";
+                            if (debug_02===true) {all[i].style.color="Grey";}
                             if_replace = false;
                         }
                         else {
                             if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun);
+                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
+                            all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
+                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
+                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
                             if (all[i].style.fontFamily.length<1) {
                                 console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
                             }
@@ -267,21 +273,29 @@
                             //all[i].style.color="Grey";
                         }
                     }
+                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                 }
                 if (child.data.match(/[\u3400-\u9FBF]/)) {
                     if_replace = true;
-                    //all[i].style.color="Cyan"; //CJK-->Cyan
+                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                    if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
+                    font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                     if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
                         //do nothing if already replaced;
-                        //all[i].style.color="Black";
+                        if (debug_02===true) {all[i].style.color="Black";}
                         if_replace = false;
+                        if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                     }          //break;
 
                 }
             }
             child = child.nextSibling;
         }
+        //Just to make sure "font_str" is already updated.
+        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         if (if_replace === true) {
+            if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
+            if (debug_02===true) {if (all[i].innerHTML.match(/目前量子多体的书/g)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
             //Test if contains Sans
             if (list_has(font_str, re_sans0) !== false) {
                 //all[i].style.color="Salmon";
@@ -296,7 +310,7 @@
                 all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
             }
             else {
-                //all[i].style.color='Fuchsia';
+                if (debug_02===true) {all[i].style.color='Fuchsia';}
                 if (font_str.match(re_simsun)) {
                     //all[i].style.color='Fuchsia';
                     //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
@@ -309,7 +323,9 @@
             }
         }
     }
-    /// ===== The final round: Add CJKdefault to all elements ===== ///
+    if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
+    if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
+    /// ===== The Third round: Add CJKdefault to all elements ===== ///
     if (FixMore === false) {
         return false;
     }
@@ -317,7 +333,7 @@
     for (i = 0; i < max; i++) {
         //all[i].style.color="SeaGreen";
         font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default))) {
+        if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
             if (list_has(font_str, re_sans0) !== false) {
                 //all[i].style.color="Salmon";
                 all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
@@ -462,23 +478,23 @@
             tmp_str='$1<span style="letter-spacing:'+kern_consec_pq+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_end+';">$3</span>$4';
             currHTML=currHTML.replace(/(.|^)([，。][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
             tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_qp+';">$2</span>$3$4';
-            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\u0021-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。])([^“‘]|$)/mg,tmp_str);
+            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\u0021-\u003B\u003D\u003F-\u05FF]*(?:<[^><]+>[ \n]?)*[\n]?)([’”])([，。])([^“‘]|$)/mg,tmp_str);
         }
         //--TWO PUNCTS: End with [，。] and ONE '“' (left mark) after:--//
         tmp_str='$1<span style="letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
-        currHTML=currHTML.replace(/([^’”]|^)([，。][\n]?)([“‘])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
+        currHTML=currHTML.replace(/([^’”]|^)([，。][\n]?)([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
         //--TWO PUNCTS: ”“ (right-left)--//
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
-        currHTML=currHTML.replace(/([^’”，。]|^)([\n]?[’”])([“‘])([\n]?[\u3400-\u9FBF])/mg,tmp_str);
+        currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”，。])|^)([\n]?[’”])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
         //--THREE PUNCTS: [，。]”“-//
         tmp_str='$1<span style="letter-spacing:'+kern_consec_pq+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$3</span>';
         tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
-        currHTML=currHTML.replace(/([\n]?)([，。][\n]?)([’”])([“‘][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        currHTML=currHTML.replace(/([\n]?)([，。][\n]?)([’”])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
         //--THREE PUNCTS: ”[，。]“-//
         tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="letter-spacing:'+kern_dq_right_left+';">$3</span>';
         tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
         //$1 is something like “智能ABC”
-        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。])([“‘][\n]?)([？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+        currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[？！：；\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
         ///---Done with conseqtive puncts--///
         //-----Use normal kerning for individual double quotation marks.---//
         if (CompressInd===true) {
@@ -488,8 +504,8 @@
                 currHTML=currHTML.replace(/([^ \n”。，\u200B][\n]?|^)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+kern_ind_left_dq+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
             }
             else{
-                // ((?:(?:<[^><\uE137]*>[\n]?)+\u200B)?) ($2) matches 0 or more consec tags.
-                currHTML=currHTML.replace(/((?:&[^&;]+;)|[^ \n”。，><;][\n]?|^)((?:(?:<[^><\uE137]*>[\n]?)+\u200B)?)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+kern_ind_left_dq+'">$1</span>$2<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
+                // ((?:(?:<[^><\uE135]*>[\n]?)+\u200B)?) ($2) matches 0 or more consec tags.
+                currHTML=currHTML.replace(/((?:&[^&;]+;)|[^ \n”。，><;][\n]?|^)((?:(?:<[^><\uE135]*>[\n]?)+\u200B)?)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+kern_ind_left_dq+'">$1</span>$2<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
             }
             //$1 is something like “智能ABC”, but not “智能"ABC”
             currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([”])([^“。\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_ind_right_dq+';">$2</span>$3');
@@ -502,7 +518,7 @@
                     currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+kern_sq+'">$1</span><span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
                 }
                 else {
-                    currHTML=currHTML.replace(/([^ \n”。，><][\n]?|^)((?:(?:<[^><\uE137]+>[\n]?)+\u200B)?)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+kern_sq+'">$1</span>$2<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
+                    currHTML=currHTML.replace(/([^ \n”。，><][\n]?|^)((?:(?:<[^><\uE135]+>[\n]?)+\u200B)?)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="letter-spacing:'+kern_sq+'">$1</span>$2<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
 
                 }
                 currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’])([^“。\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>$3');
@@ -514,9 +530,9 @@
             }
         }
         else {
-            currHTML=currHTML.replace(/([“‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$1</span>$2');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([^“。\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';">$2</span>$3');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([\n]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+            currHTML=currHTML.replace(/([“‘])([\n]?(?:<[^><\uE135]+>[ \n]?)*[\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF]+)/mg,'<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$1</span>$2');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([^“。\n])/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([\n]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+';">$2</span>$3');
         }
         if (debug_04===true) {all[currpunc].style.color="Pink";}
         if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
