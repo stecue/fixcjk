@@ -1,6 +1,7 @@
-## 0.9.11 (2016-05-25)
+## 0.9.12 (2016-05-25)
 Features:
   - Also squeeze spaces before and after "（）《》".
+  - CJKPunct supports fallback list.
 
 Bugfixes:
   - Various bugfixes including the picture bug on zhihu.com.
