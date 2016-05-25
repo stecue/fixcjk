@@ -484,7 +484,7 @@
             currHTML=currHTML.replace(/([\n]?)([，。、：；！？][\n]?)([’”])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[？！：；、\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
             //--THREE PUNCTS: [’”][，。：；！？][“‘]-//
             var punct3=/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。、：；！？])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[？！：；，。\u3400-\u9FBF][\n]?)/mg;
-            tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_left+';">$2</span>'+'<span style="letter-spacing:'+kern_dq_right_left+';">$3</span>';
+            tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_qp+';">$2</span>'+'<span style="letter-spacing:'+kern_dq_right_left+';">$3</span>';
             tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
             currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
             //--THREE PUNCTS: [’”][，。：；！？][”]-//
