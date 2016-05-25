@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         FixCJK!
 // @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.11
+// @version      0.9.12
 // @description  1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix conflicting CJK punctuations. (Currently “”‘’ are fixed).
 // @author       stecue@gmail.com
 // @license      GPLv3
@@ -163,9 +163,17 @@
     function FirstFontOnly(font_str) {
         return ((dequote(font_str)).split(','))[0];
     }
+    function AddLocal(font_str) {
+        font_str=(dequote(font_str)).split(',');
+        var localed='local("'+font_str[0]+'"), local("'+font_str[0]+' Regular")';
+        for (var l=1;l<font_str.length;l++) {
+            localed=localed+',\n'+'local("'+font_str[l]+'"),local("'+font_str[l]+' Regular")';
+        }
+        return localed;
+    }
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
-    var punctStyle='@font-face { font-family: '+genPunct+';\n src: local('+FirstFontOnly(CJKPunct)+');\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
+    var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -173,6 +181,7 @@
         punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
     }
+    alert(punctStyle);
     GM_addStyle(punctStyle);
     ///----------------------------
     qpreCJK = dequote(qpreCJK);
