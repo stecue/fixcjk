@@ -1,6 +1,6 @@
 ## 0.9.13 (2016-05-25)
 Bugfixes:
-  - Some bug fixes related to "）".
+  - Some bug fixes related to "）》".
 
 ## 0.9.12 (2016-05-25)
 Features:
