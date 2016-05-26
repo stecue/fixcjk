@@ -381,17 +381,27 @@
     else {
         //return true;
     }
-    while (FixPunct === true) {
+    var currpunc=0;
+    var currHTML='';
+    var changhai_style=false;
+    var tmp_str='';
+    var numnodes=0;
+    var puncnode=new Array('');
+    var puncid=new Array('');
+    var delete_all_spaces=true;
+    var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
+    var AlsoChangeFullStop=false;
+    var Squeezing=true;
+    var CompressInd=false;
+    var MaxNumLoops=5;
+    while ((FixPunct === true) && (MaxNumLoops>0)) {
+        MaxNumLoops--;
         i=0;
         all = document.getElementsByTagName('*');
-        var numnodes=0;
-        var puncnode=new Array('');
-        var puncid=new Array('');
-        var delete_all_spaces=true;
-        var SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
-        var AlsoChangeFullStop=false;
-        var Squeezing=true;
-        var CompressInd=false;
+        numnodes=0;
+        puncnode=new Array('');
+        puncid=new Array('');
+        SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
         for (i = 0; i < max; i++) {
             child = all[i].firstChild;
             if_replace = false;
@@ -410,57 +420,76 @@
                     //console.log(child.data);
                     //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
                     if (all[i].nodeName.match(SkippedTags)) {
+                        if (MaxNumLoops===0) {
+                            console.log('Skipped Change (Case 0): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                        }
                         if (debug_04===true) { console.log('Processing node '+i+'::'+all[i].nodeName); }
-                        i++;continue;
-                    }
-                    if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF？！：；《》、]+|[\u3400-\u9FBF？！：；《》、][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
-                        if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
-                        numnodes++;
-                        puncnode.push(i);
-                        //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
-                        puncid.push(all[i].id);
                         break;
-                    }
-                    else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[ ][^ |$]/mg))) {
-                        if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
-                        numnodes++;
-                        puncnode.push(i);
-                        //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
-                        puncid.push(all[i].id);
-                        break;
-                    }
-                    else if ((AlsoChangeFullStop===true) && child.data.match(/[？！：；、，。]/mg)) {
-                        numnodes++;
-                        puncnode.push(i);
-                        if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
-                        puncid.push(all[i].id);
-                    }
-                    else if (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\u3000-\u303F\uFF00-\uFFEF]/mg)) {
-                        numnodes++;
-                        puncnode.push(i);
                     }
                     else {
+                        if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF？！：；《》、]+|[\u3400-\u9FBF？！：；《》、][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
+                            if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
+                            numnodes++;
+                            puncnode.push(i);
+                            if (MaxNumLoops===0) {
+                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                            }
+                            //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
+                            //puncid.push(all[i].id);
+                            break;
+                        }
+                        else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[ ][^ |$]/mg))) {
+                            if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
+                            numnodes++;
+                            puncnode.push(i);
+                            if (MaxNumLoops===0) {
+                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                            }
+                            //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
+                            //puncid.push(all[i].id);
+                            break;
+                        }
+                        else if ((AlsoChangeFullStop===true) && child.data.match(/[？！：；、，。]/mg)) {
+                            if (MaxNumLoops===0) {
+                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                            }
+                            numnodes++;
+                            puncnode.push(i);
+                            //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
+                            //puncid.push(all[i].id);
+                            break;
+                        }
+                        else if (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\u3000-\u303F\uFF00-\uFFEF]/mg)) {
+                            if (MaxNumLoops===0) {
+                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                            }
+                            numnodes++;
+                            puncnode.push(i);
+                            break;
+                        }
+                        else {
+                        }
                     }
                 }
                 child = child.nextSibling;
             }
         }
-        console.log(numnodes.toString()+' elements to change.');
         if (numnodes===0) {
             FixPunct=false;
             continue;
         }
-        var currpunc=0;
-        var currHTML='';
-        var changhai_style=false;
-        var tmp_str='';
+        console.log(MaxNumLoops.toString()+' (or less) loop(s) left.');
+        console.log(numnodes.toString()+' element(s) to change.');
+        currpunc=0;
         //var kern_dq_right='-1px';
         //var kern_dq_right_tail='-5px';
         while(numnodes>0) {
             numnodes--;
             //Simply inserting blanck space, like changhai.org.
             currpunc=puncnode.pop();
-            console.log(numnodes.toString()+' left: '+'i='+currpunc.toString());
+            if (MaxNumLoops===0) {
+                console.log('currpunc='+currpunc.toString()+': '+all[currpunc].nodeName+': '+currHTML);
+            }
             if (debug_04===true) {console.log(currpunc);}
             currHTML=all[currpunc].innerHTML;
             if (changhai_style===true) {
@@ -581,6 +610,7 @@
             all[currpunc].innerHTML=currHTML;
         }
     }
+    ///--Reload if nessery--For testing purpose only. Keep it false!---///
     var reload=false;
     if (reload===true) {
         all=document.getElementsByTagName('*');
