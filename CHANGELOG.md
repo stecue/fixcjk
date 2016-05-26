@@ -1,3 +1,11 @@
+## 0.9.12 (2016-05-25)
+Features:
+  - Also squeeze spaces before and after "（）《》".
+  - CJKPunct supports fallback list.
+
+Bugfixes:
+  - Various bugfixes including the picture bug on zhihu.com.
+
 ## 0.9.9 (2016-05-23)
 Features:
   - Change fonts for some other punctuation marks as well using CSS unicode range (FF 44+).
