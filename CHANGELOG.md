@@ -1,7 +1,13 @@
+## 0.9.13 (2016-05-25)
+Bugfixes:
+  - Some bug fixes related to "）".
+
 ## 0.9.12 (2016-05-25)
 Features:
   - Also squeeze spaces before and after "（）《》".
   - CJKPunct supports fallback list.
+  - Allow multiple passes to fully fix punctuations.
+  - Add Chinese description.
 
 Bugfixes:
   - Various bugfixes including the picture bug on zhihu.com.
