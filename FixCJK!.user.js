@@ -1,18 +1,20 @@
 // ==UserScript==
-// @name         FixCJK!
-// @namespace    https://github.com/stecue/fixcjk
-// @version      0.9.12
-// @description  1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
-// @author       stecue@gmail.com
-// @license      GPLv3
-// @match        http://*/*
-// @match        https://*/*
-// @exclude      http://*edit*/*
-// @exclude      https://*edit*/*
-// @exclude      http://*action=edit*
-// @exclude      https://*action=edit*
-// @exclude      https://*jsfiddle.net*/*
-// @grant        GM_addStyle
+// @name              FixCJK!
+// @name:zh-CN        FixCJK!
+// @namespace         https://github.com/stecue/fixcjk
+// @version           0.9.13
+// @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
+// @description:zh-cn 中文字体和标点设定及修正脚本
+// @author            stecue@gmail.com
+// @license           GPLv3
+// @match             http://*/*
+// @match             https://*/*
+// @exclude           http://*edit*/*
+// @exclude           https://*edit*/*
+// @exclude           http://*action=edit*
+// @exclude           https://*action=edit*
+// @exclude           https://*jsfiddle.net*/*
+// @grant             GM_addStyle
 // ==/UserScript==
 (function () {
     'use strict';
@@ -427,7 +429,7 @@
                         break;
                     }
                     else {
-                        if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF？！：；《》、]+|[\u3400-\u9FBF？！：；《》、][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
+                        if ((child.data.match(/[“‘][ \n\t]*[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+|[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][ \n\t]*[”’]/mg)) && (!(font_str.match('monospace')))) {
                             if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                             numnodes++;
                             puncnode.push(i);
@@ -438,7 +440,7 @@
                             //puncid.push(all[i].id);
                             break;
                         }
-                        else if ((delete_all_spaces===true) && (child.data.match(/[，。？！：；》、][\n]?[ ][^ |$]/mg))) {
+                        else if ((delete_all_spaces===true) && (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\n]?[ ][^ |$]/mg))) {
                             if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                             numnodes++;
                             puncnode.push(i);
@@ -493,20 +495,20 @@
             if (debug_04===true) {console.log(currpunc);}
             currHTML=all[currpunc].innerHTML;
             if (changhai_style===true) {
-                currHTML=currHTML.replace(/([\u3400-\u9FBF]?)([“‘])([\u3400-\u9FBF]+)/g,'$1 $2$3');
-                currHTML=currHTML.replace(/([\u3400-\u9FBF])([”’])([^，, ])/g,'$1$2 $3');
+                currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
+                currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])([”’])([^，, ])/g,'$1$2 $3');
                 if (debug_04===true) {console.log(currHTML);}
                 all[currpunc].innerHTML=currHTML;
                 continue;
             }
             //We need to strip the space before and after quotation marks before fixing punctions, but not \n
             if (delete_all_spaces===true) {
-                currHTML=currHTML.replace(/([，。？！：；》、][\n]?)[ ]([^ |$])/g,'$1$2');
+                currHTML=currHTML.replace(/([\u3000-\u303F\uFF00-\uFFEF][\n]?)[ ]([^ |$])/g,'$1$2');
             }
-            currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF]+)/mg,'$1$2');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
+            currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/mg,'$1$2');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
             //fix quotations followed by HTML symbols:
-            currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF，。？！：；])/g,'$1<span style="font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
+            currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])/g,'$1<span style="font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
             //Add space/backspace between ">" and "“"
             if (currHTML.match(/(>[\n]?)[ ]*([“‘])/mg)) {
                 if (debug_04===true) {alert('Before Replacement: '+currHTML);}
@@ -521,29 +523,32 @@
                 //--THREE PUNCTS: [，。：；！？]”“-//
                 tmp_str='$1<span style="letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$3</span>';
                 tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
-                currHTML=currHTML.replace(/([\n]?)([，。、：；！？][\n]?)([’”])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[？！：；、\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
-                //--THREE PUNCTS: [’”][，。：；！？][“‘]-//
-                var punct3=/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。、：；！？])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[？！：；，。\u3400-\u9FBF][\n]?)/mg;
+                currHTML=currHTML.replace(/([\n]?)([，。、：；！？][\n]?)([’”])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[\u3000-\u303F\uFF00-\uFFEF\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
+                //--THREE PUNCTS: [’”][，。：；！？）》」][“‘]-//
+                var punct3=/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。、：；！？）》」])([“‘][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\n]?)/mg;
                 tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="letter-spacing:'+kern_consec_lr+';">$3</span>';
                 tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>$5';
                 currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                 //--THREE PUNCTS: [’”][，。：；！？][”]-//
-                punct3=/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。、：；！？])([”][\n]?)/mg;
+                punct3=/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([，。、：；！？）》」])([”][\n]?)/mg;
                 tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="letter-spacing:'+kern_consec_ll+';">$3</span>';
                 tmp_str=tmp_str+'<span style="font-family:'+dequote(CJKPunct)+';">$4</span>';
                 currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
-                //--TWO PUNCTS: End with '” (right mark)' and NONE '“' after: ”[，。、：；！？]:left-left--//
+                //--TWO PUNCTS: End with '” (lean-left)' and NONE '“' after: ”[，。、：；！？]:left-left--//
                 if (AlsoChangeFullStop===true) {
+                    //The following should not be used.
                     tmp_str='$1<span style="letter-spacing:'+kern_consec_ll+';font-family:'+dequote(CJKPunct)+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_end+';">$3</span>$4';
-                    currHTML=currHTML.replace(/([^？！：；，。、“”][\n]?)([？！：；，。、][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" should also use CJKPunct".
+                    currHTML=currHTML.replace(/([^？！：；，。、“”][\n]?)([？！：；，。、）》」][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" should also use CJKPunct".
                     tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_qp+';">$2</span><span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([？！：；，。、])([^“‘]|$)/mg,tmp_str);
                 }
                 else {
-                    tmp_str='$1<span style="letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_dq_right_end+';">$3</span>$4';
-                    currHTML=currHTML.replace(/(.|^)([，。、：；！？][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
+                    //left-left. ）”
+                    tmp_str='$1<span style="letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
+                    currHTML=currHTML.replace(/(.|^)([，。、：；！？）》」][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
+                    //left-left ”）
                     tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
-                    currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、][\u0021-\u003B\u003D\u003F-\u05FF]*(?:<[^><]+>[ \n]?)*[\n]?)([’”])([，。、：；！？])([^“‘]|$)/mg,tmp_str);
+                    currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021-\u003B\u003D\u003F-\u05FF]*(?:<[^><]+>[ \n]?)*[\n]?)([’”])([，。、：；！？）》」])([^“‘]|$)/mg,tmp_str);
                 }
                 //--TWO PUNCTS: [、，。：；！？）》」][、，。：；！？）》」] (left-left)--//
                 tmp_str='<span style="letter-spacing:'+kern_consec_ll+';">$1</span>$2';
