@@ -598,7 +598,7 @@
             //Simply inserting blanck space, like changhai.org.
             currpunc=puncnode.pop();
             if (MaxNumLoops===0) {
-                console.log('FixCJK!: currpunc='+currpunc.toString()+': '+all[currpunc].nodeName+': '+currHTML);
+                console.log('FixCJK!: currpunc='+currpunc.toString()+': '+all[currpunc].nodeName+': '+currHTML.slice(0,min(maxChildDataLength,currHTML.length)));
             }
             if (debug_04===true) {console.log(currpunc);}
             currHTML=all[currpunc].innerHTML;
