@@ -752,7 +752,7 @@
         console.log('FixCJK!: NORMAL TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
     }
     else {
-        console.log('FixCJK!: ABORTED EXECUTION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+        console.log('FixCJK!: EXECUTION ABORTED: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     if (debug_left===true) {alert('Finished!');}
 }
