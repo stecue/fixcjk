@@ -32,15 +32,37 @@
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     //Do not change following code unless you know the results!
-    var timeOut=3500; //allow maximum 3.5 seconds to run this script.
+    var timeOut=3000; //allow maximum 3.5 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 5100; // maximum number of elements to process.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;
+    var ifRound1=true;
+    var ifRound2=true;
+    var ifRound3=true;
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
+    var bodyhtml=document.getElementsByTagName("HTML");
+    if (bodyhtml[0].innerHTML.length > maxlength) {
+        console.log('FixCJK!: HTML too long, skip everything. Exiting now...');
+        ifRound1=false;
+        ifRound2=false;
+        ifRound3=false;
+        FixPunct=false;
+    }
+    //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched. (maybe in 0.10.x)
+    //else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
+    else if (!(bodyhtml[0].innerHTML.match(/[\u3400-\u9FBF]/))) {
+        console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');
+        console.log('FixCJK!: No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
+        FixPunct=false;
+    }
+    else {
+        console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');
+        FixPunct=true;
+    }
     var debug_00 = false;
     var debug_01 = false; //Turn on colors while debug_01.
     var debug_02 = false;
@@ -205,42 +227,58 @@
     CJKPunct=dequote(CJKPunct)+','+sig_punct;
     if (debug_00===true) {alert('Entering Loops...');}
     /// ===== First round: Replace all bold fonts to CJKBold ===== ///
-    for (i = 0; i < max; i++) {
-        child = all[i].firstChild;
-        if_replace = false;
-        //Only change if current node (not child node) contains CJK characters.
-        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-        while (child) {
-            if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
-                //Test if contains SimSun
-                if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
-                if (font_str.match(re_simsun)) {
-                    //all[i].style.color="Sienna"; //SimSun --> Sienna
-                    all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
-                    if (!(has_genfam(all[i].style.fontFamily))) {
-                        all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
-                    }
-                }        //Test if contains Sans
-                else if (list_has(font_str, re_sans0) !== false) {
-                    //all[i].style.color="Salmon";
-                    all[i].style.fontFamily = genPunct+','+LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
-                }        //Test if contains serif
-                else if (list_has(font_str, re_serif) !== false) {
-                    //all[i].style.color="SeaGreen";
-                    all[i].style.fontFamily = genPunct+','+LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
-                }        //Test if contains monospace
-                else if (list_has(font_str, re_mono0) !== false) {
-                    //all[i].style.color="Maroon";
-                    all[i].style.fontFamily = genPunct+','+LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
-                }        //Just append the fonts to the font preference list.
+    if (ifRound1===true) {
+        for (i = 0; i < max; i++) {
+            if (i % 500===0) { //Check every 500 elements.
+                if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                    ifRound1=false;
+                    ifRound2=false;
+                    ifRound3=false;
+                    FixPunct=false;
+                    processedAll=false;
+                    console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                    break;
+                }
                 else {
-                    //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
-                    all[i].style.fontFamily = genPunct+','+font_str + ',' + qBold + ',' + '  sans-serif';
-                    //console.log(all[i].style.fontFamily);
+                    console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
                 }
             }
-            child = child.nextSibling;
+            child = all[i].firstChild;
+            if_replace = false;
+            //Only change if current node (not child node) contains CJK characters.
+            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+            fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
+            while (child) {
+                if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
+                    //Test if contains SimSun
+                    if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
+                    if (font_str.match(re_simsun)) {
+                        //all[i].style.color="Sienna"; //SimSun --> Sienna
+                        all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
+                        if (!(has_genfam(all[i].style.fontFamily))) {
+                            all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
+                        }
+                    }        //Test if contains Sans
+                    else if (list_has(font_str, re_sans0) !== false) {
+                        //all[i].style.color="Salmon";
+                        all[i].style.fontFamily = genPunct+','+LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
+                    }        //Test if contains serif
+                    else if (list_has(font_str, re_serif) !== false) {
+                        //all[i].style.color="SeaGreen";
+                        all[i].style.fontFamily = genPunct+','+LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
+                    }        //Test if contains monospace
+                    else if (list_has(font_str, re_mono0) !== false) {
+                        //all[i].style.color="Maroon";
+                        all[i].style.fontFamily = genPunct+','+LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
+                    }        //Just append the fonts to the font preference list.
+                    else {
+                        //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
+                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qBold + ',' + '  sans-serif';
+                        //console.log(all[i].style.fontFamily);
+                    }
+                }
+                child = child.nextSibling;
+            }
         }
     }
     if (FixRegular === false) {
@@ -249,24 +287,27 @@
     /// ===== Second Round: Deal with regular weight. ===== ///
     var tmp_idx=0;
     max = all.length;
-    var ifRound2=true;
     t_stop=performance.now();
     if ((t_stop-t_start)*4 > timeOut) {
         ifRound2=false;
+        ifRound3=false;
+        FixPunct=false;
         processedAll=false;
-        console.log('FixCJK!: Round 1 already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Skipping Round 2.');
+        console.log('FixCJK!: Round 1 has been running for '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Skipping following steps.');
     }
     if (ifRound2===true) {
         for (i = 0; i < max; i++) {
-            if (i % 200===0) { //Check every 200 elements.
+            if (i % 500===0) { //Check every 500 elements.
                 if ((performance.now()-t_stop)*invForLimit > timeOut) {
                     ifRound2=false;
+                    ifRound3=false;
+                    FixPunct=false;
                     processedAll=false;
-                    console.log('FixCJK!: Round 2 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                    console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
                     break;
                 }
                 else {
-                    console.log('FixCJK!: Round 2 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
+                    console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
                 }
             }
             child = all[i].firstChild;
@@ -369,25 +410,24 @@
         return false;
     }
     max = all.length;
-    var ifRound3=true;
     t_stop=performance.now();
     if ((t_stop-t_start)*3 > timeOut) {
         ifRound3=false;
         processedAll=false;
-        console.log('FixCJK!: Round 1&2 already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to proceed.');
+        console.log('FixCJK!: Rounds 1&2 have been running for '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to proceed.');
     }
     if (max < maxNumElements && ifRound3===true) {
         for (i = 0; i < max; i++) {
             //all[i].style.color="SeaGreen";
-            if (i % 200===0) { //Check every 200 elements.
+            if (i % 500===0) { //Check every 500 elements.
                 if ((performance.now()-t_stop)*invForLimit > timeOut) {
                     ifRound2=false;
                     processedAll=false;
-                    console.log('FixCJK!: Round 3 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                    console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
                     break;
                 }
                 else {
-                    console.log('FixCJK!: Round 3 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
+                    console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
                 }
             }
             font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
@@ -427,34 +467,10 @@
         console.log('FixCJK!: '+max.toString()+' elements, too many or too slow to proceed. Skip Round 3 and punctuation fixing. Exiting now...');
     }
     ///===Round 4, FixPunct===///
-    if (FixPunct === false) {
-        return false;
-    }
-    else {
-        //return true;
-    }
     t_stop=performance.now(); console.log('FixCJK!: Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
     if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
         console.log('FixCJK!: Too slow or too many elements, skip checking and fixing punctuations...');
         FixPunct=false;
-    }
-    else {
-        var bodyhtml=document.getElementsByTagName("HTML");
-        if (bodyhtml[0].innerHTML.length > maxlength) {
-            console.log('FixCJK!: HTML too long, skip checking and fixing punctuations...');
-            FixPunct=false;
-        }
-        //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched. (maybe in 0.10.x)
-        //else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
-        else if (!(bodyhtml[0].innerHTML.match(/[\u3400-\u9FBF]/))) {
-            console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');
-            console.log('FixCJK!: No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
-            FixPunct=false;
-        }
-        else {
-            console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');
-            FixPunct=true;
-        }
     }
     var currpunc=0;
     var currHTML='';
@@ -732,7 +748,7 @@
         console.log('FixCJK!: NORMAL TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
     }
     else {
-        console.log('FixCJK!: FORCED TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+        console.log('FixCJK!: ABORTED EXECUTION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     if (debug_left===true) {alert('Finished!');}
 }
