@@ -410,20 +410,27 @@
         return false;
     }
     max = all.length;
+    if (max > maxNumElements) {
+        ifRound3=false;
+        FixPunct=false;
+        processedAll=false;
+        console.log('FixCJK!: '+max.toString()+' elements, too many. Skip Round 3 and punctuation fixing. Exiting now...');
+    }
     t_stop=performance.now();
     if ((t_stop-t_start)*3 > timeOut) {
         ifRound3=false;
         processedAll=false;
         console.log('FixCJK!: Rounds 1&2 have been running for '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to proceed.');
     }
-    if (max < maxNumElements && ifRound3===true) {
+    if (ifRound3===true) {
         for (i = 0; i < max; i++) {
             //all[i].style.color="SeaGreen";
             if (i % 500===0) { //Check every 500 elements.
                 if ((performance.now()-t_stop)*invForLimit > timeOut) {
-                    ifRound2=false;
+                    ifRound3=false;
+                    FixPunct=false;
                     processedAll=false;
-                    console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                    console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue. Exiting now...');
                     break;
                 }
                 else {
@@ -461,10 +468,6 @@
                 //all[i].style.color="Silver"; //Signed-->Silver
             }
         }
-    }
-    else {
-        processedAll=false;
-        console.log('FixCJK!: '+max.toString()+' elements, too many or too slow to proceed. Skip Round 3 and punctuation fixing. Exiting now...');
     }
     ///===Round 4, FixPunct===///
     t_stop=performance.now(); console.log('FixCJK!: Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
