@@ -488,6 +488,7 @@
     var Squeezing=true;
     var CompressInd=false;
     var MaxNumLoops=3;
+    var maxChildDataLength=80;
     SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
     while ((FixPunct === true) && (MaxNumLoops>0)) {
         MaxNumLoops--;
@@ -520,7 +521,7 @@
                     //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
                     if (all[i].nodeName.match(SkippedTags)) {
                         if (MaxNumLoops===0) {
-                            console.log('FixCJK!: Skipped Change (Case 0): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                            console.log('FixCJK!: Skipped Change (Case 0): '+all[i].nodeName+'#'+i.toString()+': '+child.data.slice(0,Math.min(maxChildDataLength,child.data.length)));
                         }
                         if (debug_04===true) { console.log('Processing node '+i+'::'+all[i].nodeName); }
                         break;
@@ -531,7 +532,7 @@
                             numnodes++;
                             puncnode.push(i);
                             if (MaxNumLoops===0) {
-                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data.slice(0,Math.min(maxChildDataLength,child.data.length)));
                             }
                             //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
                             //puncid.push(all[i].id);
@@ -542,7 +543,7 @@
                             numnodes++;
                             puncnode.push(i);
                             if (MaxNumLoops===0) {
-                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data.slice(0,Math.min(maxChildDataLength,child.data.length)));
                             }
                             //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
                             //puncid.push(all[i].id);
@@ -550,7 +551,7 @@
                         }
                         else if ((AlsoChangeFullStop===true) && child.data.match(/[？！：；、，。]/mg)) {
                             if (MaxNumLoops===0) {
-                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data.slice(0,Math.min(maxChildDataLength,child.data.length)));
                             }
                             numnodes++;
                             puncnode.push(i);
@@ -560,7 +561,7 @@
                         }
                         else if (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\u3000-\u303F\uFF00-\uFFEF]/mg)) {
                             if (MaxNumLoops===0) {
-                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data.slice(0,Math.min(maxChildDataLength,child.data.length)));
                             }
                             numnodes++;
                             puncnode.push(i);
