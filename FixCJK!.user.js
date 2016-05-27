@@ -396,8 +396,9 @@
         console.log('Too long, skip checking and fixing punctuations...');
         FixPunct=false;
     }
-    else if (!(bodyhtml[0].innerHTML.match(/\u3000-\u303F\uFF00-\uFFEF/m))) {
+    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
         //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched.
+        console.log('No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
         FixPunct=false;
     }
     else {
