@@ -1,6 +1,10 @@
-## 0.9.13 (2016-05-25)
+## 0.9.14 (2016-05-26)
+Features:
+  - Add an internal timer to limit the execution time to 3.0 seconds.
+  - Do not run CJK punctuation checking on pure Latin pages.
+
 Bugfixes:
-  - Some bug fixes related to "）》".
+  - Some bug fixes related to "）》】".
 
 ## 0.9.12 (2016-05-25)
 Features:

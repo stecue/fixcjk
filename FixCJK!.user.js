@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.9.13
+// @version           0.9.14
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -32,7 +32,10 @@
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     //Do not change following code unless you know the results!
+    var timeOut=3500; //allow maximum 3.5 seconds to run this script.
+    var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var t_start = performance.now();
+    var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
     var debug_00 = false;
@@ -383,6 +386,24 @@
     else {
         //return true;
     }
+    t_stop=performance.now();
+    if ((t_stop-t_start)*2 > timeOut) {
+        console.log('Too slow, skip checking and fixing punctuations...');
+        FixPunct=false;
+    }
+    var bodyhtml=document.getElementsByTagName("HTML");
+    if (bodyhtml[0].innerHTML.length > maxlength) {
+        console.log('Too long, skip checking and fixing punctuations...');
+        FixPunct=false;
+    }
+    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
+        //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched.
+        console.log('No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
+        FixPunct=false;
+    }
+    else {
+        FixPunct=true;
+    }
     var currpunc=0;
     var currHTML='';
     var changhai_style=false;
@@ -395,7 +416,8 @@
     var AlsoChangeFullStop=false;
     var Squeezing=true;
     var CompressInd=false;
-    var MaxNumLoops=5;
+    var MaxNumLoops=3;
+    SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
     while ((FixPunct === true) && (MaxNumLoops>0)) {
         MaxNumLoops--;
         i=0;
@@ -403,7 +425,10 @@
         numnodes=0;
         puncnode=new Array('');
         puncid=new Array('');
-        SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
+        if ((performance.now()-t_start) > timeOut) {
+            console.log('Time out, stopping now...');
+            break;
+        }
         for (i = 0; i < max; i++) {
             child = all[i].firstChild;
             if_replace = false;
@@ -476,6 +501,10 @@
                 child = child.nextSibling;
             }
         }
+        if ((performance.now()-t_start) > timeOut) {
+            console.log('Time out, stopping now...');
+            break;
+        }
         if (numnodes===0) {
             FixPunct=false;
             continue;
@@ -486,6 +515,10 @@
         //var kern_dq_right='-1px';
         //var kern_dq_right_tail='-5px';
         while(numnodes>0) {
+            if ((performance.now()-t_start) > timeOut) {
+                console.log('Time out, some elements are left unchanged...');
+                break;
+            }
             numnodes--;
             //Simply inserting blanck space, like changhai.org.
             currpunc=puncnode.pop();
@@ -550,21 +583,21 @@
                     tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021-\u003B\u003D\u003F-\u05FF]*(?:<[^><]+>[ \n]?)*[\n]?)([’”])([，。、：；！？）》」])([^“‘]|$)/mg,tmp_str);
                 }
-                //--TWO PUNCTS: [、，。：；！？）》」][、，。：；！？）》」] (left-left)--//
+                //--TWO PUNCTS: [、，。：；！？）》】」][、，。：；！？）》】」] (left-left)--//
                 tmp_str='<span style="letter-spacing:'+kern_consec_ll+';">$1</span>$2';
-                currHTML=currHTML.replace(/([、，。：；！？）》」])([、，。：；！？）》」])/mg,tmp_str);
+                currHTML=currHTML.replace(/([、，。：；！？）》】」])([、，。：；！？）》】」])/mg,tmp_str);
                 //--TWO PUNCTS: [、，。：；！？）》」][（《「] (left-right)--//
                 tmp_str='<span style="letter-spacing:'+kern_consec_lr+';">$1</span>$2';
-                currHTML=currHTML.replace(/([、，。：；！？）》」])([（《「])/mg,tmp_str);
-                //--TWO PUNCTS: End with [，。：；）》] and ONE '[“]' (left mark) after:--//
+                currHTML=currHTML.replace(/([、，。：；！？）》】」])([（《「【])/mg,tmp_str);
+                //--TWO PUNCTS: End with [，。：；）》】」] and ONE '[“]' (left mark) after:--//
                 tmp_str='$1<span style="letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
-                currHTML=currHTML.replace(/([^’”]|^)([、，。：；！？）》」][\n]?)([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
+                currHTML=currHTML.replace(/([^’”]|^)([、，。：；！？）》】」][\n]?)([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
                 //--TWO PUNCTS: ”[“‘] (left-rgiht)--//
                 tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="font-family:'+dequote(CJKPunct)+';">$3</span>$4';
-                currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）》」])|^)([\n]?[’”])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
+                currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）》】」])|^)([\n]?[’”])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
                 //--TWO PUNCTS: ”[（《「] (left-right)--//
                 tmp_str='$1<span style="font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>$3';
-                currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）》」])|^)([\n]?[’”])([（《])/mg,tmp_str);
+                currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）》】」])|^)([\n]?[’”])([（【《])/mg,tmp_str);
             }
             else {
                 alert('Alway squeeze consec puncts now or ind ones won\'t work. No squeezing not implemented yet!');
@@ -639,7 +672,7 @@
             all[i].src=all[i].getAttribute('data-actualsrc');
         }
     }
-    var t_stop=performance.now();
+    t_stop=performance.now();
     console.log('FixCJK! execution time: '+((t_stop-t_start)/1000).toFixed(3)+' seconds');
     if (debug_left===true) {alert('Finished!');}
 }
