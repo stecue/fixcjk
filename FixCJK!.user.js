@@ -32,7 +32,7 @@
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     //Do not change following code unless you know the results!
-    var timeOut=3000; //allow maximum 3.0 seconds to run this script.
+    var timeOut=3500; //allow maximum 3.5 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var t_start = performance.now();
     var t_stop = t_start;
