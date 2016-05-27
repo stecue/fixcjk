@@ -248,95 +248,112 @@
     /// ===== Second Round: Deal with regular weight. ===== ///
     var tmp_idx=0;
     max = all.length;
-    for (i = 0; i < max; i++) {
-        child = all[i].firstChild;
-        if_replace = false;
-        //Only change if current node (not child node) contains CJK characters.
-        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-        //console.log(child.nodeType);
-        while (child) {
-            if (child.nodeType == 3) {
-                //all[i].style.color='Teal'; //text-->teal;
-                //Just check and fix the improper SimSun use
-                if (font_str.match(re_simsun)) {
-                    if (debug_02===true) {all[i].style.color="Sienna";}
-                    if (fweight == 'bold' || fweight > 500) {
-                        //all[i].style.color="Grey";
-                        if_replace = false;
-                        //console.log(child.data);
-                        //return false;
-                    }
-                    else {
-                        if (debug_02===true) {all[i].style.color="Orange";}
-                        if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/)) {
-                            //do nothing if already replaced;
-                            if (debug_02===true) {all[i].style.color="Grey";}
+    var ifRound2=true;
+    t_stop=performance.now();
+    if ((t_stop-t_start)*4 > timeOut) {
+        ifRound2=false;
+        processedAll=false;
+        console.log('FixCJK!: Round 1 already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Skipping Round 2.');
+    }
+    if (ifRound2===true) {
+        for (i = 0; i < max; i++) {
+            if (i % 20===0) { //Check every 20 elements.
+                if ((performance.now()-t_stop)*4 > timeOut) {
+                    ifRound2=false;
+                    processedAll=false;
+                    console.log('FixCJK!: Round 2 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                    break;
+                }
+            }
+            child = all[i].firstChild;
+            if_replace = false;
+            //Only change if current node (not child node) contains CJK characters.
+            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+            fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
+            //console.log(child.nodeType);
+            while (child) {
+                if (child.nodeType == 3) {
+                    //all[i].style.color='Teal'; //text-->teal;
+                    //Just check and fix the improper SimSun use
+                    if (font_str.match(re_simsun)) {
+                        if (debug_02===true) {all[i].style.color="Sienna";}
+                        if (fweight == 'bold' || fweight > 500) {
+                            //all[i].style.color="Grey";
                             if_replace = false;
+                            //console.log(child.data);
+                            //return false;
                         }
                         else {
-                            if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
-                            all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
-                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
-                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
-                            if (all[i].style.fontFamily.length<1) {
-                                console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
+                            if (debug_02===true) {all[i].style.color="Orange";}
+                            if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/)) {
+                                //do nothing if already replaced;
+                                if (debug_02===true) {all[i].style.color="Grey";}
+                                if_replace = false;
                             }
-                            if (!(has_genfam(all[i].style.fontFamily))) {
-                                all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
-                            }              //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
+                            else {
+                                if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
+                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
+                                all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
+                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
+                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
+                                if (all[i].style.fontFamily.length<1) {
+                                    console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
+                                }
+                                if (!(has_genfam(all[i].style.fontFamily))) {
+                                    all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
+                                }              //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
 
-                            if_replace = false;
-                            //all[i].style.color="Grey";
+                                if_replace = false;
+                                //all[i].style.color="Grey";
+                            }
                         }
+                        if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                     }
-                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                }
-                if (child.data.match(/[\u3400-\u9FBF]/)) {
-                    if_replace = true;
-                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                    if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
-                    font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-                    if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
-                        //do nothing if already replaced;
-                        if (debug_02===true) {all[i].style.color="Black";}
-                        if_replace = false;
-                        if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                    }          //break;
+                    if (child.data.match(/[\u3400-\u9FBF]/)) {
+                        if_replace = true;
+                        if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                        if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
+                        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                        if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
+                            //do nothing if already replaced;
+                            if (debug_02===true) {all[i].style.color="Black";}
+                            if_replace = false;
+                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                        }          //break;
 
+                    }
                 }
+                child = child.nextSibling;
             }
-            child = child.nextSibling;
-        }
-        //Just to make sure "font_str" is already updated.
-        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        if (if_replace === true) {
-            if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
-            if (debug_02===true) {if (all[i].innerHTML.match(/目前量子多体的书/g)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
-            //Test if contains Sans
-            if (list_has(font_str, re_sans0) !== false) {
-                //all[i].style.color="Salmon";
-                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
-            }      //Test if contains serif
-            else if (list_has(font_str, re_serif) !== false) {
-                //all[i].style.color="SeaGreen";
-                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
-            }      //Test if contains monospace
-            else if (list_has(font_str, re_mono0) !== false) {
-                //all[i].style.color="Maroon";
-                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
-            }
-            else {
-                if (debug_02===true) {all[i].style.color='Fuchsia';}
-                if (font_str.match(re_simsun)) {
-                    //all[i].style.color='Fuchsia';
-                    //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                    all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+            //Just to make sure "font_str" is already updated.
+            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+            if (if_replace === true) {
+                if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
+                if (debug_02===true) {if (all[i].innerHTML.match(/目前量子多体的书/g)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
+                //Test if contains Sans
+                if (list_has(font_str, re_sans0) !== false) {
+                    //all[i].style.color="Salmon";
+                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                }      //Test if contains serif
+                else if (list_has(font_str, re_serif) !== false) {
+                    //all[i].style.color="SeaGreen";
+                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                }      //Test if contains monospace
+                else if (list_has(font_str, re_mono0) !== false) {
+                    //all[i].style.color="Maroon";
+                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                 }
                 else {
-                    //all[i].style.color='Fuchsia';
-                    all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                    if (debug_02===true) {all[i].style.color='Fuchsia';}
+                    if (font_str.match(re_simsun)) {
+                        //all[i].style.color='Fuchsia';
+                        //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
+                        all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                    }
+                    else {
+                        //all[i].style.color='Fuchsia';
+                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                    }
                 }
             }
         }
@@ -348,7 +365,14 @@
         return false;
     }
     max = all.length;
-    if (max < maxNumElements) {
+    var ifRound3=true;
+    t_stop=performance.now();
+    if ((t_stop-t_start)*3 > timeOut) {
+        ifRound3=false;
+        processedAll=false;
+        console.log('FixCJK!: Round 1&2 already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to proceed.');
+    }
+    if (max < maxNumElements && ifRound3===true) {
         for (i = 0; i < max; i++) {
             //all[i].style.color="SeaGreen";
             font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
@@ -385,7 +409,7 @@
     }
     else {
         processedAll=false;
-        console.log('FixCJK!: '+max.toString()+' elements, too many to proceed. Skip Round 3 and punctuation fixing.');
+        console.log('FixCJK!: '+max.toString()+' elements, too many or too slow to proceed. Skip Round 3 and punctuation fixing.');
     }
     ///===Round 4, FixPunct===///
     if (FixPunct === false) {
@@ -690,10 +714,10 @@
     }
     t_stop=performance.now();
     if (processedAll===true) {
-        console.log('FixCJK!: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
+        console.log('FixCJK!: NORMAL TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
     }
     else {
-        console.log('FixCJK!: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+        console.log('FixCJK!: FORCED TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     if (debug_left===true) {alert('Finished!');}
 }
