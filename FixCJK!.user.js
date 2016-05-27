@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.9.14
+// @version           0.9.15
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -34,6 +34,8 @@
     //Do not change following code unless you know the results!
     var timeOut=3500; //allow maximum 3.5 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
+    var maxNumElements = 5100; // maximum number of elements to process.
+    var processedAll=true;
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
@@ -346,38 +348,44 @@
         return false;
     }
     max = all.length;
-    for (i = 0; i < max; i++) {
-        //all[i].style.color="SeaGreen";
-        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
-            if (list_has(font_str, re_sans0) !== false) {
-                //all[i].style.color="Salmon";
-                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
-            }      //Test if contains serif
-            else if (list_has(font_str, re_serif) !== false) {
-                //all[i].style.color="SeaGreen";
-                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
-            }      //Test if contains monospace
-            else if (list_has(font_str, re_mono0) !== false) {
-                //all[i].style.color="Maroon";
-                all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
-            }
-            else {
-                if (debug_03 === true) { all[i].style.color='Fuchsia'; }
-                if (font_str.match(re_simsun)) {
-                    if (debug_03 === true) {all[i].style.color='Sienna'; }
-                    //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                    all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+    if (max < maxNumElements) {
+        for (i = 0; i < max; i++) {
+            //all[i].style.color="SeaGreen";
+            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+            if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
+                if (list_has(font_str, re_sans0) !== false) {
+                    //all[i].style.color="Salmon";
+                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                }      //Test if contains serif
+                else if (list_has(font_str, re_serif) !== false) {
+                    //all[i].style.color="SeaGreen";
+                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                }      //Test if contains monospace
+                else if (list_has(font_str, re_mono0) !== false) {
+                    //all[i].style.color="Maroon";
+                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                 }
                 else {
-                    if (debug_03 === true) { all[i].style.color='Olive';}
-                    all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                    if (debug_03 === true) { all[i].style.color='Fuchsia'; }
+                    if (font_str.match(re_simsun)) {
+                        if (debug_03 === true) {all[i].style.color='Sienna'; }
+                        //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
+                        all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                    }
+                    else {
+                        if (debug_03 === true) { all[i].style.color='Olive';}
+                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                    }
                 }
             }
+            else {
+                //all[i].style.color="Silver"; //Signed-->Silver
+            }
         }
-        else {
-            //all[i].style.color="Silver"; //Signed-->Silver
-        }
+    }
+    else {
+        processedAll=false;
+        console.log('FixCJK!: '+max.toString()+' elements, too many to proceed. Skip Round 3 and punctuation fixing.');
     }
     ///===Round 4, FixPunct===///
     if (FixPunct === false) {
@@ -386,23 +394,28 @@
     else {
         //return true;
     }
-    t_stop=performance.now();
-    if ((t_stop-t_start)*2 > timeOut) {
-        console.log('Too slow, skip checking and fixing punctuations...');
-        FixPunct=false;
-    }
-    var bodyhtml=document.getElementsByTagName("HTML");
-    if (bodyhtml[0].innerHTML.length > maxlength) {
-        console.log('Too long, skip checking and fixing punctuations...');
-        FixPunct=false;
-    }
-    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
-        //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched.
-        console.log('No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
+    t_stop=performance.now(); console.log('FixCJK!: Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
+    if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
+        console.log('FixCJK!: Too slow or too many elements, skip checking and fixing punctuations...');
         FixPunct=false;
     }
     else {
-        FixPunct=true;
+        var bodyhtml=document.getElementsByTagName("HTML");
+        if (bodyhtml[0].innerHTML.length > maxlength) {
+            console.log('FixCJK!: HTML too long, skip checking and fixing punctuations...');
+            FixPunct=false;
+        }
+        //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched. (maybe in 0.10.x)
+        //else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
+        else if (!(bodyhtml[0].innerHTML.match(/[\u3400-\u9FBF]/))) {
+            console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');
+            console.log('FixCJK!: No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
+            FixPunct=false;
+        }
+        else {
+            console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');
+            FixPunct=true;
+        }
     }
     var currpunc=0;
     var currHTML='';
@@ -426,7 +439,8 @@
         puncnode=new Array('');
         puncid=new Array('');
         if ((performance.now()-t_start) > timeOut) {
-            console.log('Time out, stopping now...');
+            processedAll=false;
+            console.log('FixCJK!: Time out, stopping now...');
             break;
         }
         for (i = 0; i < max; i++) {
@@ -448,7 +462,7 @@
                     //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
                     if (all[i].nodeName.match(SkippedTags)) {
                         if (MaxNumLoops===0) {
-                            console.log('Skipped Change (Case 0): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                            console.log('FixCJK!: Skipped Change (Case 0): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
                         }
                         if (debug_04===true) { console.log('Processing node '+i+'::'+all[i].nodeName); }
                         break;
@@ -459,7 +473,7 @@
                             numnodes++;
                             puncnode.push(i);
                             if (MaxNumLoops===0) {
-                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
                             }
                             //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
                             //puncid.push(all[i].id);
@@ -470,7 +484,7 @@
                             numnodes++;
                             puncnode.push(i);
                             if (MaxNumLoops===0) {
-                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
                             }
                             //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
                             //puncid.push(all[i].id);
@@ -478,7 +492,7 @@
                         }
                         else if ((AlsoChangeFullStop===true) && child.data.match(/[？！：；、，。]/mg)) {
                             if (MaxNumLoops===0) {
-                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
                             }
                             numnodes++;
                             puncnode.push(i);
@@ -488,7 +502,7 @@
                         }
                         else if (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\u3000-\u303F\uFF00-\uFFEF]/mg)) {
                             if (MaxNumLoops===0) {
-                                console.log('To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
+                                console.log('FixCJK!: To Change (Case A): '+all[i].nodeName+'#'+i.toString()+': '+child.data);
                             }
                             numnodes++;
                             puncnode.push(i);
@@ -502,28 +516,30 @@
             }
         }
         if ((performance.now()-t_start) > timeOut) {
-            console.log('Time out, stopping now...');
+            processedAll=false;
+            console.log('FixCJK!: Time out, stopping now...');
             break;
         }
         if (numnodes===0) {
             FixPunct=false;
             continue;
         }
-        console.log(MaxNumLoops.toString()+' (or less) loop(s) left.');
-        console.log(numnodes.toString()+' element(s) to change.');
+        console.log('FixCJK!: '+MaxNumLoops.toString()+' (or less) loop(s) left.');
+        console.log('FixCJK!: '+numnodes.toString()+' element(s) to change.');
         currpunc=0;
         //var kern_dq_right='-1px';
         //var kern_dq_right_tail='-5px';
         while(numnodes>0) {
             if ((performance.now()-t_start) > timeOut) {
-                console.log('Time out, some elements are left unchanged...');
+                processedAll=false;
+                console.log('FixCJK!: Time out, some elements are left unchanged...');
                 break;
             }
             numnodes--;
             //Simply inserting blanck space, like changhai.org.
             currpunc=puncnode.pop();
             if (MaxNumLoops===0) {
-                console.log('currpunc='+currpunc.toString()+': '+all[currpunc].nodeName+': '+currHTML);
+                console.log('FixCJK!: currpunc='+currpunc.toString()+': '+all[currpunc].nodeName+': '+currHTML);
             }
             if (debug_04===true) {console.log(currpunc);}
             currHTML=all[currpunc].innerHTML;
@@ -673,7 +689,12 @@
         }
     }
     t_stop=performance.now();
-    console.log('FixCJK! execution time: '+((t_stop-t_start)/1000).toFixed(3)+' seconds');
+    if (processedAll===true) {
+        console.log('FixCJK!: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
+    }
+    else {
+        console.log('FixCJK!: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+    }
     if (debug_left===true) {alert('Finished!');}
 }
 ) ();
