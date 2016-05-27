@@ -1,3 +1,7 @@
+## 0.9.15 (2016-05-27)
+Features:
+  - More fine-grained control of execution time.
+
 ## 0.9.14 (2016-05-26)
 Features:
   - Add an internal timer to limit the execution time to 3.0 seconds.
