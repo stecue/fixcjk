@@ -35,6 +35,7 @@
     var timeOut=3500; //allow maximum 3.5 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 5100; // maximum number of elements to process.
+    var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;
     var t_start = performance.now();
     var t_stop = t_start;
@@ -257,12 +258,15 @@
     }
     if (ifRound2===true) {
         for (i = 0; i < max; i++) {
-            if (i % 20===0) { //Check every 20 elements.
-                if ((performance.now()-t_stop)*4 > timeOut) {
+            if (i % 200===0) { //Check every 200 elements.
+                if ((performance.now()-t_stop)*invForLimit > timeOut) {
                     ifRound2=false;
                     processedAll=false;
                     console.log('FixCJK!: Round 2 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to continue.');
                     break;
+                }
+                else {
+                    console.log('FixCJK!: Round 2 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
                 }
             }
             child = all[i].firstChild;
@@ -375,6 +379,17 @@
     if (max < maxNumElements && ifRound3===true) {
         for (i = 0; i < max; i++) {
             //all[i].style.color="SeaGreen";
+            if (i % 200===0) { //Check every 200 elements.
+                if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                    ifRound2=false;
+                    processedAll=false;
+                    console.log('FixCJK!: Round 3 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                    break;
+                }
+                else {
+                    console.log('FixCJK!: Round 3 itself already took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
+                }
+            }
             font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
             if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                 if (list_has(font_str, re_sans0) !== false) {
@@ -409,7 +424,7 @@
     }
     else {
         processedAll=false;
-        console.log('FixCJK!: '+max.toString()+' elements, too many or too slow to proceed. Skip Round 3 and punctuation fixing.');
+        console.log('FixCJK!: '+max.toString()+' elements, too many or too slow to proceed. Skip Round 3 and punctuation fixing. Exiting now...');
     }
     ///===Round 4, FixPunct===///
     if (FixPunct === false) {
