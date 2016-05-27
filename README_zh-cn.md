@@ -10,3 +10,8 @@
 
 # 用法
 推荐下载安装 [Noto Sans CJK SC 字体](https://www.google.com/get/noto/help/cjk/)和 [Ubuntu Mono 字体](https://www.google.com/fonts/specimen/Ubuntu+Mono)。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
+
+# 已知问题
+
+1. 由于采用直接遍历和修改`innerHTML`的方法，标点修正的效率可能会较低。为了尽量少影响网页加载时间，脚本内置了定时机制；超时自动退出运行。所以字体和标点修正效果可能和机器配置以及浏览器有关。按`F12`并选择`控制台`（或 `console`）可查看脚本执行日志信息。
+2. 连续三个中文标点的空白压缩仅考虑了包含引号的情况。连续更多中文标点的空白压缩尚未实现。
