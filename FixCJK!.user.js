@@ -416,7 +416,7 @@
     var AlsoChangeFullStop=false;
     var Squeezing=true;
     var CompressInd=false;
-    var MaxNumLoops=5;
+    var MaxNumLoops=3;
     SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
     while ((FixPunct === true) && (MaxNumLoops>0)) {
         MaxNumLoops--;
