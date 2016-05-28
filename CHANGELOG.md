@@ -1,3 +1,7 @@
+## 0.9.16 (2016-05-27)
+Bugfixes:
+  - More punctuation combinations are taken into account.
+
 ## 0.9.15 (2016-05-27)
 Features:
   - More fine-grained control of execution time.
