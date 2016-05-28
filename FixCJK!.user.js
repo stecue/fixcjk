@@ -36,6 +36,7 @@
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 5100; // maximum number of elements to process.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
+    var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
     var processedAll=true;
     var ifRound1=true;
     var ifRound2=true;
@@ -227,9 +228,33 @@
     qmono = dequote(qmono);//LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     CJKPunct=dequote(CJKPunct)+','+sig_punct;
     if (debug_00===true) {alert('Entering Loops...');}
+    /// ===== Labeling CJK elements === ///
+    for (i=0;i <max;i++) {
+        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
+            continue;
+        }
+        font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+        if (font_str.match(re_simsun)) {
+            all[i].className += " CJK2Fix";
+            console.log(all[i].className);
+            continue;
+        }
+        child=all[i].child;
+        while (child) {
+            if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
+                all[i].className += " CJK2Fix";
+                console.log(all[i].className);
+                break;
+            }
+            child=child.nextSibling;
+        }
+    }
+    console.log('FixCJK!: Labling took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
     /// ===== First round: Replace all bold fonts to CJKBold ===== ///
+    t_stop=performance.now();
+    all = document.getElementsByClassName('CJK2Fix');
     if (ifRound1===true) {
-        for (i = 0; i < max; i++) {
+        for (i = 0; i < all.length; i++) {
             if (i % 500===0) { //Check every 500 elements.
                 if ((performance.now()-t_stop)*invForLimit > timeOut) {
                     ifRound1=false;
@@ -484,7 +509,6 @@
     var puncnode=new Array('');
     var puncid=new Array('');
     var delete_all_spaces=true;
-    var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
     var AlsoChangeFullStop=false;
     var Squeezing=true;
     var CompressInd=false;
