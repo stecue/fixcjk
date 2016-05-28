@@ -313,14 +313,14 @@
     /// ===== Second Round: Deal with regular weight. ===== ///
     var tmp_idx=0;
     max = all.length;
-    t_stop=performance.now();
-    if ((t_stop-t_start)*4 > timeOut) {
+    if ((performance.now()-t_stop)*4 > timeOut) {
         ifRound2=false;
         ifRound3=false;
         FixPunct=false;
         processedAll=false;
-        console.log('FixCJK!: Round 1 has been running for '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Skipping following steps.');
+        console.log('FixCJK!: Round 1 has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Skipping following steps.');
     }
+    t_stop=performance.now();
     if (ifRound2===true) {
         for (i = 0; i < max; i++) {
             if (i % 500===0) { //Check every 500 elements.
