@@ -236,14 +236,14 @@
         font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         if (font_str.match(re_simsun)) {
             all[i].className += " CJK2Fix";
-            console.log(all[i].className);
+            //console.log(all[i].className);
             continue;
         }
-        child=all[i].child;
+        child = all[i].firstChild;
         while (child) {
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].className += " CJK2Fix";
-                console.log(all[i].className);
+                //console.log(all[i].className);
                 break;
             }
             child=child.nextSibling;
