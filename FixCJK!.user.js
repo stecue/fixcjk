@@ -56,7 +56,7 @@
     //else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
     else if (!(bodyhtml[0].innerHTML.match(/[\u3400-\u9FBF]/))) {
         console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');
-        console.log('FixCJK!: No need to check CJK punctuations. If this is not what you want, email the url to stecue@gmail.com.');
+        console.log('FixCJK!: No need to check CJK punctuations.');
         FixPunct=false;
     }
     else {
