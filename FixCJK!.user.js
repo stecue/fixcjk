@@ -34,7 +34,8 @@
     //Do not change following code unless you know the results!
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
-    var maxNumElements = 5100; // maximum number of elements to process.
+    var maxNumElements = 8000; // maximum number of elements to process.
+    var CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold. 
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
     var processedAll=true;
@@ -445,6 +446,16 @@
         FixPunct=false;
         processedAll=false;
         console.log('FixCJK!: '+max.toString()+' elements, too many. Skip Round 3 and punctuation fixing. Exiting now...');
+    }
+    else if (max > CJKOnlyThreshold) {
+        ifRound3=true;
+        FixPunct=true;
+        processedAll=true;
+        all = document.getElementsByTagName('CJK2Fix');
+        console.log('FixCJK!: '+max.toString()+' elements, too many. Only CJK elements will be processed in Round 3.');
+    }
+    else {
+        console.log('FixCJK!: All elements will be processed in Round 3.');
     }
     if (ifRound3===true) {
         for (i = 0; i < all.length; i++) {
