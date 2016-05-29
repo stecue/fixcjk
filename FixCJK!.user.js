@@ -438,6 +438,7 @@
     if (FixMore === false) {
         return false;
     }
+    all = document.getElementsByTagName('*');
     max = all.length;
     if (max > maxNumElements) {
         ifRound3=false;
