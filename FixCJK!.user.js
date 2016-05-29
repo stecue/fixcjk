@@ -788,6 +788,7 @@
             all[i].src=all[i].getAttribute('data-actualsrc');
         }
     }
+    console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
     t_stop=performance.now();
     if (processedAll===true) {
         console.log('FixCJK!: NORMAL TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
