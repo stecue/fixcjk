@@ -3,7 +3,7 @@ Features:
   - Apply CJK filter first to speed up.
 
 Bugfixes:
-  - Some minor bugfixes.
+  - More punctuation combinations are taken into account.
 
 ## 0.9.15 (2016-05-27)
 Features:
