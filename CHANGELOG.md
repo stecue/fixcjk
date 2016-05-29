@@ -1,3 +1,10 @@
+## 0.9.17 (2016-05-29)
+Features:
+  - Apply CJK filter first to speed up.
+
+Bugfixes:
+  - Some minor bugfixes.
+
 ## 0.9.15 (2016-05-27)
 Features:
   - More fine-grained control of execution time.
