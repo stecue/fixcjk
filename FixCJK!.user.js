@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.9.16
+// @version           0.9.17
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -229,7 +229,8 @@
     CJKPunct=dequote(CJKPunct)+','+sig_punct;
     if (debug_00===true) {alert('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
-    for (i=0;i <max;i++) {
+    t_stop=performance.now();
+    for (i=0;i < all.length;i++) {
         if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
             continue;
         }
@@ -249,7 +250,7 @@
             child=child.nextSibling;
         }
     }
-    console.log('FixCJK!: Labling took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+    console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
     /// ===== First round: Replace all bold fonts to CJKBold ===== ///
     t_stop=performance.now();
     all = document.getElementsByClassName('CJK2Fix');
@@ -322,7 +323,7 @@
     }
     t_stop=performance.now();
     if (ifRound2===true) {
-        for (i = 0; i < max; i++) {
+        for (i = 0; i < all.length; i++) {
             if (i % 500===0) { //Check every 500 elements.
                 if ((performance.now()-t_stop)*invForLimit > timeOut) {
                     ifRound2=false;
@@ -429,6 +430,8 @@
             }
         }
     }
+    console.log('FixCJK!: Round 2 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+    t_stop=performance.now();
     if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
     if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
     /// ===== The Third round: Add CJKdefault to all elements ===== ///
@@ -442,14 +445,8 @@
         processedAll=false;
         console.log('FixCJK!: '+max.toString()+' elements, too many. Skip Round 3 and punctuation fixing. Exiting now...');
     }
-    t_stop=performance.now();
-    if ((t_stop-t_start)*3 > timeOut) {
-        ifRound3=false;
-        processedAll=false;
-        console.log('FixCJK!: Rounds 1&2 have been running for '+((t_stop-t_start)/1000).toFixed(3)+' seconds. Too slow to proceed.');
-    }
     if (ifRound3===true) {
-        for (i = 0; i < max; i++) {
+        for (i = 0; i < all.length; i++) {
             //all[i].style.color="SeaGreen";
             if (i % 500===0) { //Check every 500 elements.
                 if ((performance.now()-t_stop)*invForLimit > timeOut) {
@@ -495,11 +492,16 @@
             }
         }
     }
+    console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+    t_stop=performance.now();
     ///===Round 4, FixPunct===///
-    t_stop=performance.now(); console.log('FixCJK!: Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
+    console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
     if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
-        console.log('FixCJK!: Too slow or too many elements, skip checking and fixing punctuations...');
+        console.log('FixCJK!: Too slow or too many elements.');
         FixPunct=false;
+    }
+    if (FixPunct===false) {
+        console.log('FixCJK!: Skipping fixing punctuations...');
     }
     var currpunc=0;
     var currHTML='';
@@ -514,11 +516,11 @@
     var CompressInd=false;
     var MaxNumLoops=3;
     var maxChildDataLength=80;
-    SkippedTags=/^(?:TITLE)|(?:HEAD)|(?:textarea)|(?:img)$/i; //to be fixed for github.
     while ((FixPunct === true) && (MaxNumLoops>0)) {
         MaxNumLoops--;
         i=0;
-        all = document.getElementsByTagName('*');
+        //all = document.getElementsByTagName('*');
+        all = document.getElementsByClassName('CJK2Fix');
         numnodes=0;
         puncnode=new Array('');
         puncid=new Array('');
@@ -527,7 +529,7 @@
             console.log('FixCJK!: Time out, stopping now...');
             break;
         }
-        for (i = 0; i < max; i++) {
+        for (i = 0; i < all.length; i++) {
             child = all[i].firstChild;
             if_replace = false;
             //Only change if current node (not child node) contains CJK characters.
