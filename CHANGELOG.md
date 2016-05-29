@@ -1,4 +1,7 @@
-## 0.9.16 (2016-05-27)
+## 0.9.17 (2016-05-29)
+Features:
+  - Apply CJK filter first to speed up.
+
 Bugfixes:
   - More punctuation combinations are taken into account.
 
