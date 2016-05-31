@@ -35,7 +35,7 @@
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 8000; // maximum number of elements to process.
-    var CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold. 
+    var CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
     var processedAll=true;
@@ -779,57 +779,6 @@
         }
     }
     FunFixPunct();
-    document.onclick = ReFixCJK;
-    function ReFixCJK () {
-        t_start=performance.now();
-        FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-        FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
-        FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
-        timeOut=3000; //allow maximum 3.0 seconds to run this script.
-        maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
-        maxNumElements = 8000; // maximum number of elements to process.
-        CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
-        invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
-        SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
-        processedAll=true;
-        ifRound1=true;
-        ifRound2=true;
-        ifRound3=true;
-        //FixCJK();
-        var ReFixAll=document.getElementsByTagName('*');
-        for (i=0;i<ReFixAll.length;i++) {
-            child = ReFixAll[i].firstChild;
-            while (child) {
-                if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                    var tmpClass=ReFixAll[i].className+" CJK2Fix";
-                    tmpClass=tmpClass.replace(/(?: CJK2Fix)+/,' CJK2Fix');
-                    ReFixAll[i].className =tmpClass;
-                    //console.log(all[i].className);
-                    break;
-                }
-                child=child.nextSibling;
-            }
-        }
-        FunFixPunct();
-    }
-    ///--Reload if nessery--For testing purpose only. Keep it false!---///
-    var reload=false;
-    if (reload===true) {
-        all=document.getElementsByTagName('*');
-        for (i=0;i<all.length;i++) {
-            //currHTML=currHTML.replace(/([^>]|^)([？！：；、，。])([^<]|$)/mg,'$1<span style="font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
-            child = all[i].firstChild;
-            while (child) {
-                if (child.nodeType == 3) {
-                    if (child.data.match(/([？！：；、，。])/mg)) {
-                        console.log(all[i].innerHTML.replace(/([？！：；、，。])/mg,'<span style="font-family:'+dequote(CJKPunct)+';">$1</span>'));
-                    }
-                    break;
-                }
-                child = child.nextSibling;
-            }
-        }
-    }
     all=document.getElementsByTagName('img');
     for (i=0;i<all.length;i++) {
         if (all[i].hasAttribute('data-actualsrc')) {
@@ -845,5 +794,51 @@
         console.log('FixCJK!: EXECUTION ABORTED: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     if (debug_left===true) {alert('Finished!');}
+    var oldBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
+    var newBodyHtml=oldBodyHtml;
+    document.onclick = ReFixCJK;
+    function ReFixCJK () {
+        t_start=performance.now();
+        newBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
+        //alert(newBodyHtml===oldBodyHtml);
+        if (true) {
+            //console.log(newBodyHtml);
+            //console.log('Something has been changed, refixing...');//alway chaninge..no idea why
+            FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
+            FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
+            timeOut=3000; //allow maximum 3.0 seconds to run this script.
+            maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
+            maxNumElements = 8000; // maximum number of elements to process.
+            CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
+            invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
+            SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
+            processedAll=true;
+            ifRound1=true;
+            ifRound2=true;
+            ifRound3=true;
+            //FixCJK();
+            var ReFixAll=document.getElementsByTagName('*');
+            for (i=0;i<ReFixAll.length;i++) {
+                child = ReFixAll[i].firstChild;
+                while (child) {
+                    if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
+                        var tmpClass=ReFixAll[i].className+" CJK2Fix";
+                        tmpClass=tmpClass.replace(/(?: CJK2Fix)+/,' CJK2Fix');
+                        ReFixAll[i].className =tmpClass;
+                        //console.log(all[i].className);
+                        break;
+                    }
+                    child=child.nextSibling;
+                }
+            }
+            FunFixPunct();
+        }
+        else {
+            console.log('FixCJK: No HTML change.')
+        }
+        newBodyHtml===oldBodyHtml;
+        console.log('FixCJK: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+    }
 }
 ) ();
