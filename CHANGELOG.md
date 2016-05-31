@@ -1,3 +1,10 @@
+## 0.10.0 (2016-05-31)
+Features:
+  - Add an "onClick" event to `document`. Punctuations will be re-checked if click on anywhere of a webpage.
+
+Bugfixes:
+  - Fix a bug related to context with blank space.
+
 ## 0.9.17 (2016-05-29)
 Features:
   - Apply CJK filter first to speed up.
