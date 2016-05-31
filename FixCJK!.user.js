@@ -439,7 +439,7 @@
         /// ===== The Third round: Add CJKdefault to all elements ===== ///
         if (FixMore === false) {
             t_stop=performance.now();
-            console.log('FixCJK!: FixMore/Round 3 will be skipped intentionally.');
+            console.log('FixCJK!: FixMore/Round 3 is intentionally skipped.');
             return false;
         }
         all = document.getElementsByTagName('*');
