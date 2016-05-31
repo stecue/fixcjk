@@ -849,6 +849,9 @@
             //newBodyHtml===oldBodyHtml;
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
+        else {
+            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000).toFixed(1)+' seconds before clicking again.')
+        }
         NumClicks++;
         t_last=performance.now();
     }
