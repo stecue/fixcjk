@@ -807,7 +807,8 @@
     document.onclick = ReFixCJK;
     function ReFixCJK () {
         t_start=performance.now();
-        if ((NumClicks % 1===0) && t_start-t_last > t_interval ) {
+        if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
+        if ((NumClicks < 2) || (t_start-t_last > t_interval) ) {
             //newBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
             //alert(newBodyHtml===oldBodyHtml);
             //if (true) {
