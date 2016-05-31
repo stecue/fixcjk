@@ -847,7 +847,7 @@
             //    console.log('FixCJK: No HTML change.')
             //}
             //newBodyHtml===oldBodyHtml;
-            console.log('FixCJK: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+            console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         NumClicks++;
         t_last=performance.now();
