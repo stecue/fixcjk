@@ -253,259 +253,262 @@
     }
     console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
     /// ===== First round: Replace all bold fonts to CJKBold ===== ///
-    t_stop=performance.now();
-    all = document.getElementsByClassName('CJK2Fix');
-    if (ifRound1===true) {
-        for (i = 0; i < all.length; i++) {
-            if (i % 500===0) { //Check every 500 elements.
-                if ((performance.now()-t_stop)*invForLimit > timeOut) {
-                    ifRound1=false;
-                    ifRound2=false;
-                    ifRound3=false;
-                    FixPunct=false;
-                    processedAll=false;
-                    console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
-                    break;
-                }
-                else {
-                    console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-                }
-            }
-            child = all[i].firstChild;
-            if_replace = false;
-            //Only change if current node (not child node) contains CJK characters.
-            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-            fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-            while (child) {
-                if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
-                    //Test if contains SimSun
-                    if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
-                    if (font_str.match(re_simsun)) {
-                        //all[i].style.color="Sienna"; //SimSun --> Sienna
-                        all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
-                        if (!(has_genfam(all[i].style.fontFamily))) {
-                            all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
-                        }
-                    }        //Test if contains Sans
-                    else if (list_has(font_str, re_sans0) !== false) {
-                        //all[i].style.color="Salmon";
-                        all[i].style.fontFamily = genPunct+','+LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
-                    }        //Test if contains serif
-                    else if (list_has(font_str, re_serif) !== false) {
-                        //all[i].style.color="SeaGreen";
-                        all[i].style.fontFamily = genPunct+','+LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
-                    }        //Test if contains monospace
-                    else if (list_has(font_str, re_mono0) !== false) {
-                        //all[i].style.color="Maroon";
-                        all[i].style.fontFamily = genPunct+','+LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
-                    }        //Just append the fonts to the font preference list.
+    function FixAllFonts () {
+        t_stop=performance.now();
+        all = document.getElementsByClassName('CJK2Fix');
+        if (ifRound1===true) {
+            for (i = 0; i < all.length; i++) {
+                if (i % 500===0) { //Check every 500 elements.
+                    if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                        ifRound1=false;
+                        ifRound2=false;
+                        ifRound3=false;
+                        FixPunct=false;
+                        processedAll=false;
+                        console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                        break;
+                    }
                     else {
-                        //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
-                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qBold + ',' + '  sans-serif';
-                        //console.log(all[i].style.fontFamily);
+                        console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
                     }
                 }
-                child = child.nextSibling;
+                child = all[i].firstChild;
+                if_replace = false;
+                //Only change if current node (not child node) contains CJK characters.
+                font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
+                while (child) {
+                    if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
+                        //Test if contains SimSun
+                        if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
+                        if (font_str.match(re_simsun)) {
+                            //all[i].style.color="Sienna"; //SimSun --> Sienna
+                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
+                            if (!(has_genfam(all[i].style.fontFamily))) {
+                                all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
+                            }
+                        }        //Test if contains Sans
+                        else if (list_has(font_str, re_sans0) !== false) {
+                            //all[i].style.color="Salmon";
+                            all[i].style.fontFamily = genPunct+','+LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
+                        }        //Test if contains serif
+                        else if (list_has(font_str, re_serif) !== false) {
+                            //all[i].style.color="SeaGreen";
+                            all[i].style.fontFamily = genPunct+','+LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
+                        }        //Test if contains monospace
+                        else if (list_has(font_str, re_mono0) !== false) {
+                            //all[i].style.color="Maroon";
+                            all[i].style.fontFamily = genPunct+','+LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
+                        }        //Just append the fonts to the font preference list.
+                        else {
+                            //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
+                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qBold + ',' + '  sans-serif';
+                            //console.log(all[i].style.fontFamily);
+                        }
+                    }
+                    child = child.nextSibling;
+                }
             }
         }
-    }
-    if (FixRegular === false) {
-        return false;
-    }
-    /// ===== Second Round: Deal with regular weight. ===== ///
-    var tmp_idx=0;
-    max = all.length;
-    if ((performance.now()-t_stop)*4 > timeOut) {
-        ifRound2=false;
-        ifRound3=false;
-        FixPunct=false;
-        processedAll=false;
-        console.log('FixCJK!: Round 1 has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Skipping following steps.');
-    }
-    t_stop=performance.now();
-    if (ifRound2===true) {
-        for (i = 0; i < all.length; i++) {
-            if (i % 500===0) { //Check every 500 elements.
-                if ((performance.now()-t_stop)*invForLimit > timeOut) {
-                    ifRound2=false;
-                    ifRound3=false;
-                    FixPunct=false;
-                    processedAll=false;
-                    console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
-                    break;
+        if (FixRegular === false) {
+            return false;
+        }
+        /// ===== Second Round: Deal with regular weight. ===== ///
+        var tmp_idx=0;
+        max = all.length;
+        if ((performance.now()-t_stop)*4 > timeOut) {
+            ifRound2=false;
+            ifRound3=false;
+            FixPunct=false;
+            processedAll=false;
+            console.log('FixCJK!: Round 1 has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Skipping following steps.');
+        }
+        t_stop=performance.now();
+        if (ifRound2===true) {
+            for (i = 0; i < all.length; i++) {
+                if (i % 500===0) { //Check every 500 elements.
+                    if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                        ifRound2=false;
+                        ifRound3=false;
+                        FixPunct=false;
+                        processedAll=false;
+                        console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue.');
+                        break;
+                    }
+                    else {
+                        console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+                    }
                 }
-                else {
-                    console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-                }
-            }
-            child = all[i].firstChild;
-            if_replace = false;
-            //Only change if current node (not child node) contains CJK characters.
-            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-            fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-            //console.log(child.nodeType);
-            while (child) {
-                if (child.nodeType == 3) {
-                    //all[i].style.color='Teal'; //text-->teal;
-                    //Just check and fix the improper SimSun use
-                    if (font_str.match(re_simsun)) {
-                        if (debug_02===true) {all[i].style.color="Sienna";}
-                        if (fweight == 'bold' || fweight > 500) {
-                            //all[i].style.color="Grey";
-                            if_replace = false;
-                            //console.log(child.data);
-                            //return false;
-                        }
-                        else {
-                            if (debug_02===true) {all[i].style.color="Orange";}
-                            if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/)) {
-                                //do nothing if already replaced;
-                                if (debug_02===true) {all[i].style.color="Grey";}
+                child = all[i].firstChild;
+                if_replace = false;
+                //Only change if current node (not child node) contains CJK characters.
+                font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
+                //console.log(child.nodeType);
+                while (child) {
+                    if (child.nodeType == 3) {
+                        //all[i].style.color='Teal'; //text-->teal;
+                        //Just check and fix the improper SimSun use
+                        if (font_str.match(re_simsun)) {
+                            if (debug_02===true) {all[i].style.color="Sienna";}
+                            if (fweight == 'bold' || fweight > 500) {
+                                //all[i].style.color="Grey";
                                 if_replace = false;
+                                //console.log(child.data);
+                                //return false;
                             }
                             else {
-                                if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
-                                all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
-                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
-                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
-                                if (all[i].style.fontFamily.length<1) {
-                                    console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
+                                if (debug_02===true) {all[i].style.color="Orange";}
+                                if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/)) {
+                                    //do nothing if already replaced;
+                                    if (debug_02===true) {all[i].style.color="Grey";}
+                                    if_replace = false;
                                 }
-                                if (!(has_genfam(all[i].style.fontFamily))) {
-                                    all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
-                                }              //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
+                                else {
+                                    if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
+                                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
+                                    all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
+                                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
+                                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
+                                    if (all[i].style.fontFamily.length<1) {
+                                        console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));
+                                    }
+                                    if (!(has_genfam(all[i].style.fontFamily))) {
+                                        all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
+                                    }              //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
 
-                                if_replace = false;
-                                //all[i].style.color="Grey";
+                                    if_replace = false;
+                                    //all[i].style.color="Grey";
+                                }
                             }
+                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                         }
-                        if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                    }
-                    if (child.data.match(/[\u3400-\u9FBF]/)) {
-                        if_replace = true;
-                        if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                        if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
-                        font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-                        if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
-                            //do nothing if already replaced;
-                            if (debug_02===true) {all[i].style.color="Black";}
-                            if_replace = false;
-                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                        }          //break;
+                        if (child.data.match(/[\u3400-\u9FBF]/)) {
+                            if_replace = true;
+                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                            if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
+                            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                            if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
+                                //do nothing if already replaced;
+                                if (debug_02===true) {all[i].style.color="Black";}
+                                if_replace = false;
+                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                            }          //break;
 
+                        }
                     }
+                    child = child.nextSibling;
                 }
-                child = child.nextSibling;
-            }
-            //Just to make sure "font_str" is already updated.
-            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-            if (if_replace === true) {
-                if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
-                if (debug_02===true) {if (all[i].innerHTML.match(/目前量子多体的书/g)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
-                //Test if contains Sans
-                if (list_has(font_str, re_sans0) !== false) {
-                    //all[i].style.color="Salmon";
-                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
-                }      //Test if contains serif
-                else if (list_has(font_str, re_serif) !== false) {
-                    //all[i].style.color="SeaGreen";
-                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
-                }      //Test if contains monospace
-                else if (list_has(font_str, re_mono0) !== false) {
-                    //all[i].style.color="Maroon";
-                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
-                }
-                else {
-                    if (debug_02===true) {all[i].style.color='Fuchsia';}
-                    if (font_str.match(re_simsun)) {
-                        //all[i].style.color='Fuchsia';
-                        //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                        all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                //Just to make sure "font_str" is already updated.
+                font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                if (if_replace === true) {
+                    if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
+                    if (debug_02===true) {if (all[i].innerHTML.match(/目前量子多体的书/g)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
+                    //Test if contains Sans
+                    if (list_has(font_str, re_sans0) !== false) {
+                        //all[i].style.color="Salmon";
+                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                    }      //Test if contains serif
+                    else if (list_has(font_str, re_serif) !== false) {
+                        //all[i].style.color="SeaGreen";
+                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                    }      //Test if contains monospace
+                    else if (list_has(font_str, re_mono0) !== false) {
+                        //all[i].style.color="Maroon";
+                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                     }
                     else {
-                        //all[i].style.color='Fuchsia';
-                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                        if (debug_02===true) {all[i].style.color='Fuchsia';}
+                        if (font_str.match(re_simsun)) {
+                            //all[i].style.color='Fuchsia';
+                            //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
+                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                        }
+                        else {
+                            //all[i].style.color='Fuchsia';
+                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                        }
                     }
                 }
             }
         }
-    }
-    console.log('FixCJK!: Round 2 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-    t_stop=performance.now();
-    if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
-    if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
-    /// ===== The Third round: Add CJKdefault to all elements ===== ///
-    if (FixMore === false) {
-        return false;
-    }
-    all = document.getElementsByTagName('*');
-    max = all.length;
-    if (max > maxNumElements) {
-        ifRound3=false;
-        FixPunct=false;
-        processedAll=false;
-        console.log('FixCJK!: '+max.toString()+' elements, too many. Skip Round 3 and punctuation fixing. Exiting now...');
-    }
-    else if (max > CJKOnlyThreshold) {
-        ifRound3=true;
-        FixPunct=true;
-        processedAll=true;
-        all = document.getElementsByTagName('CJK2Fix');
-        console.log('FixCJK!: '+max.toString()+' elements, too many. Only CJK elements will be processed in Round 3.');
-    }
-    else {
-        console.log('FixCJK!: All elements will be processed in Round 3.');
-    }
-    if (ifRound3===true) {
-        for (i = 0; i < all.length; i++) {
-            //all[i].style.color="SeaGreen";
-            if (i % 500===0) { //Check every 500 elements.
-                if ((performance.now()-t_stop)*invForLimit > timeOut) {
-                    ifRound3=false;
-                    FixPunct=false;
-                    processedAll=false;
-                    console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue. Exiting now...');
-                    break;
-                }
-                else {
-                    console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-                }
-            }
-            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-            if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
-                if (list_has(font_str, re_sans0) !== false) {
-                    //all[i].style.color="Salmon";
-                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
-                }      //Test if contains serif
-                else if (list_has(font_str, re_serif) !== false) {
-                    //all[i].style.color="SeaGreen";
-                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
-                }      //Test if contains monospace
-                else if (list_has(font_str, re_mono0) !== false) {
-                    //all[i].style.color="Maroon";
-                    all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
-                }
-                else {
-                    if (debug_03 === true) { all[i].style.color='Fuchsia'; }
-                    if (font_str.match(re_simsun)) {
-                        if (debug_03 === true) {all[i].style.color='Sienna'; }
-                        //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                        all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+        console.log('FixCJK!: Round 2 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+        t_stop=performance.now();
+        if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
+        if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
+        /// ===== The Third round: Add CJKdefault to all elements ===== ///
+        if (FixMore === false) {
+            return false;
+        }
+        all = document.getElementsByTagName('*');
+        max = all.length;
+        if (max > maxNumElements) {
+            ifRound3=false;
+            FixPunct=false;
+            processedAll=false;
+            console.log('FixCJK!: '+max.toString()+' elements, too many. Skip Round 3 and punctuation fixing. Exiting now...');
+        }
+        else if (max > CJKOnlyThreshold) {
+            ifRound3=true;
+            FixPunct=true;
+            processedAll=true;
+            all = document.getElementsByTagName('CJK2Fix');
+            console.log('FixCJK!: '+max.toString()+' elements, too many. Only CJK elements will be processed in Round 3.');
+        }
+        else {
+            console.log('FixCJK!: All elements will be processed in Round 3.');
+        }
+        if (ifRound3===true) {
+            for (i = 0; i < all.length; i++) {
+                //all[i].style.color="SeaGreen";
+                if (i % 500===0) { //Check every 500 elements.
+                    if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                        ifRound3=false;
+                        FixPunct=false;
+                        processedAll=false;
+                        console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue. Exiting now...');
+                        break;
                     }
                     else {
-                        if (debug_03 === true) { all[i].style.color='Olive';}
-                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                        console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
                     }
                 }
-            }
-            else {
-                //all[i].style.color="Silver"; //Signed-->Silver
+                font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
+                    if (list_has(font_str, re_sans0) !== false) {
+                        //all[i].style.color="Salmon";
+                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                    }      //Test if contains serif
+                    else if (list_has(font_str, re_serif) !== false) {
+                        //all[i].style.color="SeaGreen";
+                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                    }      //Test if contains monospace
+                    else if (list_has(font_str, re_mono0) !== false) {
+                        //all[i].style.color="Maroon";
+                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
+                    }
+                    else {
+                        if (debug_03 === true) { all[i].style.color='Fuchsia'; }
+                        if (font_str.match(re_simsun)) {
+                            if (debug_03 === true) {all[i].style.color='Sienna'; }
+                            //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
+                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                        }
+                        else {
+                            if (debug_03 === true) { all[i].style.color='Olive';}
+                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                        }
+                    }
+                }
+                else {
+                    //all[i].style.color="Silver"; //Signed-->Silver
+                }
             }
         }
+        console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+        t_stop=performance.now();
     }
-    console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-    t_stop=performance.now();
+    FixAllFonts();
     ///===Round 4, FixPunct===///
     console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
     if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
@@ -798,7 +801,7 @@
     //var newBodyHtml=oldBodyHtml;
     var NumClicks=0;
     var t_last=performance.now();
-    var t_interval=3000.0; //The interval between two checks.
+    var t_interval=2000.0; //The interval between two checks.
     document.onclick = ReFixCJK;
     function ReFixCJK () {
         t_start=performance.now();
@@ -836,6 +839,7 @@
                     child=child.nextSibling;
                 }
             }
+            FixAllFonts();
             FunFixPunct();
             //}
             //else {
