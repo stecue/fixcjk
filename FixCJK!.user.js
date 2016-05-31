@@ -801,7 +801,7 @@
     //var newBodyHtml=oldBodyHtml;
     var NumClicks=0;
     var t_last=performance.now();
-    var t_interval=2000.0; //The interval between two checks.
+    var t_interval=timeOut; //The interval between two checks.
     document.onclick = ReFixCJK;
     function ReFixCJK () {
         t_start=performance.now();
@@ -814,7 +814,6 @@
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
             FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
-            timeOut=3000; //allow maximum 3.0 seconds to run this script.
             maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
             maxNumElements = 8000; // maximum number of elements to process.
             CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
