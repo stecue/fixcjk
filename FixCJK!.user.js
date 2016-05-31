@@ -438,6 +438,8 @@
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
         /// ===== The Third round: Add CJKdefault to all elements ===== ///
         if (FixMore === false) {
+            t_stop=performance.now();
+            console.log('FixCJK!: FixMore/Round 3 will be skipped intentionally.');
             return false;
         }
         all = document.getElementsByTagName('*');
@@ -812,7 +814,7 @@
             //console.log(newBodyHtml);
             //console.log('Something has been changed, refixing...');//alway chaninge..no idea why
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-            FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
             maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
             maxNumElements = 8000; // maximum number of elements to process.
@@ -822,7 +824,7 @@
             processedAll=true;
             ifRound1=true;
             ifRound2=true;
-            ifRound3=true;
+            ifRound3=false;
             //FixCJK();
             var ReFixAll=document.getElementsByTagName('*');
             for (i=0;i<ReFixAll.length;i++) {
