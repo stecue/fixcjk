@@ -797,10 +797,12 @@
     //var oldBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
     //var newBodyHtml=oldBodyHtml;
     var NumClicks=0;
+    var t_last=performance.now();
+    var t_interval=3000.0; //The interval between two checks.
     document.onclick = ReFixCJK;
     function ReFixCJK () {
-        if (NumClicks % 2===0) {
-            t_start=performance.now();
+        t_start=performance.now();
+        if ((NumClicks % 1===0) && t_start-t_last > t_interval ) {
             //newBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
             //alert(newBodyHtml===oldBodyHtml);
             //if (true) {
@@ -843,6 +845,7 @@
             console.log('FixCJK: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         NumClicks++;
+        t_last=performance.now();
     }
 }
 ) ();
