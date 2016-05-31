@@ -796,49 +796,53 @@
     if (debug_left===true) {alert('Finished!');}
     //var oldBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
     //var newBodyHtml=oldBodyHtml;
+    var NumClicks=0;
     document.onclick = ReFixCJK;
     function ReFixCJK () {
-        t_start=performance.now();
-        //newBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
-        //alert(newBodyHtml===oldBodyHtml);
-        //if (true) {
-        //console.log(newBodyHtml);
-        //console.log('Something has been changed, refixing...');//alway chaninge..no idea why
-        FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-        FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
-        FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
-        timeOut=3000; //allow maximum 3.0 seconds to run this script.
-        maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
-        maxNumElements = 8000; // maximum number of elements to process.
-        CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
-        invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
-        SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
-        processedAll=true;
-        ifRound1=true;
-        ifRound2=true;
-        ifRound3=true;
-        //FixCJK();
-        var ReFixAll=document.getElementsByTagName('*');
-        for (i=0;i<ReFixAll.length;i++) {
-            child = ReFixAll[i].firstChild;
-            while (child) {
-                if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                    var tmpClass=ReFixAll[i].className+" CJK2Fix";
-                    tmpClass=tmpClass.replace(/(?: CJK2Fix)+/,' CJK2Fix');
-                    ReFixAll[i].className =tmpClass;
-                    //console.log(all[i].className);
-                    break;
+        if (NumClicks % 2===0) {
+            t_start=performance.now();
+            //newBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
+            //alert(newBodyHtml===oldBodyHtml);
+            //if (true) {
+            //console.log(newBodyHtml);
+            //console.log('Something has been changed, refixing...');//alway chaninge..no idea why
+            FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
+            FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
+            timeOut=3000; //allow maximum 3.0 seconds to run this script.
+            maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
+            maxNumElements = 8000; // maximum number of elements to process.
+            CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
+            invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
+            SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
+            processedAll=true;
+            ifRound1=true;
+            ifRound2=true;
+            ifRound3=true;
+            //FixCJK();
+            var ReFixAll=document.getElementsByTagName('*');
+            for (i=0;i<ReFixAll.length;i++) {
+                child = ReFixAll[i].firstChild;
+                while (child) {
+                    if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
+                        var tmpClass=ReFixAll[i].className+" CJK2Fix";
+                        tmpClass=tmpClass.replace(/(?: CJK2Fix)+/,' CJK2Fix');
+                        ReFixAll[i].className =tmpClass;
+                        //console.log(all[i].className);
+                        break;
+                    }
+                    child=child.nextSibling;
                 }
-                child=child.nextSibling;
             }
+            FunFixPunct();
+            //}
+            //else {
+            //    console.log('FixCJK: No HTML change.')
+            //}
+            //newBodyHtml===oldBodyHtml;
+            console.log('FixCJK: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
-        FunFixPunct();
-        //}
-        //else {
-        //    console.log('FixCJK: No HTML change.')
-        //}
-        //newBodyHtml===oldBodyHtml;
-        console.log('FixCJK: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+        NumClicks++;
     }
 }
 ) ();
