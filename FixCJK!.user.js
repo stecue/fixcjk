@@ -207,7 +207,7 @@
     var t_interval=timeOut; //The interval between two checks.
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
-        document.onclick = ReFixCJK;
+        (document.getElementsByTagName("BODY"))[0].addEventListener("click",ReFixCJK);
     }
     else {
         //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
@@ -287,11 +287,6 @@
             console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');
             console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');
             FunFixPunct();
-            //}
-            //else {
-            //    console.log('FixCJK: No HTML change.')
-            //}
-            //newBodyHtml===oldBodyHtml;
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         else {
