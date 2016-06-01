@@ -252,6 +252,10 @@
             child=child.nextSibling;
         }
     }
+    if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
+        //Do not try to fixpuncts if it is an English site. Just trying to save time.
+        FixPunct=false;
+    }
     console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
     /// ===== First round: Replace all bold fonts to CJKBold ===== ///
     function FixAllFonts () {
