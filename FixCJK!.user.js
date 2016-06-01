@@ -815,17 +815,22 @@
     function ReFixCJK () {
         t_start=performance.now();
         if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
+        //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
         for (i=0;i<AllCJKFixed.length;i++) {
-            if ((AllCJKFixed[i].className).match(/CJK2Fix/g)) {
-                AllCJKFixed[i].classList.remove("CJK2Fix");
+            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
+                continue;
             }
+            if (debug_left===true) {console.log(AllCJKFixed[i].className);}
+            AllCJKFixed[i].classList.remove("CJK2Fix");
         }
         AllCJKFixed=document.getElementsByClassName("MarksFixedE135");
         for (i=0;i<AllCJKFixed.length;i++) {
-            if ((AllCJKFixed[i].className).match(/CJK2Fix/g)) {
-                AllCJKFixed[i].classList.remove("CJK2Fix");
+            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
+                continue;
             }
+            if (debug_left===true) {console.log(AllCJKFixed[i].className);}
+            AllCJKFixed[i].classList.remove("CJK2Fix");
         }
         if ((NumClicks < 2) || (t_start-t_last > t_interval) ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
