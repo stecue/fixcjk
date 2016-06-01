@@ -207,7 +207,8 @@
     var t_interval=timeOut; //The interval between two checks.
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
-        (document.getElementsByTagName("BODY"))[0].addEventListener("click",ReFixCJK);
+        //document.onClick will cause problems on some webpages on Firefox.
+        (document.getElementsByTagName("BODY"))[0].addEventListener("click",ReFixCJK,false);
     }
     else {
         //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
