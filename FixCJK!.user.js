@@ -9,6 +9,7 @@
 // @license           GPLv3
 // @match             http://*/*
 // @match             https://*/*
+// @include           file:///*
 // @exclude           http://*edit*/*
 // @exclude           https://*edit*/*
 // @exclude           http://*action=edit*
