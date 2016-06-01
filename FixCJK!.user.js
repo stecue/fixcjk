@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.10.1
+// @version           0.10.2
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -46,6 +46,7 @@
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
     var all = document.getElementsByTagName('*');
+    var NumAllDOMs=all.length;
     var bodyhtml=document.getElementsByTagName("HTML");
     if (bodyhtml[0].innerHTML.length > maxlength) {
         console.log('FixCJK!: HTML too long, skip everything. Exiting now...');
@@ -805,13 +806,20 @@
     else {
         console.log('FixCJK!: EXECUTION ABORTED: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
-    if (debug_left===true) {alert('Finished!');}
     //var oldBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
     //var newBodyHtml=oldBodyHtml;
     var NumClicks=0;
     var t_last=performance.now();
     var t_interval=timeOut; //The interval between two checks.
-    document.onclick = ReFixCJK;
+    var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
+    if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
+        document.onclick = ReFixCJK;
+    }
+    else {
+        //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
+        console.log('FixCJK!: Only '+(NumAllCJKs*1.0/NumAllDOMs*100).toFixed(1)+'% elements contains CJK. Probably an English/Latin site and no event listener needed.');
+    }
+    if (debug_left===true) {alert('Finished!');}
     function ReFixCJK () {
         t_start=performance.now();
         if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
