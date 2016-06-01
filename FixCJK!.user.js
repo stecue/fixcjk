@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.10.2
+// @version           0.10.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -113,16 +113,6 @@
     var kern_dq_right_end='-0.3em'; //Just in case, do not use.
     var kern_dq_right_left='-0.8em'; //Just in case, do not use.
     //Check if the font definitions are valid
-    function check_fonts(font_var, fvname) {
-        var fl = font_var.split(',');
-        for (i = 0; i < fl.length; i++) {
-            if (!(fl[i].match(/^[^" ][^"]+[^" ]$|^"[^ ][^"]+[^ ]"$/))) {
-                alert('Check your font definition: ' + fl[i] + ' in ' + fvname);
-                return false;
-            }
-        }
-        return true;
-    }
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
     else if (check_fonts(CJKserif, 'CJKserif') === false)
@@ -140,6 +130,185 @@
     else if (check_fonts(LatinMono, 'LatinMono') === false)
         return false;
     else {
+    }
+    if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
+    //Assign fonts for puncts:
+    var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
+    var useCSSforSimSun=false;
+    if (useCSSforSimSun===true) {
+        punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
+        punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
+        punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
+        punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
+    }
+    if (debug_00===true) alert(punctStyle);
+    GM_addStyle(punctStyle);
+    ///----------------------------
+    qpreCJK = dequote(qpreCJK);
+    qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
+    qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
+    qHei = dequote(qHei);//LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
+    qBold = dequote(qBold);//LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
+    qsans = dequote(qsans);//LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
+    qserif = dequote(qserif);//LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
+    qmono = dequote(qmono);//LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
+    CJKPunct=dequote(CJKPunct)+','+sig_punct;
+    if (debug_00===true) {alert('Entering Loops...');}
+    /// ===== Labeling CJK elements === ///
+    t_stop=performance.now();
+    for (i=0;i < all.length;i++) {
+        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
+            continue;
+        }
+        font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+        if (font_str.match(re_simsun)) {
+            all[i].classList.add("CJK2Fix");
+            //console.log(all[i].className);
+            continue;
+        }
+        child = all[i].firstChild;
+        while (child) {
+            if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
+                all[i].classList.add("CJK2Fix");
+                //console.log(all[i].className);
+                break;
+            }
+            child=child.nextSibling;
+        }
+    }
+    //Do not try to fixpuncts if it is an English site. Just trying to save time.
+    if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
+        FixPunct=false;
+    }
+    console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+    ///===FixFonts, Rounds 1-3===///
+    FixAllFonts();
+    ///===Round 4, FixPunct===///
+    console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
+    if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
+        console.log('FixCJK!: Too slow or too many elements.');
+        FixPunct=false;
+    }
+    if (FixPunct===false) {
+        console.log('FixCJK!: Skipping fixing punctuations...');
+    }
+    FunFixPunct();
+    all=document.getElementsByTagName('img');
+    for (i=0;i<all.length;i++) {
+        if (all[i].hasAttribute('data-actualsrc')) {
+            all[i].src=all[i].getAttribute('data-actualsrc');
+        }
+    }
+    console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
+    ///===Add onClick listener before exiting===///
+    var NumClicks=0;
+    var t_last=performance.now();
+    var t_interval=timeOut; //The interval between two checks.
+    var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
+    if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
+        document.onclick = ReFixCJK;
+    }
+    else {
+        //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
+        console.log('FixCJK!: Only '+(NumAllCJKs*1.0/NumAllDOMs*100).toFixed(1)+'% elements contains CJK. Probably an English/Latin site and no event listener needed.');
+    }
+    ///===Time to exiting the main function===///
+    var t_fullstop=performance.now();
+    if (processedAll===true) {
+        console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
+    }
+    else {
+        console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+    }
+    if (debug_left===true) {alert('Finished!');}
+    //The actual listening function//
+    function ReFixCJK () {
+        t_start=performance.now();
+        if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
+        //First remove the "CJK2Fix" attibute for those already processed.
+        var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
+        for (i=0;i<AllCJKFixed.length;i++) {
+            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
+                continue;
+            }
+            if (debug_left===true) {console.log(AllCJKFixed[i].className);}
+            AllCJKFixed[i].classList.remove("CJK2Fix");
+        }
+        AllCJKFixed=document.getElementsByClassName("MarksFixedE135");
+        for (i=0;i<AllCJKFixed.length;i++) {
+            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
+                continue;
+            }
+            if (debug_left===true) {console.log(AllCJKFixed[i].className);}
+            AllCJKFixed[i].classList.remove("CJK2Fix");
+        }
+        if ((NumClicks < 2) || (t_start-t_last > t_interval) ) {
+            FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
+            FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
+            maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
+            maxNumElements = 8000; // maximum number of elements to process.
+            CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
+            invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
+            processedAll=true;
+            ifRound1=true;
+            ifRound2=true;
+            ifRound3=false;
+            //FixCJK();
+            var ReFixAll=document.getElementsByTagName('*');
+            var NumFixed=0;
+            var NumReFix=0;
+            for (i=0;i<ReFixAll.length;i++) {
+                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement){
+                    continue;
+                }
+                child = ReFixAll[i].firstChild;
+                while (child) {
+                    if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
+                        if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/g))) {
+                            NumFixed++;
+                        }
+                        else {
+                            if (debug_left===true) {
+                                console.log(ReFixAll[i].className+':: '+child.data);
+                                console.log(ReFixAll[i].outerHTML);
+                            }
+                            ReFixAll[i].classList.add("CJK2Fix");
+                            //ReFixAll[i].className=(ReFixAll[i].className).replace(/(?: CJK2Fix)+/g,' CJK2Fix');
+                            NumReFix++;
+                            break;
+                        }
+                    }
+                    child=child.nextSibling;
+                }
+            }
+            FixAllFonts();
+            console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');
+            console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');
+            FunFixPunct();
+            //}
+            //else {
+            //    console.log('FixCJK: No HTML change.')
+            //}
+            //newBodyHtml===oldBodyHtml;
+            console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+        }
+        else {
+            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000).toFixed(1)+' seconds before clicking again.')
+        }
+        NumClicks++;
+        t_last=performance.now();
+    }
+    ///===various aux functions===///
+    function check_fonts(font_var, fvname) {
+        var fl = font_var.split(',');
+        for (i = 0; i < fl.length; i++) {
+            if (!(fl[i].match(/^[^" ][^"]+[^" ]$|^"[^ ][^"]+[^ ]"$/))) {
+                alert('Check your font definition: ' + fl[i] + ' in ' + fvname);
+                return false;
+            }
+        }
+        return true;
     }
     function list_has(font_str, family) {
         /// Fucntion to check matches
@@ -207,58 +376,9 @@
         }
         return localed;
     }
-    if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
-    //Assign fonts for puncts:
-    var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    var useCSSforSimSun=false;
-    if (useCSSforSimSun===true) {
-        punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
-        punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
-        punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
-        punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
-    }
-    if (debug_00===true) alert(punctStyle);
-    GM_addStyle(punctStyle);
-    ///----------------------------
-    qpreCJK = dequote(qpreCJK);
-    qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
-    qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
-    qHei = dequote(qHei);//LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
-    qBold = dequote(qBold);//LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
-    qsans = dequote(qsans);//LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
-    qserif = dequote(qserif);//LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
-    qmono = dequote(qmono);//LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
-    CJKPunct=dequote(CJKPunct)+','+sig_punct;
-    if (debug_00===true) {alert('Entering Loops...');}
-    /// ===== Labeling CJK elements === ///
-    t_stop=performance.now();
-    for (i=0;i < all.length;i++) {
-        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
-            continue;
-        }
-        font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        if (font_str.match(re_simsun)) {
-            all[i].classList.add("CJK2Fix");
-            //console.log(all[i].className);
-            continue;
-        }
-        child = all[i].firstChild;
-        while (child) {
-            if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                all[i].classList.add("CJK2Fix");
-                //console.log(all[i].className);
-                break;
-            }
-            child=child.nextSibling;
-        }
-    }
-    if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
-        //Do not try to fixpuncts if it is an English site. Just trying to save time.
-        FixPunct=false;
-    }
-    console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-    /// ===== First round: Replace all bold fonts to CJKBold ===== ///
+    /// ======================== FixAllFonts, 3 Rounds ==============================///
     function FixAllFonts () {
+        /// ===== First round: Replace all bold fonts to CJKBold ===== ///
         t_stop=performance.now();
         all = document.getElementsByClassName('CJK2Fix');
         if (ifRound1===true) {
@@ -520,16 +640,7 @@
         console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
         t_stop=performance.now();
     }
-    FixAllFonts();
-    ///===Round 4, FixPunct===///
-    console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');
-    if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
-        console.log('FixCJK!: Too slow or too many elements.');
-        FixPunct=false;
-    }
-    if (FixPunct===false) {
-        console.log('FixCJK!: Skipping fixing punctuations...');
-    }
+    ///===The Actual Round 4===///
     function FunFixPunct() {
         var currpunc=0;
         var currHTML='';
@@ -794,113 +905,6 @@
                 all[currpunc].classList.add("MarksFixedE135"); //We cannot Remove the "CJK2Fix" class here because the index i is "live".
             }
         }
-    }
-    FunFixPunct();
-    all=document.getElementsByTagName('img');
-    for (i=0;i<all.length;i++) {
-        if (all[i].hasAttribute('data-actualsrc')) {
-            all[i].src=all[i].getAttribute('data-actualsrc');
-        }
-    }
-    console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-    ///===Add onClick listener before exiting===///
-    var NumClicks=0;
-    var t_last=performance.now();
-    var t_interval=timeOut; //The interval between two checks.
-    var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
-    if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
-        document.onclick = ReFixCJK;
-    }
-    else {
-        //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
-        console.log('FixCJK!: Only '+(NumAllCJKs*1.0/NumAllDOMs*100).toFixed(1)+'% elements contains CJK. Probably an English/Latin site and no event listener needed.');
-    }
-    ///===Time to exiting the main function===///
-    var t_fullstop=performance.now();
-    if (processedAll===true) {
-        console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
-    }
-    else {
-        console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
-    }
-    if (debug_left===true) {alert('Finished!');}
-    //The actual listening function//
-    function ReFixCJK () {
-        t_start=performance.now();
-        if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
-        //First remove the "CJK2Fix" attibute for those already processed.
-        var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
-        for (i=0;i<AllCJKFixed.length;i++) {
-            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
-                continue;
-            }
-            if (debug_left===true) {console.log(AllCJKFixed[i].className);}
-            AllCJKFixed[i].classList.remove("CJK2Fix");
-        }
-        AllCJKFixed=document.getElementsByClassName("MarksFixedE135");
-        for (i=0;i<AllCJKFixed.length;i++) {
-            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
-                continue;
-            }
-            if (debug_left===true) {console.log(AllCJKFixed[i].className);}
-            AllCJKFixed[i].classList.remove("CJK2Fix");
-        }
-        if ((NumClicks < 2) || (t_start-t_last > t_interval) ) {
-            FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-            FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
-            FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
-            maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
-            maxNumElements = 8000; // maximum number of elements to process.
-            CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
-            invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
-            processedAll=true;
-            ifRound1=true;
-            ifRound2=true;
-            ifRound3=false;
-            //FixCJK();
-            var ReFixAll=document.getElementsByTagName('*');
-            var NumFixed=0;
-            var NumReFix=0;
-            for (i=0;i<ReFixAll.length;i++) {
-                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement){
-                    continue;
-                }
-                child = ReFixAll[i].firstChild;
-                while (child) {
-                    if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                        if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/g))) {
-                            NumFixed++;
-                        }
-                        else {
-                            if (debug_left===true) {
-                                console.log(ReFixAll[i].className+':: '+child.data);
-                                console.log(ReFixAll[i].outerHTML);
-                            }
-                            ReFixAll[i].classList.add("CJK2Fix");
-                            //ReFixAll[i].className=(ReFixAll[i].className).replace(/(?: CJK2Fix)+/g,' CJK2Fix');
-                            NumReFix++;
-                            break;
-                        }
-                    }
-                    child=child.nextSibling;
-                }
-            }
-            FixAllFonts();
-            console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');
-            console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');
-            FunFixPunct();
-            //}
-            //else {
-            //    console.log('FixCJK: No HTML change.')
-            //}
-            //newBodyHtml===oldBodyHtml;
-            console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
-        }
-        else {
-            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000).toFixed(1)+' seconds before clicking again.')
-        }
-        NumClicks++;
-        t_last=performance.now();
     }
 }
 ) ();
