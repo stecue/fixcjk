@@ -1,4 +1,4 @@
-## 0.10.2 (2016-05-31)
+## 0.10.3 (2016-05-31)
 Features:
   - Optimize the selection rules in the "click to check" function.
   - Skip English/Latin sites when adding the onClick event listener.
