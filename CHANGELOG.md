@@ -1,6 +1,9 @@
-## 0.10.1 (2016-05-31)
-Bugfixes:
+## 0.10.2 (2016-05-31)
+Features:
   - Optimize the selection rules in the "click to check" function.
+  - Skip English/Latin sites when adding the onClick event listener.
+
+Bugfixes:
   - Add `float:none` to `style` to prevent position changes of punctuation marks.
 
 ## 0.10.0 (2016-05-31)
