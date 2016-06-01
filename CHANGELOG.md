@@ -1,3 +1,8 @@
+## 0.10.1 (2016-05-31)
+Bugfixes:
+  - Optimize the selection rules in the "click to check" function.
+  - Add `float:none` to `style` to prevent position changes of punctuation marks.
+
 ## 0.10.0 (2016-05-31)
 Features:
   - Add an "onClick" event to `document`. Punctuations will be re-checked if click on anywhere of a webpage.
