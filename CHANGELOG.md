@@ -5,7 +5,7 @@ Features:
 
 Bugfixes:
   - Add `float:none` to `style` to prevent position changes of punctuation marks.
-  - (FIXME): the onClick listener conflicts with some websites. Mainly English sites and they are skipped now.
+  - The onClick listener was conflicting with scripts on some websites.
 
 ## 0.10.0 (2016-05-31)
 Features:
