@@ -803,15 +803,7 @@
         }
     }
     console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
-    t_stop=performance.now();
-    if (processedAll===true) {
-        console.log('FixCJK!: NORMAL TERMINATION: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
-    }
-    else {
-        console.log('FixCJK!: EXECUTION ABORTED: '+((t_stop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
-    }
-    //var oldBodyHtml=(document.getElementsByTagName('BODY'))[0].innerHTML;
-    //var newBodyHtml=oldBodyHtml;
+    ///===Add onClick listener before existing===///
     var NumClicks=0;
     var t_last=performance.now();
     var t_interval=timeOut; //The interval between two checks.
@@ -823,7 +815,15 @@
         //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
         console.log('FixCJK!: Only '+(NumAllCJKs*1.0/NumAllDOMs*100).toFixed(1)+'% elements contains CJK. Probably an English/Latin site and no event listener needed.');
     }
+    var t_fullstop=performance.now();
+    if (processedAll===true) {
+        console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
+    }
+    else {
+        console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+    }
     if (debug_left===true) {alert('Finished!');}
+    //The actual listening function//
     function ReFixCJK () {
         t_start=performance.now();
         if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
