@@ -6,6 +6,7 @@ Features:
 Bugfixes:
   - Add `float:none` to `style` to prevent position changes of punctuation marks.
   - The onClick listener was conflicting with scripts on some websites.
+  - Quotation marks winthin tags are now treated correctly.
 
 ## 0.10.0 (2016-05-31)
 Features:
