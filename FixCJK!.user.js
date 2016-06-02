@@ -887,9 +887,9 @@
                     tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）】〉》」』])|^)([\n]?[’”])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
                     //////////////The following TWO-PUNCT Rules are for the "processed marks" (quotation marks processed in the THREE-PUNCT-RULE section)//////
-                    //--TWO PUNCTS: [、，。：；！？）】〉》」』]<span>[’”]</span> left-left--//
-                    tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
-                    currHTML=currHTML.replace(/(.|^)([、，。：；！？）】〉》」』][\n]?)(<span[^><]*\uE135[^><]*>[’”]<\/span>)([^“‘]|$)/mg,tmp_str);
+                    //--TWO PUNCTS: [、，。：；！？）】〉》」』]<span>[’”{Left}] left-left--//
+                    tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>$3';
+                    currHTML=currHTML.replace(/(.|^)([、，。：；！？）】〉》」』][\n]?)(<span[^><]*>[’”、，。：；！？）】〉》」』])/mg,tmp_str);
                 }
                 else {
                     alert('Alway squeeze consec puncts now or ind ones won\'t work. No squeezing not implemented yet!');
