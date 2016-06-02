@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.10.3
+// @version           0.10.4
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -38,7 +38,7 @@
     var maxNumElements = 8000; // maximum number of elements to process.
     var CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
-    var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT|META)$/i; //to be fixed for github.
+    var SkippedTags=/^(TITLE|HEAD|BODY|textarea|img|SCRIPT|META)$/i; //to be fixed for github.
     var processedAll=true;
     var ifRound1=true;
     var ifRound2=true;
@@ -699,6 +699,7 @@
                                 }
                                 //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
                                 //puncid.push(all[i].id);
+                                if_replace=true;
                                 break;
                             }
                             else if ((delete_all_spaces===true) && (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\n]?[ ][^ |$]/mg))) {
@@ -720,6 +721,7 @@
                                 puncnode.push(i);
                                 //if (all[i].id.match(/^$/)) {all[i].id='punct'+i.toString();}
                                 //puncid.push(all[i].id);
+                                if_replace=true;
                                 break;
                             }
                             else if (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\u3000-\u303F\uFF00-\uFFEF]/mg)) {
@@ -728,6 +730,7 @@
                                 }
                                 numnodes++;
                                 puncnode.push(i);
+                                if_replace=true;
                                 break;
                             }
                             else {
@@ -735,6 +738,13 @@
                         }
                     }
                     child = child.nextSibling;
+                }
+                if (if_replace === false) {
+                    all[i].classList.add("MarksFixedE135"); //one can not remove CJKFixed classname now because index i is "live".
+                    if (debug_04===true) {console.log(all[i].nodeName+'::'+all[i].className);}
+                }
+                else {
+                    if (debug_04===true) {console.log(all[i].nodeName+'::'+all[i].innerHTML);}
                 }
             }
             if ((performance.now()-t_start) > timeOut) {
