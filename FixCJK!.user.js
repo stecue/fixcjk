@@ -786,7 +786,7 @@
                 currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/mg,'$1$2');
                 currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
                 //fix quotations followed by HTML symbols:
-                currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])/g,'$1<span style="float:none;font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
+                currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])/g,'$1<span style="padding-left:0px;float:none;font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
                 //Add space/backspace between ">" and "“"
                 if (currHTML.match(/(>[\n]?)[ ]*([“‘])/mg)) {
                     if (debug_04===true) {alert('Before Replacement: '+currHTML);}
@@ -801,61 +801,61 @@
                     ///--Group Left: [、，。：；！？）】〉》」』] //Occupies the left half width.
                     ///--Group Right:[『「《〈【（] //Occupies the right half width.
                     //--THREE PUNCTS: [{Left}][{Left}’”][“‘{Right}]-//
-                    tmp_str='$1<span style="float:none;letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$3</span>';
-                    tmp_str=tmp_str+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$4</span>$5';
+                    tmp_str='$1<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$3</span>';
+                    tmp_str=tmp_str+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$4</span>$5';
                     currHTML=currHTML.replace(/([\n]?)([、，。：；！？）】〉》」』][\n]?)([、，。：；！？）】〉》」』’”])([“‘『「《〈【（][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[\u3000-\u303F\uFF00-\uFFEF\u3400-\u9FBF])/mg,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                     //--THREE PUNCTS: [’”][{Left}][“‘{Right}]-//
                     var punct3=/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([、，。：；！？）】〉》」』])([“‘『「《〈【（][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\n]?)/mg;
-                    tmp_str='$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="float:none;letter-spacing:'+kern_consec_lr+';">$3</span>';
-                    tmp_str=tmp_str+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$4</span>$5';
+                    tmp_str='$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_lr+';">$3</span>';
+                    tmp_str=tmp_str+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$4</span>$5';
                     currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                     //--THREE PUNCTS: [{Left}’”][{Right}][“‘{Right}]-//
                     punct3=/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([、，。：；！？）】〉》」』’”])([『「《〈【（])([“‘『「《〈【（][\n]?)([\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\n]?)/mg;
-                    tmp_str='$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="float:none;letter-spacing:'+kern_consec_rr+';">$3</span>';
-                    tmp_str=tmp_str+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$4</span>$5';
+                    tmp_str='$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_rr+';">$3</span>';
+                    tmp_str=tmp_str+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$4</span>$5';
                     currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                     //--THREE PUNCTS: [’”][{Left}][{Left}’”]-//
                     punct3=/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’”])([、，。：；！？）】〉》」』])([、，。：；！？）】〉》」』’”][\n]?)/mg;
-                    tmp_str='$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="float:none;letter-spacing:'+kern_consec_ll+';">$3</span>';
-                    tmp_str=tmp_str+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$4</span>';
+                    tmp_str='$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_ll+';">$3</span>';
+                    tmp_str=tmp_str+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$4</span>';
                     currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                     //--THREE PUNCTS: [{Left}][{Left}][{Left}]-//
                     punct3=/([、，。：；！？）】〉》」』])([、，。：；！？）】〉》」』])([、，。：；！？）】〉》」』][\n]?)/mg;
-                    tmp_str='<span style="float:none;letter-spacing:'+kern_consec_ll+';">$1</span>'+'<span style="float:none;letter-spacing:'+kern_consec_ll+';">$2</span>$3';
+                    tmp_str='<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>'+'<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>$3';
                     currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                     //--THREE PUNCTS: [{Right}][{Right}][{Right}]-//
                     punct3=/([『「《〈【（])([『「《〈【（])([『「《〈【（][\n]?)/mg;
-                    tmp_str='<span style="float:none;letter-spacing:'+kern_consec_rr+';">$1</span>'+'<span style="float:none;letter-spacing:'+kern_consec_rr+';">$2</span>$3';
+                    tmp_str='<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_rr+';">$1</span>'+'<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_rr+';">$2</span>$3';
                     currHTML=currHTML.replace(punct3,tmp_str); //all[currpunc].innerHTML=currHTML; continue;
                     //--TWO PUNCTS: [、，。：；！？）》】」][、，。：；！？）》】」] (left-left)--//
-                    tmp_str='<span style="float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2';
+                    tmp_str='<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2';
                     currHTML=currHTML.replace(/([、，。：；！？）】〉》」』])([、，。：；！？）】〉》」』])/mg,tmp_str);
                     //--TWO PUNCTS: [、，。：；！？）》」][（《「] (left-right)--//
-                    tmp_str='<span style="float:none;letter-spacing:'+kern_consec_lr+';">$1</span>$2';
+                    tmp_str='<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>$2';
                     currHTML=currHTML.replace(/([、，。：；！？）】〉》」』])([『「《〈【（])/mg,tmp_str);
                     //--TWO PUNCTS: [、，。：；！？）》」][（《「] (right-right)--//
-                    tmp_str='<span style="float:none;letter-spacing:'+kern_consec_rr+';">$1</span>$2';
+                    tmp_str='<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_rr+';">$1</span>$2';
                     currHTML=currHTML.replace(/([『「《〈【（])([『「《〈【（])/mg,tmp_str);
                     //--TWO PUNCTS: [’”][，。、：；！？] left-left--//
-                    tmp_str='$1<span style="float:none;letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
+                    tmp_str='$1<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/(.|^)([、，。：；！？）】〉》」』][\n]?)([’”])([^“‘]|$)/mg,tmp_str); // "？！：；" are in the middle of the "font space".
                     //--TWO PUNCTS: [，。、：；！？][’”] left-left--//
-                    tmp_str='$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
+                    tmp_str='$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021-\u003B\u003D\u003F-\u05FF]*(?:<[^><]+>[ \n]?)*[\n]?)([’”])([、，。：；！？）】〉》」』])([^“‘]|$)/mg,tmp_str);
                     //--TWO PUNCTS: [{Left}][“‘] left-right--//
-                    tmp_str='$1<span style="float:none;letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
+                    tmp_str='$1<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/([^’”]|^)([、，。：；！？）】〉》」』][\n]?)([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
                     //--TWO PUNCTS: [’”][{Right}] left-right--//
-                    tmp_str='$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>$3';
+                    tmp_str='$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>$3';
                     currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）】〉》」』])|^)([\n]?[’”])([『「《〈【（])/mg,tmp_str);
                     //--TWO PUNCTS: [{Right}][“‘] right-right--//
-                    tmp_str='<span style="float:none;letter-spacing:'+kern_consec_lr+';">$1</span>'+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3';
+                    tmp_str='<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>'+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3';
                     currHTML=currHTML.replace(/([『「《〈【（])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
                     //--TWO PUNCTS: [“‘][{Right}] right-right--//
-                    tmp_str='$1<span style="float:none;letter-spacing:'+kern_consec_rr+';font-family:'+dequote(CJKPunct)+';">$2</span>$3';
+                    tmp_str='$1<span style="padding-left:0px;float:none;letter-spacing:'+kern_consec_rr+';font-family:'+dequote(CJKPunct)+';">$2</span>$3';
                     currHTML=currHTML.replace(/([^’”]|^)([“‘][\n]?)([『「《〈【（])/mg,tmp_str);
                     //--TWO PUNCTS: [’”][“‘] (left-rgiht)--//
-                    tmp_str='$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
+                    tmp_str='$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）】〉》」』])|^)([\n]?[’”])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
                 }
                 else {
@@ -867,42 +867,42 @@
                     ////// Why do I need to start with non-space character?
                     var use_kern_after_bra=true;
                     if (use_kern_after_bra===false) {
-                        currHTML=currHTML.replace(/([^ \n”。，\u200B][\n]?|^)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="float:none;letter-spacing:'+kern_ind_left_dq+'">$1</span><span style="float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+                        currHTML=currHTML.replace(/([^ \n”。，\u200B][\n]?|^)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="padding-left:0px;float:none;letter-spacing:'+kern_ind_left_dq+'">$1</span><span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
                     }
                     else{
                         // ((?:(?:<[^><\uE135]*>[\n]?)+\u200B)?) ($2) matches 0 or more consec tags.
-                        currHTML=currHTML.replace(/((?:&[^&;]+;)|[^ \n”。，><;][\n]?|^)((?:(?:<[^><\uE135]*>[\n]?)+\u200B)?)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="float:none;letter-spacing:'+kern_ind_left_dq+'">$1</span>$2<span style="float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
+                        currHTML=currHTML.replace(/((?:&[^&;]+;)|[^ \n”。，><;][\n]?|^)((?:(?:<[^><\uE135]*>[\n]?)+\u200B)?)([“])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="padding-left:0px;float:none;letter-spacing:'+kern_ind_left_dq+'">$1</span>$2<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
                     }
                     //$1 is something like “智能ABC”, but not “智能"ABC”
-                    currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([”])([^“，。：；！\n])/mg,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_ind_right_dq+';">$2</span>$3');
-                    currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([”])([\n]|$)/mg,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_ind_right_dq_tail+';">$2</span>$3');
+                    currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([”])([^“，。：；！\n])/mg,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_ind_right_dq+';">$2</span>$3');
+                    currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([”])([\n]|$)/mg,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_ind_right_dq_tail+';">$2</span>$3');
                     ///===== User more negative spacing for single quotation marks. =====//
                     // However, left quotation marks will overwrite the character on the left with too negative spacing.) ---///
                     var Unified_Algo=true; //Unified replacement algorithm for double and single quotations.
                     if (Unified_Algo===true) {
                         if (use_kern_after_bra===false) {
-                            currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="float:none;letter-spacing:'+kern_sq+'">$1</span><span style="float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+                            currHTML=currHTML.replace(/([^ \n”。，][\n]?|^)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="padding-left:0px;float:none;letter-spacing:'+kern_sq+'">$1</span><span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
                         }
                         else {
-                            currHTML=currHTML.replace(/([^ \n”。，><][\n]?|^)((?:(?:<[^><\uE135]+>[\n]?)+\u200B)?)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="float:none;letter-spacing:'+kern_sq+'">$1</span>$2<span style="float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
+                            currHTML=currHTML.replace(/([^ \n”。，><][\n]?|^)((?:(?:<[^><\uE135]+>[\n]?)+\u200B)?)([‘])([\n]?[\u3400-\u9FBF]+)/mg,'<span style="padding-left:0px;float:none;letter-spacing:'+kern_sq+'">$1</span>$2<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$3</span>$4');
 
                         }
-                        currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’])([^“，。：；！\n])/mg,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>$3');
-                        currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’])([\n]|$)/mg,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>$3');
+                        currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’])([^“，。：；！\n])/mg,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>$3');
+                        currHTML=currHTML.replace(/([\u3400-\u9FBF《》][\u0021\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?)([’])([\n]|$)/mg,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>$3');
                     }
                     else {
-                        currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；《》、])([‘])([\n]?[\u3400-\u9FBF？！：；《》、]+)/mg,'<span style="float:none;letter-spacing:'+kern_sq+'">$1</span><span style="float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
-                        currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；《》、][\n]?)([’])/g,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>');
+                        currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；《》、])([‘])([\n]?[\u3400-\u9FBF？！：；《》、]+)/mg,'<span style="padding-left:0px;float:none;letter-spacing:'+kern_sq+'">$1</span><span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$2</span>$3');
+                        currHTML=currHTML.replace(/([\u3400-\u9FBF，。？！：；《》、][\n]?)([’])/g,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_sq+';">$2</span>');
                     }
                 }
                 else {
-                    currHTML=currHTML.replace(/([“‘])([\n]?(?:<[^><\uE135]+>[ \n]?)*[\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF]+)/mg,'<span style="float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$1</span>$2');
-                    currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([^“，。：；！（《\n])/mg,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
-                    currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([\n]|$)/mg,'$1<span style="float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+                    currHTML=currHTML.replace(/([“‘])([\n]?(?:<[^><\uE135]+>[ \n]?)*[\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF]+)/mg,'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$1</span>$2');
+                    currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([^“，。：；！（《\n])/mg,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+                    currHTML=currHTML.replace(/([\u3400-\u9FBF？！：；《》、，][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([\n]|$)/mg,'$1<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
                 }
                 if (debug_04===true) {all[currpunc].style.color="Pink";}
                 if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
-                    currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
+                    currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span style="padding-left:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
                 }
                 currHTML=currHTML.replace(/\uE862/g,'\u2018');
                 currHTML=currHTML.replace(/\uE863/g,'\u2019');
