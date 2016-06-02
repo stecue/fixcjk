@@ -5,7 +5,7 @@ Features:
 
 Bugfixes:
   - Add `float:none` to `style` to prevent position changes of punctuation marks.
-  - The onClick listener was conflicting with scripts on some websites.
+  - The onClick listener was conflicting with scripts on some websites, fixed now.
   - Quotation marks winthin tags are now treated correctly.
   - `<BODY>` is now in the `SkippedTags` list.
 
