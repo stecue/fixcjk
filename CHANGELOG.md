@@ -1,4 +1,4 @@
-## 0.10.3 (2016-05-31)
+## 0.10.4 (2016-06-01)
 Features:
   - Optimize the selection rules in the "click to check" function.
   - Skip English/Latin sites when adding the onClick event listener.
@@ -7,6 +7,7 @@ Bugfixes:
   - Add `float:none` to `style` to prevent position changes of punctuation marks.
   - The onClick listener was conflicting with scripts on some websites.
   - Quotation marks winthin tags are now treated correctly.
+  - `<BODY>` is now in the `SkippedTags` list.
 
 ## 0.10.0 (2016-05-31)
 Features:
