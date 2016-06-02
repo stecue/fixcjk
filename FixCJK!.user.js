@@ -231,12 +231,12 @@
             NumPureEng = 0;
             LastURL=document.URL;
         }
-        if (document.lastModified.match(LastMod)) {
+        if (document.lastModified===LastMod) {
             console.log('FixCJK!: Document modified at '+document.lastModified+', no change.');
             return true;
         }
         else {
-            console.log('FixCJK!: Document modified at '+document.lastModified);
+            if (debug_left===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
         }
         //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
         if (NumPureEng > 3) {
