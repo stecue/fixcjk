@@ -194,12 +194,14 @@
         console.log('FixCJK!: Skipping fixing punctuations...');
     }
     FunFixPunct();
+    ///===The following loop is to solve the picture problem on zhihu.com===///
     all=document.getElementsByTagName('img');
     for (i=0;i<all.length;i++) {
         if (all[i].hasAttribute('data-actualsrc')) {
             all[i].src=all[i].getAttribute('data-actualsrc');
         }
     }
+    ///===End of Solving the picture problem===///
     console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
     ///===Add onClick listener before exiting===///
     var NumClicks=0;
@@ -866,9 +868,6 @@
                     //--TWO PUNCTS: [、，。：；！？）】〉》」』][’”] left-left--//
                     tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>'+'<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/(.|^)([、，。：；！？）】〉》」』][\n]?)([’”])([^“‘]|$)/mg,tmp_str);
-                    //--TWO PUNCTS: [、，。：；！？）】〉》」』]<span>[’”]</span> left-left--//
-                    tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
-                    currHTML=currHTML.replace(/(.|^)([、，。：；！？）】〉》」』][\n]?)(<span[^><]*\uE135[^><]*>[’”]<\/span>)([^“‘]|$)/mg,tmp_str);
                     //--TWO PUNCTS: [’”][、，。：；！？）】〉》」』] left-left--//
                     tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0021-\u003B\u003D\u003F-\u05FF]*(?:<[^><]+>[ \n]?)*[\n]?)([’”])([、，。：；！？）】〉》」』])([^“‘]|$)/mg,tmp_str);
@@ -887,6 +886,10 @@
                     //--TWO PUNCTS: [’”][“‘] (left-rgiht)--//
                     tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>'+'<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$3</span>$4';
                     currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u05FF]*[^’”、，。：；！？）】〉》」』])|^)([\n]?[’”])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF])/mg,tmp_str);
+                    //////////////The following TWO-PUNCT Rules are for the "processed marks" (quotation marks processed in the THREE-PUNCT-RULE section)//////
+                    //--TWO PUNCTS: [、，。：；！？）】〉》」』]<span>[’”]</span> left-left--//
+                    tmp_str='$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$2</span>$3$4';
+                    currHTML=currHTML.replace(/(.|^)([、，。：；！？）】〉》」』][\n]?)(<span[^><]*\uE135[^><]*>[’”]<\/span>)([^“‘]|$)/mg,tmp_str);
                 }
                 else {
                     alert('Alway squeeze consec puncts now or ind ones won\'t work. No squeezing not implemented yet!');
