@@ -206,14 +206,12 @@
     var t_last=performance.now();
     var t_interval=timeOut; //The interval between two checks.
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
-    if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
-        //document.onClick will cause problems on some webpages on Firefox.
-        document.body.addEventListener("click",ReFixCJK,false);
+    var NumPureEng=0;
+    if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
+        NumPureEng++;
     }
-    else {
-        //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
-        console.log('FixCJK!: Only '+(NumAllCJKs*1.0/NumAllDOMs*100).toFixed(1)+'% elements contains CJK. Probably an English/Latin site and no event listener needed.');
-    }
+    //document.onClick will cause problems on some webpages on Firefox.
+    document.body.addEventListener("click",ReFixCJK,false);
     ///===Time to exiting the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
@@ -226,6 +224,10 @@
     //The actual listening function//
     function ReFixCJK () {
         t_start=performance.now();
+        if (NumPureEng > 2) {
+            console.log('Probably pure English/Latin site, re-checking skipped.');
+            return true;
+        }
         if (debug_left===true) {alert('FixCJK!: '+NumClicks.toString());}
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
@@ -289,6 +291,10 @@
             console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');
             FunFixPunct();
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+            NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
+            if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
+                NumPureEng++;
+            }
         }
         else {
             console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000).toFixed(1)+' seconds before clicking again.')
