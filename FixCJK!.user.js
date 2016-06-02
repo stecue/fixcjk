@@ -208,7 +208,7 @@
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     if (NumAllCJKs*1.0/NumAllDOMs*100 > 1.0) {
         //document.onClick will cause problems on some webpages on Firefox.
-        (document.getElementsByTagName("BODY"))[0].addEventListener("click",ReFixCJK,false);
+        document.body.addEventListener("click",ReFixCJK,false);
     }
     else {
         //Bypass English sites (such as pubs.acs.org, which is problematic with onclick in Firefox)
@@ -766,6 +766,12 @@
                 if (debug_04===true) {console.log(currpunc);}
                 //console.log(currpunc.toString()+":: "+all[currpunc].outerHTML);
                 currHTML=all[currpunc].innerHTML;
+                // \uE862,\uE863 <==> “,”
+                // \uE972,\uE973 <==> ‘,’
+                currHTML=currHTML.replace(/(<[^>]*)‘([^<]*>)/g,'$1\uE862$2');
+                currHTML=currHTML.replace(/(<[^>]*)’([^<]*>)/g,'$1\uE863$2');
+                currHTML=currHTML.replace(/(<[^>]*)“([^<]*>)/g,'$1\uE972$2');
+                currHTML=currHTML.replace(/(<[^>]*)”([^<]*>)/g,'$1\uE973$2');
                 if (changhai_style===true) {
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])([”’])([^，, ])/g,'$1$2 $3');
@@ -898,6 +904,10 @@
                 if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
                     currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span style="float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
                 }
+                currHTML=currHTML.replace(/\uE862/g,'\u2018');
+                currHTML=currHTML.replace(/\uE863/g,'\u2019');
+                currHTML=currHTML.replace(/\uE972/g,'\u201C');
+                currHTML=currHTML.replace(/\uE973/g,'\u201D');
                 all[currpunc].innerHTML=currHTML;
                 all[currpunc].classList.add("MarksFixedE135"); //We cannot Remove the "CJK2Fix" class here because the index i is "live".
             }
