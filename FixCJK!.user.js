@@ -38,7 +38,7 @@
     var maxNumElements = 8000; // maximum number of elements to process.
     var CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
-    var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT)$/i; //to be fixed for github.
+    var SkippedTags=/^(TITLE|HEAD|textarea|img|SCRIPT|META)$/i; //to be fixed for github.
     var processedAll=true;
     var ifRound1=true;
     var ifRound2=true;
