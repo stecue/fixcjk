@@ -2,6 +2,9 @@
 Features:
   - Continue to optimize the selection rules in the "click to check" function.
 
+Bugfixes:
+  - The "processed ”" is taken into account in the "two consecutive marks" part. More "processed" marks will be considered later.
+
 ## 0.10.4 (2016-06-01)
 Features:
   - Optimize the selection rules in the "click to check" function.
