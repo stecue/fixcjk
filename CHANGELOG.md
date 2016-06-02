@@ -1,3 +1,7 @@
+## 0.10.5 (2016-06-01)
+Features:
+  - Continue to optimize the selection rules in the "click to check" function.
+
 ## 0.10.4 (2016-06-01)
 Features:
   - Optimize the selection rules in the "click to check" function.

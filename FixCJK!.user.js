@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.10.4
+// @version           0.10.5
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -207,6 +207,9 @@
     var t_interval=timeOut; //The interval between two checks.
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     var NumPureEng=0;
+    var LastURL=document.URL;
+    var LastMod=document.lastModified;
+    var ItvScl=3.0;
     if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
         NumPureEng++;
     }
@@ -224,7 +227,19 @@
     //The actual listening function//
     function ReFixCJK () {
         t_start=performance.now();
-        if (NumPureEng > 2) {
+        if (document.URL!==LastURL) {
+            NumPureEng = 0;
+            LastURL=document.URL;
+        }
+        if (document.lastModified===LastMod) {
+            console.log('FixCJK!: Document modified at '+document.lastModified+', no change.');
+            return true;
+        }
+        else {
+            if (debug_left===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
+        }
+        //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
+        if (NumPureEng > 3) {
             console.log('Probably pure English/Latin site, re-checking skipped.');
             return true;
         }
@@ -232,21 +247,15 @@
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
         for (i=0;i<AllCJKFixed.length;i++) {
-            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
-                continue;
-            }
             if (debug_left===true) {console.log(AllCJKFixed[i].className);}
             AllCJKFixed[i].classList.remove("CJK2Fix");
         }
         AllCJKFixed=document.getElementsByClassName("MarksFixedE135");
         for (i=0;i<AllCJKFixed.length;i++) {
-            if ((AllCJKFixed[i].nodeName.match(SkippedTags)) || AllCJKFixed[i] instanceof SVGElement){
-                continue;
-            }
             if (debug_left===true) {console.log(AllCJKFixed[i].className);}
             AllCJKFixed[i].classList.remove("CJK2Fix");
         }
-        if ((NumClicks < 2) || (t_start-t_last > t_interval) ) {
+        if ((NumClicks < 2) || ((t_start-t_last)*ItvScl > t_interval) ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
             FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
@@ -266,13 +275,14 @@
                 if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement){
                     continue;
                 }
-                child = ReFixAll[i].firstChild;
-                while (child) {
-                    if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                        if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/g))) {
-                            NumFixed++;
-                        }
-                        else {
+                else if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/))) {
+                    NumFixed++;
+                    continue;
+                }
+                else {
+                    child = ReFixAll[i].firstChild;
+                    while (child) {
+                        if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                             if (debug_left===true) {
                                 console.log(ReFixAll[i].className+':: '+child.data);
                                 console.log(ReFixAll[i].outerHTML);
@@ -282,8 +292,8 @@
                             NumReFix++;
                             break;
                         }
+                        child=child.nextSibling;
                     }
-                    child=child.nextSibling;
                 }
             }
             FixAllFonts();
@@ -297,9 +307,10 @@
             }
         }
         else {
-            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000).toFixed(1)+' seconds before clicking again.')
+            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.')
         }
         NumClicks++;
+        LastMod=document.lastModified;
         t_last=performance.now();
     }
     ///===various aux functions===///
