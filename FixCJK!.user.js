@@ -102,8 +102,8 @@
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
     //letter-spacing options
-    var kern_consec_ll='-0.4em'; //。” or ））
-    var kern_consec_rr='-0.4em'; //（（
+    var kern_consec_ll='-0.35em'; //。” or ））
+    var kern_consec_rr='-0.3em'; //（（
     var kern_consec_lr='-0.8em'; //）（
     var kern_consec_pq='-0.5em'; //kern for ,. before right ” Just in case, do not use.
     var kern_consec_qp='-0.5em'; //quote followed by period. Just in case, do not use.
