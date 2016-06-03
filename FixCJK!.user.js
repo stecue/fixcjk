@@ -38,7 +38,7 @@
     var maxNumElements = 8000; // maximum number of elements to process.
     var CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
-    var SkippedTags=/^(TITLE|HEAD|BODY|textarea|img|SCRIPT|META)$/i; //to be fixed for github.
+    var SkippedTags=/^(TITLE|HEAD|BODY|textarea|img|SCRIPT|noscript|META|STYLE|AUDIO|BASE|canvas|figure|map|object|video|audio|source)$/i; //to be fixed for github.
     var processedAll=true;
     var ifRound1=true;
     var ifRound2=true;
@@ -194,11 +194,14 @@
         console.log('FixCJK!: Skipping fixing punctuations...');
     }
     FunFixPunct();
-    ///===The following loop is to solve the picture problem on zhihu.com===///
-    all=document.getElementsByTagName('img');
-    for (i=0;i<all.length;i++) {
-        if (all[i].hasAttribute('data-actualsrc')) {
-            all[i].src=all[i].getAttribute('data-actualsrc');
+    ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
+    var FixLazy=true;
+    if (FixLazy===true) {
+        all=document.getElementsByTagName('img');
+        for (i=0;i<all.length;i++) {
+            if (all[i].hasAttribute('data-actualsrc')) {
+                all[i].src=all[i].getAttribute('data-actualsrc');
+            }
         }
     }
     ///===End of Solving the picture problem===///
@@ -619,6 +622,9 @@
                     else {
                         console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');
                     }
+                }
+                if (all[i].nodeName.match(SkippedTags)) {
+                    continue;
                 }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
