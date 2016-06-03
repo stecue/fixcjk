@@ -1,3 +1,7 @@
+## 0.10.8 (2016-06-03)
+Features:
+  - Code cleaning up. Add a flag (`debug_verbose`) to control whether more information should be shown.
+
 ## 0.10.7 (2016-06-02)
 Features:
   - Continue to optimize the selection rules in the "click to check" function.
