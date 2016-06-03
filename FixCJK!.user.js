@@ -229,7 +229,8 @@
         console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     if (debug_left===true) {alert('Finished!');}
-    //The actual listening function//
+    ////////////////////======== Main Function Ends Here ==============/////////////////////////////
+    //===The actual listening function===//
     function ReFixCJK () {
         t_start=performance.now();
         if (document.URL!==LastURL) {
