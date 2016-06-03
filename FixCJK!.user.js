@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.10.6
+// @version           0.10.7
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -825,11 +825,30 @@
                 //==We need to protect the quotation marks within tags first===//
                 // \uE862,\uE863 <==> “,”
                 // \uE972,\uE973 <==> ‘,’
-                while (currHTML.match(/<[^>]*[“”‘’][^<]*>/m)) {
+                while (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
                     currHTML=currHTML.replace(/(<[^>]*)‘([^<]*>)/mg,'$1\uE862$2');
                     currHTML=currHTML.replace(/(<[^>]*)’([^<]*>)/mg,'$1\uE863$2');
                     currHTML=currHTML.replace(/(<[^>]*)“([^<]*>)/mg,'$1\uE972$2');
                     currHTML=currHTML.replace(/(<[^>]*)”([^<]*>)/mg,'$1\uE973$2');
+                    currHTML=currHTML.replace(/(<[^>]*)、([^<]*>)/mg,'$1\uEA01$2');
+                    currHTML=currHTML.replace(/(<[^>]*)，([^<]*>)/mg,'$1\uEA02$2');
+                    currHTML=currHTML.replace(/(<[^>]*)。([^<]*>)/mg,'$1\uEA03$2');
+                    currHTML=currHTML.replace(/(<[^>]*)：([^<]*>)/mg,'$1\uEA04$2');
+                    currHTML=currHTML.replace(/(<[^>]*)；([^<]*>)/mg,'$1\uEA05$2');
+                    currHTML=currHTML.replace(/(<[^>]*)！([^<]*>)/mg,'$1\uEA06$2');
+                    currHTML=currHTML.replace(/(<[^>]*)？([^<]*>)/mg,'$1\uEA07$2');
+                    currHTML=currHTML.replace(/(<[^>]*)）([^<]*>)/mg,'$1\uEA08$2');
+                    currHTML=currHTML.replace(/(<[^>]*)】([^<]*>)/mg,'$1\uEA09$2');
+                    currHTML=currHTML.replace(/(<[^>]*)〉([^<]*>)/mg,'$1\uEA10$2');
+                    currHTML=currHTML.replace(/(<[^>]*)》([^<]*>)/mg,'$1\uEA11$2');
+                    currHTML=currHTML.replace(/(<[^>]*)」([^<]*>)/mg,'$1\uEA12$2');
+                    currHTML=currHTML.replace(/(<[^>]*)』([^<]*>)/mg,'$1\uEA13$2');
+                    currHTML=currHTML.replace(/(<[^>]*)『([^<]*>)/mg,'$1\uEA14$2');
+                    currHTML=currHTML.replace(/(<[^>]*)「([^<]*>)/mg,'$1\uEA15$2');
+                    currHTML=currHTML.replace(/(<[^>]*)《([^<]*>)/mg,'$1\uEA16$2');
+                    currHTML=currHTML.replace(/(<[^>]*)〈([^<]*>)/mg,'$1\uEA17$2');
+                    currHTML=currHTML.replace(/(<[^>]*)【([^<]*>)/mg,'$1\uEA18$2');
+                    currHTML=currHTML.replace(/(<[^>]*)（([^<]*>)/mg,'$1\uEA19$2');
                 }
                 //Now let's fix the punctions.
                 //Use more negative kerning for consective punction marks.
@@ -956,6 +975,25 @@
                 currHTML=currHTML.replace(/\uE863/mg,'\u2019');
                 currHTML=currHTML.replace(/\uE972/mg,'\u201C');
                 currHTML=currHTML.replace(/\uE973/mg,'\u201D');
+                currHTML=currHTML.replace(/\uEA01/,'、');
+                currHTML=currHTML.replace(/\uEA02/,'，');
+                currHTML=currHTML.replace(/\uEA03/,'。');
+                currHTML=currHTML.replace(/\uEA04/,'：');
+                currHTML=currHTML.replace(/\uEA05/,'；');
+                currHTML=currHTML.replace(/\uEA06/,'！');
+                currHTML=currHTML.replace(/\uEA07/,'？');
+                currHTML=currHTML.replace(/\uEA08/,'）');
+                currHTML=currHTML.replace(/\uEA09/,'】');
+                currHTML=currHTML.replace(/\uEA10/,'〉');
+                currHTML=currHTML.replace(/\uEA11/,'》');
+                currHTML=currHTML.replace(/\uEA12/,'」');
+                currHTML=currHTML.replace(/\uEA13/,'』');
+                currHTML=currHTML.replace(/\uEA14/,'『');
+                currHTML=currHTML.replace(/\uEA15/,'「');
+                currHTML=currHTML.replace(/\uEA16/,'《');
+                currHTML=currHTML.replace(/\uEA17/,'〈');
+                currHTML=currHTML.replace(/\uEA18/,'【');
+                currHTML=currHTML.replace(/\uEA19/,'（');
                 all[currpunc].innerHTML=currHTML;
                 all[currpunc].classList.add("MarksFixedE135"); //We cannot Remove the "CJK2Fix" class here because the index i is "live".
             }
