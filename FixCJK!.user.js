@@ -823,16 +823,14 @@
                     if (debug_04===true) {alert('After Replacement: '+currHTML);}
                 }
                 //==We need to protect the quotation marks within tags first===//
+                // \uE862,\uE863 <==> “,”
+                // \uE972,\uE973 <==> ‘,’
                 while (currHTML.match(/<[^>]*[“”‘’][^<]*>/m)) {
                     currHTML=currHTML.replace(/(<[^>]*)‘([^<]*>)/mg,'$1\uE862$2');
                     currHTML=currHTML.replace(/(<[^>]*)’([^<]*>)/mg,'$1\uE863$2');
                     currHTML=currHTML.replace(/(<[^>]*)“([^<]*>)/mg,'$1\uE972$2');
                     currHTML=currHTML.replace(/(<[^>]*)”([^<]*>)/mg,'$1\uE973$2');
                 }
-                //if (currHTML.match(/【记忆】民国时孩子们怎么过儿童节？/)) {
-                //    console.log(all[currpunc].nodeName+'::'+currHTML);
-                //}
-                //all[currpunc].innerHTML=currHTML; continue;
                 //Now let's fix the punctions.
                 //Use more negative kerning for consective punction marks.
                 // \uE862,\uE863 <==> “,”
