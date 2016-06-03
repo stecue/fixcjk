@@ -42,12 +42,12 @@
     var ifRound1=true;
     var ifRound2=true;
     var ifRound3=true;
-    var debug_00 = false;
-    var debug_01 = false; //Turn on colors while debug_01.
+    var debug_verbose = false; //show/hide more information on console.
+    var debug_00 = false; //debug codes before Rounds 1/2/3/4.
+    var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
-    var debug_internal = false; //debug what's left.
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTags=/^(TITLE|HEAD|BODY|textarea|img|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|figure|map|object|source|video)$/i;
     var t_start = performance.now();
@@ -66,12 +66,12 @@
     //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched. (maybe in 0.10.x)
     //else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
     else if (!(bodyhtml[0].innerHTML.match(/[\u3400-\u9FBF]/))) {
-        if (debug_internal===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');}
-        if (debug_internal===true) {console.log('FixCJK!: No need to check CJK punctuations.');}
+        if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');}
+        if (debug_verbose===true) {console.log('FixCJK!: No need to check CJK punctuations.');}
         FixPunct=false;
     }
     else {
-        if (debug_internal===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
+        if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
     var sig_sun = 'RealCJKBold 宋'; // signature to check if change is sucssful or not.
@@ -182,17 +182,17 @@
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
     }
-    if (debug_internal===true) {console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+    if (debug_verbose===true) {console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
     ///===FixFonts, Rounds 1-3===///
     FixAllFonts();
     ///===Round 4, FixPunct===///
-    if (debug_internal===true) {console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');}
+    if (debug_verbose===true) {console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');}
     if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
         console.log('FixCJK!: Too slow or too many elements.');
         FixPunct=false;
     }
     if (FixPunct===false) {
-        if (debug_internal===true) {console.log('FixCJK!: Skipping fixing punctuations...');}
+        if (debug_verbose===true) {console.log('FixCJK!: Skipping fixing punctuations...');}
     }
     FunFixPunct();
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
@@ -206,7 +206,7 @@
         }
     }
     ///===End of Solving the picture problem===///
-    if (debug_internal===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+    if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
     ///===Add onClick listener before exiting===///
     var NumClicks=0;
     var t_last=performance.now();
@@ -242,23 +242,23 @@
             return true;
         }
         else {
-            if (debug_internal===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
+            if (debug_verbose===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
         }
         //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
         if (NumPureEng > 2) {
             console.log('Probably pure English/Latin site, re-checking skipped.');
             return true;
         }
-        if (debug_internal===true) {alert('FixCJK!: '+NumClicks.toString());}
+        if (debug_verbose===true) {alert('FixCJK!: '+NumClicks.toString());}
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
         for (i=0;i<AllCJKFixed.length;i++) {
-            if (debug_internal===true) {console.log(AllCJKFixed[i].className);}
+            if (debug_verbose===true) {console.log(AllCJKFixed[i].className);}
             AllCJKFixed[i].classList.remove("CJK2Fix");
         }
         AllCJKFixed=document.getElementsByClassName("MarksFixedE135");
         for (i=0;i<AllCJKFixed.length;i++) {
-            if (debug_internal===true) {console.log(AllCJKFixed[i].className);}
+            if (debug_verbose===true) {console.log(AllCJKFixed[i].className);}
             AllCJKFixed[i].classList.remove("CJK2Fix");
         }
         if ((NumClicks < 2) || ((t_start-t_last)*ItvScl > t_interval) ) {
@@ -289,7 +289,7 @@
                     child = ReFixAll[i].firstChild;
                     while (child) {
                         if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                            if (debug_internal===true) {
+                            if (debug_verbose===true) {
                                 console.log(ReFixAll[i].className+':: '+child.data);
                                 console.log(ReFixAll[i].outerHTML);
                             }
@@ -303,8 +303,8 @@
                 }
             }
             FixAllFonts();
-            if (debug_internal===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
-            if (debug_internal===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
+            if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
+            if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
             FunFixPunct();
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
@@ -414,7 +414,7 @@
                         break;
                     }
                     else {
-                        if (debug_internal===true) {console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+                        if (debug_verbose===true) {console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
                     }
                 }
                 child = all[i].firstChild;
@@ -481,7 +481,7 @@
                         break;
                     }
                     else {
-                        if (debug_internal===true) {console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+                        if (debug_verbose===true) {console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
                     }
                 }
                 child = all[i].firstChild;
@@ -516,7 +516,7 @@
                                     if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
                                     if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
                                     if (all[i].style.fontFamily.length<1) {
-                                        if (debug_internal===true) {console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));}
+                                        if (debug_verbose===true) {console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));}
                                     }
                                     if (!(has_genfam(all[i].style.fontFamily))) {
                                         all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
@@ -581,14 +581,14 @@
                 }
             }
         }
-        if (debug_internal===true) {console.log('FixCJK!: Round 2 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+        if (debug_verbose===true) {console.log('FixCJK!: Round 2 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
         /// ===== The Third round: Add CJKdefault to all elements ===== ///
         if (FixMore === false) {
             t_stop=performance.now();
-            if (debug_internal===true) {console.log('FixCJK!: FixMore/Round 3 is intentionally skipped.');}
+            if (debug_verbose===true) {console.log('FixCJK!: FixMore/Round 3 is intentionally skipped.');}
             return false;
         }
         all = document.getElementsByTagName('*');
@@ -607,7 +607,7 @@
             console.log('FixCJK!: '+max.toString()+' elements, too many. Only CJK elements will be processed in Round 3.');
         }
         else {
-            if (debug_internal===true) {console.log('FixCJK!: All elements will be processed in Round 3.');}
+            if (debug_verbose===true) {console.log('FixCJK!: All elements will be processed in Round 3.');}
         }
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
@@ -621,7 +621,7 @@
                         break;
                     }
                     else {
-                        if (debug_internal===true) {console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+                        if (debug_verbose===true) {console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
                     }
                 }
                 if (all[i].nodeName.match(SkippedTags)) {
@@ -660,7 +660,7 @@
                 all[i].classList.add("FontsFixedE137");
             }
         }
-        if (debug_internal===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+        if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
     }
     ///===The Actual Round 4===///
@@ -782,8 +782,8 @@
                 FixPunct=false;
                 continue;
             }
-            if (debug_internal===true) {console.log('FixCJK!: '+MaxNumLoops.toString()+' (or less) loop(s) left.');}
-            if (debug_internal===true) {console.log('FixCJK!: '+numnodes.toString()+' element(s) to change.');}
+            if (debug_verbose===true) {console.log('FixCJK!: '+MaxNumLoops.toString()+' (or less) loop(s) left.');}
+            if (debug_verbose===true) {console.log('FixCJK!: '+numnodes.toString()+' element(s) to change.');}
             currpunc=0;
             //var kern_dq_right='-1px';
             //var kern_dq_right_tail='-5px';
