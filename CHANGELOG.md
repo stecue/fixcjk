@@ -1,3 +1,10 @@
+## 0.10.7 (2016-06-02)
+Features:
+  - Continue to optimize the selection rules in the "click to check" function.
+
+Bugfixes:
+  - Various bugs caused by punctuation marks in tags are fixed.
+
 ## 0.10.5 (2016-06-01)
 Features:
   - Continue to optimize the selection rules in the "click to check" function.
