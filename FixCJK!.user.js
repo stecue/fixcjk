@@ -236,7 +236,7 @@
             NumPureEng = 0;
             LastURL=document.URL;
         }
-        if (document.lastModified===LastMod) {
+        if ((document.lastModified===LastMod) && (NumClicks >2)) {
             console.log('FixCJK!: Document modified at '+document.lastModified+', no change.');
             return true;
         }
@@ -244,7 +244,7 @@
             if (debug_left===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
         }
         //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
-        if (NumPureEng > 3) {
+        if (NumPureEng > 2) {
             console.log('Probably pure English/Latin site, re-checking skipped.');
             return true;
         }
@@ -801,12 +801,6 @@
                 if (debug_04===true) {console.log(currpunc);}
                 //console.log(currpunc.toString()+":: "+all[currpunc].outerHTML);
                 currHTML=all[currpunc].innerHTML;
-                // \uE862,\uE863 <==> “,”
-                // \uE972,\uE973 <==> ‘,’
-                currHTML=currHTML.replace(/(<[^>]*)‘([^<]*>)/g,'$1\uE862$2');
-                currHTML=currHTML.replace(/(<[^>]*)’([^<]*>)/g,'$1\uE863$2');
-                currHTML=currHTML.replace(/(<[^>]*)“([^<]*>)/g,'$1\uE972$2');
-                currHTML=currHTML.replace(/(<[^>]*)”([^<]*>)/g,'$1\uE973$2');
                 if (changhai_style===true) {
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
                     currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])([”’])([^，, ])/g,'$1$2 $3');
@@ -828,10 +822,21 @@
                     currHTML=currHTML.replace(/(>[\n]?)[ ]*([“‘])/mg,'$1\u200B$2');
                     if (debug_04===true) {alert('After Replacement: '+currHTML);}
                 }
+                //==We need to protect the quotation marks within tags first===//
+                while (currHTML.match(/<[^>]*[“”‘’][^<]*>/m)) {
+                    currHTML=currHTML.replace(/(<[^>]*)‘([^<]*>)/mg,'$1\uE862$2');
+                    currHTML=currHTML.replace(/(<[^>]*)’([^<]*>)/mg,'$1\uE863$2');
+                    currHTML=currHTML.replace(/(<[^>]*)“([^<]*>)/mg,'$1\uE972$2');
+                    currHTML=currHTML.replace(/(<[^>]*)”([^<]*>)/mg,'$1\uE973$2');
+                }
+                //if (currHTML.match(/【记忆】民国时孩子们怎么过儿童节？/)) {
+                //    console.log(all[currpunc].nodeName+'::'+currHTML);
+                //}
                 //all[currpunc].innerHTML=currHTML; continue;
                 //Now let's fix the punctions.
                 //Use more negative kerning for consective punction marks.
-                ///----[？！：；]“ does not need special treatment. Just compress [，。]---///
+                // \uE862,\uE863 <==> “,”
+                // \uE972,\uE973 <==> ‘,’
                 if (Squeezing===true) {
                     ///--Group Left: [、，。：；！？）】〉》」』] //Occupies the left half width.
                     ///--Group Right:[『「《〈【（] //Occupies the right half width.
@@ -949,14 +954,15 @@
                 if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
                     currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
                 }
-                currHTML=currHTML.replace(/\uE862/g,'\u2018');
-                currHTML=currHTML.replace(/\uE863/g,'\u2019');
-                currHTML=currHTML.replace(/\uE972/g,'\u201C');
-                currHTML=currHTML.replace(/\uE973/g,'\u201D');
+                currHTML=currHTML.replace(/\uE862/mg,'\u2018');
+                currHTML=currHTML.replace(/\uE863/mg,'\u2019');
+                currHTML=currHTML.replace(/\uE972/mg,'\u201C');
+                currHTML=currHTML.replace(/\uE973/mg,'\u201D');
                 all[currpunc].innerHTML=currHTML;
                 all[currpunc].classList.add("MarksFixedE135"); //We cannot Remove the "CJK2Fix" class here because the index i is "live".
             }
         }
+        //End of FunFixPunct
     }
 }
 ) ();
