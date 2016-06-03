@@ -751,7 +751,7 @@
                 node.innerHTML=currHTML;
             }
         }
-        if (node2fix===true) {
+        if (node2fix===true && !(node.nodeName.match(SkippedTags)) && !(node.className.match(/MarksFixedE135/))) {
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             node.classList.add("MarksFixedE135");
             //if (node.innerHTML.length > 20)
