@@ -665,31 +665,100 @@
     }
     ///===The Actual Round 4===///
     function FunFixPunct() {
-        var MaxNumLoops=3;
-        while ((FixPunct === true) && (MaxNumLoops>0)) {
-            if ((performance.now()-t_start) > timeOut) {
-                processedAll=false;
-                console.log('FixCJK!: Time out, stopping now...');
-                break;
-            }
-            FixPunctLoop(MaxNumLoops);
-            //Use Recursion instead of loop:
+        //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
+        var useRecursion=true;
+        if (useRecursion===true) {
             FixPunctRecursion(document.body);
-            MaxNumLoops--;
+            var tmpHTML=document.body.innerHTML;
+            tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
+            tmpHTML=tmpHTML.replace(/\uE863/mg,'\u2019');
+            tmpHTML=tmpHTML.replace(/\uE972/mg,'\u201C');
+            tmpHTML=tmpHTML.replace(/\uE973/mg,'\u201D');
+            tmpHTML=tmpHTML.replace(/\uEA01/mg,'、');
+            tmpHTML=tmpHTML.replace(/\uEA02/mg,'，');
+            tmpHTML=tmpHTML.replace(/\uEA03/mg,'。');
+            tmpHTML=tmpHTML.replace(/\uEA04/mg,'：');
+            tmpHTML=tmpHTML.replace(/\uEA05/mg,'；');
+            tmpHTML=tmpHTML.replace(/\uEA06/mg,'！');
+            tmpHTML=tmpHTML.replace(/\uEA07/mg,'？');
+            tmpHTML=tmpHTML.replace(/\uEA08/mg,'）');
+            tmpHTML=tmpHTML.replace(/\uEA09/mg,'】');
+            tmpHTML=tmpHTML.replace(/\uEA10/mg,'〉');
+            tmpHTML=tmpHTML.replace(/\uEA11/mg,'》');
+            tmpHTML=tmpHTML.replace(/\uEA12/mg,'」');
+            tmpHTML=tmpHTML.replace(/\uEA13/mg,'』');
+            tmpHTML=tmpHTML.replace(/\uEA14/mg,'『');
+            tmpHTML=tmpHTML.replace(/\uEA15/mg,'「');
+            tmpHTML=tmpHTML.replace(/\uEA16/mg,'《');
+            tmpHTML=tmpHTML.replace(/\uEA17/mg,'〈');
+            tmpHTML=tmpHTML.replace(/\uEA18/mg,'【');
+            tmpHTML=tmpHTML.replace(/\uEA19/mg,'（');
+            document.body.innerHTML=tmpHTML;
+        }
+        else {
+            var MaxNumLoops=3;
+            while ((FixPunct === true) && (MaxNumLoops>0)) {
+                if ((performance.now()-t_start) > timeOut) {
+                    processedAll=false;
+                    console.log('FixCJK!: Time out, stopping now...');
+                    break;
+                }
+                FixPunctLoop(MaxNumLoops);
+                MaxNumLoops--;
+            }
         }
     }
+    /////=====The Recursion Implementation=====/////
     function FixPunctRecursion(node) {
         var child=node.firstChild;
-        var childfixed=false;
+        var node2fix=false;
         while (child) {
-            FixPunctRecursion(child);
-            if (child.nodeType == 3) {
-                node.classList.add("Recursion3");
+            if (!child.nodeName.match(SkippedTags)) {
+                FixPunctRecursion(child);
+            }
+            if ( child.nodeType == 3 && child.data.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/)) {
+                node2fix=true;
             }
             child=child.nextSibling;
         }
-        if (childfixed===true)
+        if (node.nodeName.match(SkippedTags)) {
+            node2fix=false;
+            var currHTML=node.innerHTML;
+            if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
+                currHTML=currHTML.replace(/\u2018/mg,'\uE862');
+                currHTML=currHTML.replace(/\u2019/mg,'\uE863');
+                currHTML=currHTML.replace(/\u201C/mg,'\uE972');
+                currHTML=currHTML.replace(/\u201D/mg,'\uE973');
+                currHTML=currHTML.replace(/、/mg,'\uEA01');
+                currHTML=currHTML.replace(/，/mg,'\uEA02');
+                currHTML=currHTML.replace(/。/mg,'\uEA03');
+                currHTML=currHTML.replace(/：/mg,'\uEA04');
+                currHTML=currHTML.replace(/；/mg,'\uEA05');
+                currHTML=currHTML.replace(/！/mg,'\uEA06');
+                currHTML=currHTML.replace(/？/mg,'\uEA07');
+                currHTML=currHTML.replace(/）/mg,'\uEA08');
+                currHTML=currHTML.replace(/】/mg,'\uEA09');
+                currHTML=currHTML.replace(/〉/mg,'\uEA10');
+                currHTML=currHTML.replace(/》/mg,'\uEA11');
+                currHTML=currHTML.replace(/」/mg,'\uEA12');
+                currHTML=currHTML.replace(/』/mg,'\uEA13');
+                currHTML=currHTML.replace(/『/mg,'\uEA14');
+                currHTML=currHTML.replace(/「/mg,'\uEA15');
+                currHTML=currHTML.replace(/《/mg,'\uEA16');
+                currHTML=currHTML.replace(/〈/mg,'\uEA17');
+                currHTML=currHTML.replace(/【/mg,'\uEA18');
+                currHTML=currHTML.replace(/（/mg,'\uEA19');
+                node.innerHTML=currHTML;
+            }
+        }
+        if (node2fix===true) {
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
+            node.classList.add("MarksFixedE135");
+            //if (node.innerHTML.length > 20)
+            //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
+            //else
+            //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML);
+        }
     }
     ///== Each Loop in FunFixPunct() ==///
     function FixPunctLoop(MaxNumLoops) {
@@ -988,7 +1057,9 @@
         }
         else {
             currHTML=currHTML.replace(/([“‘])([\n]?(?:<[^><\uE135]+>[ \n]?)*[\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\u3400-\u9FBF]+)/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$1</span>$2');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([^“，。：；！（《\n])/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([”])([^“，。：；！（《\n])/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+            //Process something like 你好，it's....
+            currHTML=currHTML.replace(/(‘[^’]*[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][^’]*)([’])([^“，。：；！（《\n])/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
             currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0020\u0023-\u003B\u003D\u003F-\u05FF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([\n]|$)/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
         }
         if (debug_04===true) {all[currpunc].style.color="Pink";}
@@ -999,25 +1070,25 @@
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
         currHTML=currHTML.replace(/\uE972/mg,'\u201C');
         currHTML=currHTML.replace(/\uE973/mg,'\u201D');
-        currHTML=currHTML.replace(/\uEA01/,'、');
-        currHTML=currHTML.replace(/\uEA02/,'，');
-        currHTML=currHTML.replace(/\uEA03/,'。');
-        currHTML=currHTML.replace(/\uEA04/,'：');
-        currHTML=currHTML.replace(/\uEA05/,'；');
-        currHTML=currHTML.replace(/\uEA06/,'！');
-        currHTML=currHTML.replace(/\uEA07/,'？');
-        currHTML=currHTML.replace(/\uEA08/,'）');
-        currHTML=currHTML.replace(/\uEA09/,'】');
-        currHTML=currHTML.replace(/\uEA10/,'〉');
-        currHTML=currHTML.replace(/\uEA11/,'》');
-        currHTML=currHTML.replace(/\uEA12/,'」');
-        currHTML=currHTML.replace(/\uEA13/,'』');
-        currHTML=currHTML.replace(/\uEA14/,'『');
-        currHTML=currHTML.replace(/\uEA15/,'「');
-        currHTML=currHTML.replace(/\uEA16/,'《');
-        currHTML=currHTML.replace(/\uEA17/,'〈');
-        currHTML=currHTML.replace(/\uEA18/,'【');
-        currHTML=currHTML.replace(/\uEA19/,'（');
+        currHTML=currHTML.replace(/\uEA01/mg,'、');
+        currHTML=currHTML.replace(/\uEA02/mg,'，');
+        currHTML=currHTML.replace(/\uEA03/mg,'。');
+        currHTML=currHTML.replace(/\uEA04/mg,'：');
+        currHTML=currHTML.replace(/\uEA05/mg,'；');
+        currHTML=currHTML.replace(/\uEA06/mg,'！');
+        currHTML=currHTML.replace(/\uEA07/mg,'？');
+        currHTML=currHTML.replace(/\uEA08/mg,'）');
+        currHTML=currHTML.replace(/\uEA09/mg,'】');
+        currHTML=currHTML.replace(/\uEA10/mg,'〉');
+        currHTML=currHTML.replace(/\uEA11/mg,'》');
+        currHTML=currHTML.replace(/\uEA12/mg,'」');
+        currHTML=currHTML.replace(/\uEA13/mg,'』');
+        currHTML=currHTML.replace(/\uEA14/mg,'『');
+        currHTML=currHTML.replace(/\uEA15/mg,'「');
+        currHTML=currHTML.replace(/\uEA16/mg,'《');
+        currHTML=currHTML.replace(/\uEA17/mg,'〈');
+        currHTML=currHTML.replace(/\uEA18/mg,'【');
+        currHTML=currHTML.replace(/\uEA19/mg,'（');
         /////==== The last meaningful line of function FixMarksInCurrHTML() =====/////
         return currHTML;
     }
