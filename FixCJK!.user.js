@@ -194,7 +194,17 @@
     if (FixPunct===false) {
         if (debug_verbose===true) {console.log('FixCJK!: Skipping fixing punctuations...');}
     }
-    FunFixPunct();
+    var useDelayedFix=false;
+    var useLoop=true;
+    var returnNow=true;
+    var returnLater=false; //Do the actual fixing.
+    if (useDelayedFix===true) {
+        var DelayedTimer=5000;
+        window.setTimeout(FunFixPunct(useLoop,returnLater),DelayedTimer);
+    }
+    else {
+        FunFixPunct(useLoop,returnNow);
+    }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
     var FixLazy=true;
     if (FixLazy===true) {
@@ -254,12 +264,9 @@
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
         for (i=0;i<AllCJKFixed.length;i++) {
             if (debug_verbose===true) {console.log(AllCJKFixed[i].className);}
-            AllCJKFixed[i].classList.remove("CJK2Fix");
-        }
-        AllCJKFixed=document.getElementsByClassName("MarksFixedE135");
-        for (i=0;i<AllCJKFixed.length;i++) {
-            if (debug_verbose===true) {console.log(AllCJKFixed[i].className);}
-            AllCJKFixed[i].classList.remove("CJK2Fix");
+            if (AllCJKFixed[i].classList.contains("MarksFixedE135")) {
+                AllCJKFixed[i].classList.remove("CJK2Fix");
+            }
         }
         if ((NumClicks < 2) || ((t_start-t_last)*ItvScl > t_interval) ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
@@ -305,7 +312,7 @@
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
-            FunFixPunct();
+            FunFixPunct(useLoop,returnLater);
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
             if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
@@ -664,10 +671,18 @@
         t_stop=performance.now();
     }
     ///===The Actual Round 4===///
-    function FunFixPunct() {
+    function FunFixPunct(useLoop,returnNow) {
         //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
+        if (returnNow===true) {
+            return true;
+        }
         var useRecursion=true;
+        if (useLoop===true) {useRecursion=false;}
+        if (NumAllDOMs > 5) {
+            useRecursion=false;
+        }
         if (useRecursion===true) {
+            console.log('Using Recursion');
             FixPunctRecursion(document.body);
             var tmpHTML=document.body.innerHTML;
             tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
@@ -712,48 +727,54 @@
     function FixPunctRecursion(node) {
         var child=node.firstChild;
         var node2fix=false;
+        var currHTML="";
         while (child) {
-            if (!child.nodeName.match(SkippedTags)) {
-                FixPunctRecursion(child);
+            if (child.nodeType===1)  {
+                if (child.nodeName.match(SkippedTags)) {
+                    currHTML=node.innerHTML;
+                    if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
+                        currHTML=currHTML.replace(/\u2018/mg,'\uE862');
+                        currHTML=currHTML.replace(/\u2019/mg,'\uE863');
+                        currHTML=currHTML.replace(/\u201C/mg,'\uE972');
+                        currHTML=currHTML.replace(/\u201D/mg,'\uE973');
+                        currHTML=currHTML.replace(/、/mg,'\uEA01');
+                        currHTML=currHTML.replace(/，/mg,'\uEA02');
+                        currHTML=currHTML.replace(/。/mg,'\uEA03');
+                        currHTML=currHTML.replace(/：/mg,'\uEA04');
+                        currHTML=currHTML.replace(/；/mg,'\uEA05');
+                        currHTML=currHTML.replace(/！/mg,'\uEA06');
+                        currHTML=currHTML.replace(/？/mg,'\uEA07');
+                        currHTML=currHTML.replace(/）/mg,'\uEA08');
+                        currHTML=currHTML.replace(/】/mg,'\uEA09');
+                        currHTML=currHTML.replace(/〉/mg,'\uEA10');
+                        currHTML=currHTML.replace(/》/mg,'\uEA11');
+                        currHTML=currHTML.replace(/」/mg,'\uEA12');
+                        currHTML=currHTML.replace(/』/mg,'\uEA13');
+                        currHTML=currHTML.replace(/『/mg,'\uEA14');
+                        currHTML=currHTML.replace(/「/mg,'\uEA15');
+                        currHTML=currHTML.replace(/《/mg,'\uEA16');
+                        currHTML=currHTML.replace(/〈/mg,'\uEA17');
+                        currHTML=currHTML.replace(/【/mg,'\uEA18');
+                        currHTML=currHTML.replace(/（/mg,'\uEA19');
+                        child.innerHTML=currHTML;
+                    }
+                    if (!child.classList.contains("MarksFixedE135")) {
+                        child.classList.add("MarksFixedE135");
+                    }
+                }
+                else {
+                    FixPunctRecursion(child);
+                }
             }
-            if ( child.nodeType == 3 && child.data.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/)) {
+            if ( child.nodeType === 3 && child.data.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/)) {
                 node2fix=true;
             }
             child=child.nextSibling;
         }
-        if (node.nodeName.match(SkippedTags)) {
-            node2fix=false;
-            var currHTML=node.innerHTML;
-            if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
-                currHTML=currHTML.replace(/\u2018/mg,'\uE862');
-                currHTML=currHTML.replace(/\u2019/mg,'\uE863');
-                currHTML=currHTML.replace(/\u201C/mg,'\uE972');
-                currHTML=currHTML.replace(/\u201D/mg,'\uE973');
-                currHTML=currHTML.replace(/、/mg,'\uEA01');
-                currHTML=currHTML.replace(/，/mg,'\uEA02');
-                currHTML=currHTML.replace(/。/mg,'\uEA03');
-                currHTML=currHTML.replace(/：/mg,'\uEA04');
-                currHTML=currHTML.replace(/；/mg,'\uEA05');
-                currHTML=currHTML.replace(/！/mg,'\uEA06');
-                currHTML=currHTML.replace(/？/mg,'\uEA07');
-                currHTML=currHTML.replace(/）/mg,'\uEA08');
-                currHTML=currHTML.replace(/】/mg,'\uEA09');
-                currHTML=currHTML.replace(/〉/mg,'\uEA10');
-                currHTML=currHTML.replace(/》/mg,'\uEA11');
-                currHTML=currHTML.replace(/」/mg,'\uEA12');
-                currHTML=currHTML.replace(/』/mg,'\uEA13');
-                currHTML=currHTML.replace(/『/mg,'\uEA14');
-                currHTML=currHTML.replace(/「/mg,'\uEA15');
-                currHTML=currHTML.replace(/《/mg,'\uEA16');
-                currHTML=currHTML.replace(/〈/mg,'\uEA17');
-                currHTML=currHTML.replace(/【/mg,'\uEA18');
-                currHTML=currHTML.replace(/（/mg,'\uEA19');
-                node.innerHTML=currHTML;
-            }
-        }
         if (node2fix===true && !(node.nodeName.match(SkippedTags)) && !(node.className.match(/MarksFixedE135/))) {
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             node.classList.add("MarksFixedE135");
+            //console.log(node.innerHTML);
             //if (node.innerHTML.length > 20)
             //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
             //else
@@ -762,6 +783,7 @@
     }
     ///== Each Loop in FunFixPunct() ==///
     function FixPunctLoop(MaxNumLoops) {
+        console.log('Using loops');
         var i=0;
         var puncnode=new Array('');
         var puncid=new Array('');
@@ -1066,6 +1088,35 @@
         if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
             currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
         }
+        //We need to "protect" them after changing (no need actually?).
+        var protectMarks=false;
+        if (protectMarks===true) {
+            currHTML=currHTML.replace(/\u2018/mg,'\uE862');
+            currHTML=currHTML.replace(/\u2019/mg,'\uE863');
+            currHTML=currHTML.replace(/\u201C/mg,'\uE972');
+            currHTML=currHTML.replace(/\u201D/mg,'\uE973');
+            currHTML=currHTML.replace(/、/mg,'\uEA01');
+            currHTML=currHTML.replace(/，/mg,'\uEA02');
+            currHTML=currHTML.replace(/。/mg,'\uEA03');
+            currHTML=currHTML.replace(/：/mg,'\uEA04');
+            currHTML=currHTML.replace(/；/mg,'\uEA05');
+            currHTML=currHTML.replace(/！/mg,'\uEA06');
+            currHTML=currHTML.replace(/？/mg,'\uEA07');
+            currHTML=currHTML.replace(/）/mg,'\uEA08');
+            currHTML=currHTML.replace(/】/mg,'\uEA09');
+            currHTML=currHTML.replace(/〉/mg,'\uEA10');
+            currHTML=currHTML.replace(/》/mg,'\uEA11');
+            currHTML=currHTML.replace(/」/mg,'\uEA12');
+            currHTML=currHTML.replace(/』/mg,'\uEA13');
+            currHTML=currHTML.replace(/『/mg,'\uEA14');
+            currHTML=currHTML.replace(/「/mg,'\uEA15');
+            currHTML=currHTML.replace(/《/mg,'\uEA16');
+            currHTML=currHTML.replace(/〈/mg,'\uEA17');
+            currHTML=currHTML.replace(/【/mg,'\uEA18');
+            currHTML=currHTML.replace(/（/mg,'\uEA19');
+            return currHTML;
+        }
+        ///////
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
         currHTML=currHTML.replace(/\uE972/mg,'\u201C');
@@ -1089,7 +1140,7 @@
         currHTML=currHTML.replace(/\uEA17/mg,'〈');
         currHTML=currHTML.replace(/\uEA18/mg,'【');
         currHTML=currHTML.replace(/\uEA19/mg,'（');
-        /////==== The last meaningful line of function FixMarksInCurrHTML() =====/////
+        ///////==== The last meaningful line of function FixMarksInCurrHTML() =====/////
         return currHTML;
     }
 }
