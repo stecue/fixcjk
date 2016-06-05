@@ -195,10 +195,13 @@
         if (debug_verbose===true) {console.log('FixCJK!: Skipping fixing punctuations...');}
     }
     var useDelayedFix=false;
-    var useLoop=true;
+    var useLoop=false;
     var returnNow=true;
     var returnLater=false; //Do the actual fixing.
     var MaxNumLoops=1;
+    if (document.URL.match(/zhihuxcom|sinaxcom/)) {
+        useLoop=true;
+    }
     if (useDelayedFix===true) {
         var DelayedTimer=200;
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
@@ -207,7 +210,7 @@
         FunFixPunct(useLoop,MaxNumLoops,returnLater);
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
-    var FixLazy=true;
+    var FixLazy=false; //No need if using the recursing method.
     if (FixLazy===true) {
         all=document.getElementsByTagName('img');
         for (i=0;i<all.length;i++) {
@@ -688,37 +691,43 @@
         }
         var useRecursion=true;
         if (useLoop===true) {useRecursion=false;}
-        if (NumAllDOMs > 5) {
+        if (NumAllDOMs > 2000) {
             useRecursion=false;
         }
         if (useRecursion===true) {
-            console.log('Using Recursion');
-            FixPunctRecursion(document.body);
-            var tmpHTML=document.body.innerHTML;
-            tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
-            tmpHTML=tmpHTML.replace(/\uE863/mg,'\u2019');
-            tmpHTML=tmpHTML.replace(/\uE972/mg,'\u201C');
-            tmpHTML=tmpHTML.replace(/\uE973/mg,'\u201D');
-            tmpHTML=tmpHTML.replace(/\uEA01/mg,'、');
-            tmpHTML=tmpHTML.replace(/\uEA02/mg,'，');
-            tmpHTML=tmpHTML.replace(/\uEA03/mg,'。');
-            tmpHTML=tmpHTML.replace(/\uEA04/mg,'：');
-            tmpHTML=tmpHTML.replace(/\uEA05/mg,'；');
-            tmpHTML=tmpHTML.replace(/\uEA06/mg,'！');
-            tmpHTML=tmpHTML.replace(/\uEA07/mg,'？');
-            tmpHTML=tmpHTML.replace(/\uEA08/mg,'）');
-            tmpHTML=tmpHTML.replace(/\uEA09/mg,'】');
-            tmpHTML=tmpHTML.replace(/\uEA10/mg,'〉');
-            tmpHTML=tmpHTML.replace(/\uEA11/mg,'》');
-            tmpHTML=tmpHTML.replace(/\uEA12/mg,'」');
-            tmpHTML=tmpHTML.replace(/\uEA13/mg,'』');
-            tmpHTML=tmpHTML.replace(/\uEA14/mg,'『');
-            tmpHTML=tmpHTML.replace(/\uEA15/mg,'「');
-            tmpHTML=tmpHTML.replace(/\uEA16/mg,'《');
-            tmpHTML=tmpHTML.replace(/\uEA17/mg,'〈');
-            tmpHTML=tmpHTML.replace(/\uEA18/mg,'【');
-            tmpHTML=tmpHTML.replace(/\uEA19/mg,'（');
-            document.body.innerHTML=tmpHTML;
+            if (debug_verbose===true) {console.log('Using Recursion');}
+            var allrecur=document.getElementsByClassName("CJK2Fix");
+            for (var ir=0; ir<allrecur.length; ir++) {
+                FixPunctRecursion(allrecur[ir]);
+            }
+            var restoreProtection=false;
+            if (restoreProtection===true) { //Don't use! It will cause all event listeners to be destroyed!!
+                var tmpHTML=document.body.innerHTML;
+                tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
+                tmpHTML=tmpHTML.replace(/\uE863/mg,'\u2019');
+                tmpHTML=tmpHTML.replace(/\uE972/mg,'\u201C');
+                tmpHTML=tmpHTML.replace(/\uE973/mg,'\u201D');
+                tmpHTML=tmpHTML.replace(/\uEA01/mg,'、');
+                tmpHTML=tmpHTML.replace(/\uEA02/mg,'，');
+                tmpHTML=tmpHTML.replace(/\uEA03/mg,'。');
+                tmpHTML=tmpHTML.replace(/\uEA04/mg,'：');
+                tmpHTML=tmpHTML.replace(/\uEA05/mg,'；');
+                tmpHTML=tmpHTML.replace(/\uEA06/mg,'！');
+                tmpHTML=tmpHTML.replace(/\uEA07/mg,'？');
+                tmpHTML=tmpHTML.replace(/\uEA08/mg,'）');
+                tmpHTML=tmpHTML.replace(/\uEA09/mg,'】');
+                tmpHTML=tmpHTML.replace(/\uEA10/mg,'〉');
+                tmpHTML=tmpHTML.replace(/\uEA11/mg,'》');
+                tmpHTML=tmpHTML.replace(/\uEA12/mg,'」');
+                tmpHTML=tmpHTML.replace(/\uEA13/mg,'』');
+                tmpHTML=tmpHTML.replace(/\uEA14/mg,'『');
+                tmpHTML=tmpHTML.replace(/\uEA15/mg,'「');
+                tmpHTML=tmpHTML.replace(/\uEA16/mg,'《');
+                tmpHTML=tmpHTML.replace(/\uEA17/mg,'〈');
+                tmpHTML=tmpHTML.replace(/\uEA18/mg,'【');
+                tmpHTML=tmpHTML.replace(/\uEA19/mg,'（');
+                document.body.innerHTML=tmpHTML;
+            }
         }
         else {
             while ((FixPunct === true) && (MaxNumLoops>0)) {
@@ -737,11 +746,18 @@
         var child=node.firstChild;
         var node2fix=false;
         var currHTML="";
+        var SafeTags=/^(SUB|SUP|P|I|B|STRONG|EM|H[123456]|U|VAR)$/i;
+        var useProtection=false;
+        var hasSubElement=false;
         while (child) {
+            if ( child.nodeType === 3 && !(node.classList.contains(SkippedTags))) {
+                node2fix=true;
+            }
             if (child.nodeType===1)  {
-                if (child.nodeName.match(SkippedTags) || child.classList.contains("MarksFixedE135") || (!child.classList.contains("CJK2Fix"))) {
-                    currHTML=node.innerHTML;
-                    if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
+                //if  (child.classList.contains("CJK2Fix") && (!(child.nodeName.match(SafeTags)) || child.classList.contains("MarksFixedE135"))) {
+                if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(SkippedTags)) || child.classList.contains("MarksFixedE135"))) {
+                    currHTML=child.innerHTML;
+                    if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m) && useProtection===true) {
                         currHTML=currHTML.replace(/\u2018/mg,'\uE862');
                         currHTML=currHTML.replace(/\u2019/mg,'\uE863');
                         currHTML=currHTML.replace(/\u201C/mg,'\uE972');
@@ -774,13 +790,26 @@
                 else {
                     FixPunctRecursion(child);
                 }
-            }
-            if ( child.nodeType === 3 && child.data.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/)) {
-                node2fix=true;
+                var orig_class=child.className;
+                child.classList.remove("CJK2Fix");
+                child.classList.remove("MarksFixedE135");
+                child.classList.remove("FontsFixedE137");
+                child.classList.remove("\uE985");
+                child.classList.remove("\uE211");
+                if (child.classList.length===0 && child.id.length===0) {
+                    if (debug_verbose===true) {console.log("SUBNODE WITHOUT ID/CLASS: "+child.nodeName);}
+                    //It would be crazy to addListener just us tagNames.
+                }
+                else if (!(child.classList.contains(/[\uE985\uE211]/)) && !(child.nodeName.match(SafeTags))) {
+                    hasSubElement=true; //Do not fix if it contains non-mark subelements.
+                    if (debug_verbose===true) {console.log(node.nodeName+"."+node.className+"-->"+child.nodeName);}
+                }
+                child.className=orig_class;
             }
             child=child.nextSibling;
         }
-        if (node2fix===true && !(node.nodeName.match(SkippedTags)) && !(node.className.match(/MarksFixedE135/))) {
+        if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+            if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             node.classList.add("MarksFixedE135");
             return true;
@@ -791,12 +820,13 @@
             //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML);
         }
         else {
+            node.classList.add("MarksFixedE135");
             return true;
         }
     }
     ///== Each Loop in FunFixPunct() ==///
     function FixPunctLoop(MaxNumLoops) {
-        console.log('Using loops');
+        console.log('FixCJK!: Using loops'); //Recursion is the default implementation.
         var i=0;
         var puncnode=new Array('');
         var puncid=new Array('');
