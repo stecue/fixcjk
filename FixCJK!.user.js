@@ -49,7 +49,7 @@
     var debug_03 = false;
     var debug_04 = false;
     ///=== The following variables should be strictly for internal use only.====///
-    var SkippedTags=/^(TITLE|HEAD|BODY|textarea|img|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
+    var SkippedTags=/^(TITLE|HEAD|BODY|textarea|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
@@ -753,7 +753,7 @@
             if ( child.nodeType === 3 && !(node.classList.contains(SkippedTags))) {
                 node2fix=true;
             }
-            if (child.nodeType===1)  {
+            if (child.nodeType===1 && !(child instanceof SVGElement))  {
                 //if  (child.classList.contains("CJK2Fix") && (!(child.nodeName.match(SafeTags)) || child.classList.contains("MarksFixedE135"))) {
                 if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(SkippedTags)) || child.classList.contains("MarksFixedE135"))) {
                     currHTML=child.innerHTML;
