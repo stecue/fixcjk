@@ -239,7 +239,13 @@
     var downY=0;
     document.body.addEventListener("mousedown",function (e){downtime=performance.now();downX=e.clientX;downY=e.clientY;},false);
     document.body.addEventListener("mouseup",function (e){
-        if (((performance.now()-downtime) > 100) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 5)
+        if (((performance.now()-downtime) > 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 30) {
+            e.target.classList.add("SafedByUser");
+            e.target.classList.remove("MarksFixedE135");
+            console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());
+            ReFixCJK(e);
+        }
+        else if (((performance.now()-downtime) > 100) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 5)
             ReFixCJK(e);
     },false);
     document.body.addEventListener("dblclick",ReFixCJK,false);
@@ -300,6 +306,10 @@
             for (i=0;i<ReFixAll.length;i++) {
                 if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement){
                     continue;
+                }
+                else if (ReFixAll[i].className.match("SafedByUser")) {
+                    ReFixAll[i].classList.add("CJK2Fix");
+                    NumReFix++;
                 }
                 else if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/))) {
                     NumFixed++;
@@ -746,7 +756,7 @@
         var child=node.firstChild;
         var node2fix=false;
         var currHTML="";
-        var SafeTags=/^(SUB|SUP|P|I|B|STRONG|EM|H[123456]|U|VAR)$/i;
+        var SafeTags=/^(A|ABBR|SUB|SUP|P|I|B|STRONG|EM|H[123456]|U|VAR)$/i;
         var useProtection=false;
         var hasSubElement=false;
         while (child) {
@@ -808,8 +818,19 @@
             }
             child=child.nextSibling;
         }
+        if (node.classList.contains("SafedByUser")) {
+            //if (debug_verbose===true) {console.log("SAFED BY USER: "+node.nodeName);}
+            node2fix=true;
+            node.classList.add("CJK2Fix");
+            node.classList.remove("MarksFixedE135");
+            hasSubElement=false;
+        }
         if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
+            if (node.classList.contains("SafedByUser")) {
+                console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);
+                node.classList.remove("SafedByUser");
+            }
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             node.classList.add("MarksFixedE135");
             return true;
