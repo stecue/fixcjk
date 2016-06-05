@@ -818,7 +818,7 @@
             }
             child=child.nextSibling;
         }
-        if (node.classList.contains("SafedByUser")) {
+        if (!(node instanceof SVGElement) && node.classList.contains("SafedByUser") && !(node.nodeName.match(SkippedTags))) {
             if (debug_verbose===true) {console.log("SAFED BY USER: "+node.nodeName);}
             node2fix=true;
             node.classList.add("CJK2Fix");
