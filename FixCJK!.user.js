@@ -198,12 +198,13 @@
     var useLoop=true;
     var returnNow=true;
     var returnLater=false; //Do the actual fixing.
+    var MaxNumLoops=1;
     if (useDelayedFix===true) {
-        var DelayedTimer=5000;
-        window.setTimeout(FunFixPunct(useLoop,returnLater),DelayedTimer);
+        var DelayedTimer=200;
+        window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
     }
     else {
-        FunFixPunct(useLoop,returnNow);
+        FunFixPunct(useLoop,MaxNumLoops,returnLater);
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
     var FixLazy=true;
@@ -230,7 +231,15 @@
         NumPureEng++;
     }
     //document.onClick will cause problems on some webpages on Firefox.
-    document.body.addEventListener("click",ReFixCJK,false);
+    var downtime=performance.now();
+    var downX=0;
+    var downY=0;
+    document.body.addEventListener("mousedown",function (e){downtime=performance.now();downX=e.clientX;downY=e.clientY;},false);
+    document.body.addEventListener("mouseup",function (e){
+        if (((performance.now()-downtime) > 100) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 5)
+            ReFixCJK(e);
+    },false);
+    document.body.addEventListener("dblclick",ReFixCJK,false);
     ///===Time to exiting the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
@@ -241,7 +250,8 @@
     }
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening function===//
-    function ReFixCJK () {
+    function ReFixCJK (e) {
+        if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
         if (document.URL!==LastURL) {
             NumPureEng = 0;
@@ -255,7 +265,7 @@
             if (debug_verbose===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
         }
         //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
-        if (NumPureEng > 2) {
+        if (NumPureEng >= 2) {
             console.log('Probably pure English/Latin site, re-checking skipped.');
             return true;
         }
@@ -312,7 +322,7 @@
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
-            FunFixPunct(useLoop,returnLater);
+            FunFixPunct(useLoop,2,returnLater);
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
             if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
@@ -671,7 +681,7 @@
         t_stop=performance.now();
     }
     ///===The Actual Round 4===///
-    function FunFixPunct(useLoop,returnNow) {
+    function FunFixPunct(useLoop,MaxNumLoops,returnNow) {
         //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
         if (returnNow===true) {
             return true;
@@ -711,7 +721,6 @@
             document.body.innerHTML=tmpHTML;
         }
         else {
-            var MaxNumLoops=3;
             while ((FixPunct === true) && (MaxNumLoops>0)) {
                 if ((performance.now()-t_start) > timeOut) {
                     processedAll=false;
