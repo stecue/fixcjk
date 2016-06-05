@@ -242,7 +242,7 @@
         if (((performance.now()-downtime) > 1000) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 50) {
             e.target.classList.add("SafedByUser");
             e.target.classList.remove("MarksFixedE135");
-            console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());
+            if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             ReFixCJK(e);
         }
         else if (((performance.now()-downtime) > 100) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 5)
@@ -819,7 +819,7 @@
             child=child.nextSibling;
         }
         if (node.classList.contains("SafedByUser")) {
-            //if (debug_verbose===true) {console.log("SAFED BY USER: "+node.nodeName);}
+            if (debug_verbose===true) {console.log("SAFED BY USER: "+node.nodeName);}
             node2fix=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
@@ -828,7 +828,7 @@
         if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
-                console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);
+                if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
                 node.classList.remove("SafedByUser");
             }
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
