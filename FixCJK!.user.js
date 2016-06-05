@@ -739,7 +739,7 @@
         var currHTML="";
         while (child) {
             if (child.nodeType===1)  {
-                if (child.nodeName.match(SkippedTags)) {
+                if (child.nodeName.match(SkippedTags) || child.classList.contains("MarksFixedE135") || (!child.classList.contains("CJK2Fix"))) {
                     currHTML=node.innerHTML;
                     if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
                         currHTML=currHTML.replace(/\u2018/mg,'\uE862');
@@ -783,11 +783,15 @@
         if (node2fix===true && !(node.nodeName.match(SkippedTags)) && !(node.className.match(/MarksFixedE135/))) {
             node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             node.classList.add("MarksFixedE135");
+            return true;
             //console.log(node.innerHTML);
             //if (node.innerHTML.length > 20)
             //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
             //else
             //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML);
+        }
+        else {
+            return true;
         }
     }
     ///== Each Loop in FunFixPunct() ==///
