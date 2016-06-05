@@ -239,7 +239,7 @@
     var downY=0;
     document.body.addEventListener("mousedown",function (e){downtime=performance.now();downX=e.clientX;downY=e.clientY;},false);
     document.body.addEventListener("mouseup",function (e){
-        if (((performance.now()-downtime) > 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 30) {
+        if (((performance.now()-downtime) > 1000) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) > 50) {
             e.target.classList.add("SafedByUser");
             e.target.classList.remove("MarksFixedE135");
             console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());
