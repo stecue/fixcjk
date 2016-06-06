@@ -4,6 +4,7 @@ Features:
 
 Bugfixes:
   - Some previously omitted combinations are taken into account.
+  - Fixing is skipped if child(type==3).data contains only blank spaces.
 
 ## 0.11.0 (2016-06-05)
 Features:
