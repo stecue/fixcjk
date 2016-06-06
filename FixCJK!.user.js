@@ -845,6 +845,7 @@
             node.classList.remove("MarksFixedE135");
             hasSubElement=false;
         }
+        //Config/Filtering Done. Fix puncts if necessary.
         if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
@@ -861,6 +862,7 @@
                 node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             }
             node.classList.add("MarksFixedE135");
+            return true;
         }
         else {
             node.classList.add("MarksFixedE135");
