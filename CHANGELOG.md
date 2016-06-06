@@ -1,3 +1,8 @@
+## 0.11.1 (2016-06-05)
+Features:
+  - Add a safer recursion implementation which is used as default.
+  - A new "long-click-to-force-fix-punctuations" feature is added.
+
 ## 0.10.8 (2016-06-03)
 Features:
   - Code cleaning up. Add a flag (`debug_verbose`) to control whether more information should be shown.
