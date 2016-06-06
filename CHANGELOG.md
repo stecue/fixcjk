@@ -1,4 +1,4 @@
-## 0.11.1 (2016-06-06)
+## 0.11.2 (2016-06-06)
 Features:
   - Add a webpage repairing framework. Currently it can fix the picture problem after applying "forced fixing". Other webpage repairings can be added in the future.
 
