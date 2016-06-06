@@ -28,7 +28,7 @@
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSans = 'Lato,"Open Sans",Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif = 'Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
-    var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinMono = '"DejaVu Sans Mono",Consolas'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
@@ -49,7 +49,7 @@
     var debug_03 = false;
     var debug_04 = false;
     ///=== The following variables should be strictly for internal use only.====///
-    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|video)$/i;
+    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|figure|map|object|source|video)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|textarea|input|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
@@ -80,13 +80,13 @@
     var sig_hei = 'RealCJKBold 黑'; // signature to check if change is sucssful or not.
     var sig_bold = 'RealCJKBold 粗'; // signature to check if change is sucssful or not.
     var sig_default = 'RealCJKBold 默'; // signature to check if change is sucssful or not.
-    var sig_punct = '\uE135'; //will be attached to CJKPunct;
+    var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sun = '"' + sig_sun + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
     var qsig_bold = '"' + sig_bold + '"';
     var qsig_default = '"' + sig_default + '"';
     //var qpreCJK = '"' + CJKdefault + '"'; //Quoted "CJK font".
-    var genPunct='General Punct \uE137';
+    var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     var qSimSun = LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
@@ -470,19 +470,19 @@
                         }        //Test if contains Sans
                         else if (list_has(font_str, re_sans0) !== false) {
                             //all[i].style.color="Salmon";
-                            all[i].style.fontFamily = genPunct+','+LatinSans + ',' + replace_font(font_str, re_sans0, qBold) + ',' + 'sans-serif';
+                            all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
                             //all[i].style.color="SeaGreen";
-                            all[i].style.fontFamily = genPunct+','+LatinSerif + ',' + replace_font(font_str, re_serif, qBold) + ',' + 'serif';
+                            all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
                             //all[i].style.color="Maroon";
-                            all[i].style.fontFamily = genPunct+','+LatinMono + ',' + replace_font(font_str, re_mono0, qBold) + ',' + 'monospace';
+                            all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
                         }        //Just append the fonts to the font preference list.
                         else {
                             //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
-                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qBold + ',' + '  sans-serif';
+                            all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
                             //console.log(all[i].style.fontFamily);
                         }
                     }
@@ -862,7 +862,7 @@
                 if (debug_verbose===true) {
                     console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
                 }
-                node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
+                node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
             }
             node.classList.add("MarksFixedE135");
             return true;
@@ -997,7 +997,7 @@
             }
             if (debug_04===true) {console.log(currpunc);}
             //console.log(currpunc.toString()+":: "+all[currpunc].outerHTML);
-            all[currpunc].innerHTML=FixMarksInCurrHTML(all[currpunc].innerHTML,delete_all_spaces,AlsoChangeFullStop);
+            all[currpunc].innerHTML=FixMarksInCurrHTML(all[currpunc].innerHTML,true,false);
             all[currpunc].classList.add("MarksFixedE135"); //We cannot Remove the "CJK2Fix" class here because the index i is "live".
         }
     }
@@ -1172,10 +1172,11 @@
         else {
             //Need to include things like “智能ABC”. \u003F-\u2FFF was \u003F-\u05FF but some characters was not included.
             currHTML=currHTML.replace(/([“‘])([\n]?(?:<[^><\uE135]+>[ \n]?)*[\u0020\u0023-\u003B\u003D\u003F-\u2FFF]*[\u3400-\u9FBF]+)/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+',sans-serif;">$1</span>$2');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0020\u0023-\u003B\u003D\u003F-\u2FFF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([”])([^“，。：；！（《\n])/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+            //Someting like 智能A<b>BC</b>” if (currHTML.match(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF](?:(?:<[^><\uE135\uE985\uE211]+>[ \n]?)*?[\u0020\u0023-\u003B\u003D\u003F-\u2FFF]*?[\n]?(?:<[^><\uE135\uE985\uE211]+>[ \n]??)*?)*?)([”])([^“，。：；！（《\n])/mg)) console.log(currHTML);
+            //currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF](?:(?:<[^><\uE135\uE985\uE211]+>[ \n]?)*?[\u0020\u0023-\u003B\u003D\u003F-\u2FFF]*?[\n]?(?:<[^><\uE135\uE985\uE211]+>[ \n]??)*?)*?)([”])([^“，。：；！（《\n])/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
             //Process something like 你好，it's....
             currHTML=currHTML.replace(/(‘[^’]*[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][^’]*)([’])([^“，。：；！（《\n])/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF][\u0020\u0023-\u003B\u003D\u003F-\u2FFF]*[\n]?(?:<[^><\uE135]+>[ \n]?)*)([’”])([\n]|$)/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF](?:(?:<[^/><\uE135\uE985\uE211]+>[ \n]?)?[\u0020\u0023-\u003B\u003D\u003F-\u2FFF]*[\n]?(?:<[^><\uE135\uE985\uE211]+>[ \n]?)?)*)([’”])([\n]|$)/mg,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3');
         }
         if (debug_04===true) {all[currpunc].style.color="Pink";}
         if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
@@ -1209,7 +1210,7 @@
             currHTML=currHTML.replace(/（/mg,'\uEA19');
             return currHTML;
         }
-        ///////
+        ///=== Change the protected punctuations back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
         currHTML=currHTML.replace(/\uE972/mg,'\u201C');
