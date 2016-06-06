@@ -1,4 +1,11 @@
-## 0.11.1 (2016-06-05)
+## 0.11.1 (2016-06-06)
+Features:
+  - Add a webpage repairing framework. Currently it can fix the picture problem after applying "forced fixing". Other webpage repairings can be added in the future.
+
+Bugfixes:
+  - Some previously omitted combinations are taken into account.
+
+## 0.11.0 (2016-06-05)
 Features:
   - Add a safer recursion implementation which is used as default.
   - A new "long-click-to-force-fix-punctuations" feature is added.
