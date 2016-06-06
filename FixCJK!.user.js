@@ -267,6 +267,7 @@
             LastURL=document.URL;
         }
         var clickedNode=e.target;
+        document.body.classList.remove("SafedByUser"); //Remove the SafedByUser if it is clicked by user.
         while (clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
                 if (debug_verbose===true) {console.log("FixCJK!: Not a valid click.");}
