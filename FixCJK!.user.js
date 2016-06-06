@@ -758,7 +758,7 @@
         var child=node.firstChild;
         var node2fix=false;
         var currHTML="";
-        var SafeTags=/^(A|ABBR|SUB|SUP|P|I|B|STRONG|EM|H[123456]|U|VAR)$/i;
+        var SafeTags=/^(A|ABBR|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR)$/i;
         var useProtection=false;
         var hasSubElement=false;
         while (child) {
