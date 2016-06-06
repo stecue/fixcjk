@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.11.0
+// @version           0.11.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -209,16 +209,6 @@
     else {
         FunFixPunct(useLoop,MaxNumLoops,returnLater);
     }
-    ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
-    var FixLazy=false; //No need if using the recursing method.
-    if (FixLazy===true) {
-        all=document.getElementsByTagName('img');
-        for (i=0;i<all.length;i++) {
-            if (all[i].hasAttribute('data-actualsrc')) {
-                all[i].src=all[i].getAttribute('data-actualsrc');
-            }
-        }
-    }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
     ///===Add onClick listener before exiting===///
@@ -244,6 +234,8 @@
             e.target.classList.remove("MarksFixedE135");
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             ReFixCJK(e);
+            if (document.URL.match(/zhihu\.com/mg))
+                FixLazy();
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 )
             ReFixCJK(e);
@@ -1217,6 +1209,16 @@
         currHTML=currHTML.replace(/\uEA19/mg,'（');
         ///////==== The last meaningful line of function FixMarksInCurrHTML() =====/////
         return currHTML;
+    }
+    ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
+    //No need if using the recursive implementation. However, it is still needed if the "forced fixing" is triggered.
+    function FixLazy() {
+        var all=document.getElementsByTagName('img');
+        for (var i=0;i<all.length;i++) {
+            if (all[i].hasAttribute('data-actualsrc')) {
+                all[i].src=all[i].getAttribute('data-actualsrc');
+            }
+        }
     }
 }
 ) ();
