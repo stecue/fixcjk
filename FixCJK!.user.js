@@ -772,7 +772,7 @@
         while (child) {
             if ( child.nodeType === 3 && !(node.nodeName.match(SkippedTags)) && !(child.data.match(/^[\s]+$/mg))) {
                 node2fix=true;
-                if (debug_verbose===true) {
+                if (debug_verbose===false) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
                 }
                 if (node.innerHTML.match('value="登录"') && debug_verbose===true) {
@@ -839,13 +839,13 @@
             child=child.nextSibling;
         }
         if (!(node instanceof SVGElement) && node.classList.contains("SafedByUser") && !(node.nodeName.match(SkippedTags))) {
-            if (debug_verbose===true) {console.log("SAFED BY USER: "+node.nodeName);}
+            if (debug_verbose===false) {console.log("SAFED BY USER: "+node.nodeName+"."+node.className);}
             node2fix=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
             hasSubElement=false;
         }
-        //Config/Filtering Done. Fix puncts if necessary.
+        //Config and Filtering Done. Fix puncts if necessary.
         if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
@@ -858,7 +858,10 @@
                 else
                     console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML);
             }
-            if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
+            if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
+                if (debug_verbose===false) {
+                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
+                }
                 node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
             }
             node.classList.add("MarksFixedE135");
