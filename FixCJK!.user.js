@@ -49,7 +49,9 @@
     var debug_03 = false;
     var debug_04 = false;
     ///=== The following variables should be strictly for internal use only.====///
-    var SkippedTags=/^(TITLE|HEAD|BODY|textarea|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
+    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|video)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|textarea|input|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
+    var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå */gi;
@@ -251,7 +253,7 @@
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening function===//
     function ReFixCJK (e) {
-        var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|IMPUT|select|option|input|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
+        var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|input|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
         if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
         if (document.URL!==LastURL) {
@@ -430,6 +432,7 @@
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
     function FixAllFonts () {
+        SkippedTags=SkippedTagsForFonts;
         /// ===== First round: Replace all bold fonts to CJKBold ===== ///
         t_stop=performance.now();
         all = document.getElementsByClassName('CJK2Fix');
@@ -697,6 +700,7 @@
     }
     ///===The Actual Round 4===///
     function FunFixPunct(useLoop,MaxNumLoops,returnNow) {
+        SkippedTags=SkippedTagsForMarks;
         //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
         if (returnNow===true) {
             return true;
@@ -755,15 +759,26 @@
     }
     /////=====The Recursion Implementation=====/////
     function FixPunctRecursion(node) {
+        SkippedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var node2fix=false;
         var currHTML="";
         var SafeTags=/^(A|ABBR|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR)$/i;
         var useProtection=false;
         var hasSubElement=false;
+        if (node.classList.contains("MarksFixedE135")) {
+            return true;
+        }
         while (child) {
-            if ( child.nodeType === 3 && !(node.classList.contains(SkippedTags))) {
+            if ( child.nodeType === 3 && !(node.nodeName.match(SkippedTags)) && !(child.data.match(/^[\s]+$/mg))) {
                 node2fix=true;
+                if (debug_verbose===true) {
+                    console.log("Permitted to check: "+node.nodeName+"."+node.className);
+                }
+                if (node.innerHTML.match('value="登录"') && debug_verbose===true) {
+                    console.log("WARNING: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
+                    console.log("WARNING: Wrong Operation because: "+child.data);
+                }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
                 //if  (child.classList.contains("CJK2Fix") && (!(child.nodeName.match(SafeTags)) || child.classList.contains("MarksFixedE135"))) {
@@ -793,6 +808,9 @@
                         currHTML=currHTML.replace(/〈/mg,'\uEA17');
                         currHTML=currHTML.replace(/【/mg,'\uEA18');
                         currHTML=currHTML.replace(/（/mg,'\uEA19');
+                        if (debug_verbose===true) {
+                            console.log("WARNING: All subnodes of"+child.nodeName+"."+child.className+" will be destroyed!");
+                        }
                         child.innerHTML=currHTML;
                     }
                     if (!child.classList.contains("MarksFixedE135")) {
@@ -827,20 +845,24 @@
             node.classList.remove("MarksFixedE135");
             hasSubElement=false;
         }
+        //Config/Filtering Done. Fix puncts if necessary.
         if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
                 node.classList.remove("SafedByUser");
             }
-            node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
+            if (debug_verbose===true) {
+                if (node.innerHTML.length > 20)
+                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
+                else
+                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML);
+            }
+            if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
+                node.innerHTML=FixMarksInCurrHTML(node.innerHTML);
+            }
             node.classList.add("MarksFixedE135");
             return true;
-            //console.log(node.innerHTML);
-            //if (node.innerHTML.length > 20)
-            //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
-            //else
-            //    console.log(node.nodeName+"."+node.className+":: "+node.innerHTML);
         }
         else {
             node.classList.add("MarksFixedE135");
@@ -849,6 +871,7 @@
     }
     ///== Each Loop in FunFixPunct() ==///
     function FixPunctLoop(MaxNumLoops) {
+        SkippedTags=SkippedTagsForMarks;
         console.log('FixCJK!: Using loops'); //Recursion is the default implementation.
         var i=0;
         var puncnode=new Array('');
@@ -876,7 +899,7 @@
                 }
             }
             while (child) {
-                if (child.nodeType == 3) {
+                if (child.nodeType == 3 && !(child.data.match(/^[\s]+$/mg))) {
                     //console.log(child.data);
                     //use "mg" to also match paragraphs with punctions at the end or beginning of a line.
                     if (all[i].nodeName.match(SkippedTags)) {
