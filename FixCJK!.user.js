@@ -264,7 +264,7 @@
         document.body.classList.remove("SafedByUser"); //Remove the SafedByUser if it is clicked by user.
         while (clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
-                console.log("FixCJK!: Not a valid click on tag \u201C"+clickedNode.nodeName+"\u201D");
+                console.log("FixCJK!: Not a valid click on DOM element \u201C"+clickedNode.nodeName+"."+clickedNode.className+"\u201D");
                 return false;
             }
             if (debug_verbose===true) {console.log("Clicked: "+clickedNode.nodeName);}
