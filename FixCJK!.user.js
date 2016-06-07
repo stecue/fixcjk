@@ -49,8 +49,8 @@
     var debug_03 = false;
     var debug_04 = false;
     ///=== The following variables should be strictly for internal use only.====///
-    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|figure|map|object|source|video)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|textarea|input|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
+    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|tt|code|BUTTON|textarea|input|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
     var t_stop = t_start;
@@ -254,7 +254,7 @@
     //===The actual listening function===//
     function ReFixCJK (e) {
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
-        if (debug_verbose===true) {console.log(e.target.nodeName);}
+        if (debug_verbose===false) {console.log(e.target.nodeName);}
         t_start=performance.now();
         if (document.URL!==LastURL) {
             NumPureEng = 0;
@@ -264,7 +264,7 @@
         document.body.classList.remove("SafedByUser"); //Remove the SafedByUser if it is clicked by user.
         while (clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
-                if (debug_verbose===true) {console.log("FixCJK!: Not a valid click.");}
+                if (debug_verbose===false) {console.log("FixCJK!: Not a valid click.");}
                 return false;
             }
             if (debug_verbose===true) {console.log("Clicked: "+clickedNode.nodeName);}
@@ -762,7 +762,7 @@
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
-        var SafeTags=/^(A|ABBR|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements;
+        var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements;
         var useProtection=false; //Keep it false in production code.
         var allSafe=true;
         var node2fix=true;
@@ -820,7 +820,7 @@
                     FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
                 }
                 //Test after fixing child:
-                if (!(child.classList.contains("Safe2FixCJK"))) {allSafe=false;}
+                if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSafe=false;} //\uE000 is Tux in Linux Libertine.
             }
             child=child.nextSibling;
         }
@@ -831,16 +831,16 @@
             node.classList.remove("FontsFixedE137");
             node.classList.remove("\uE985");
             node.classList.remove("\uE211");
-            node.classList.remove("Safe2FixCJK");
+            node.classList.remove("Safe2FixCJK\uE000");
             if (node.tagName.match(SafeTags)) {
-                //note that Safe2FixCJK means it is safe as a subelement. Safe2FixCJK also means node.innerHTML is safe. However itself may have event listeners attached to it.
+                //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
                 node.className=orig_class;
-                node.classList.add("Safe2FixCJK");
+                node.classList.add("Safe2FixCJK\uE000");
             }
             else if (node.classList.length===0 && node.id.length ===0) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
-                node.classList.add("Safe2FixCJK");
+                node.classList.add("Safe2FixCJK\uE000");
             }
             else {
                 node.className=orig_class;
