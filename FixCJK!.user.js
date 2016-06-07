@@ -49,8 +49,8 @@
     var debug_03 = false;
     var debug_04 = false;
     ///=== The following variables should be strictly for internal use only.====///
-    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|figure|map|object|source|video)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|textarea|input|SCRIPT|noscript|META|STYLE|AUDIO|AREA|BASE|canvas|code|figure|map|object|source|tt|video)$/i;
+    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|tt|code|BUTTON|textarea|input|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
     var t_stop = t_start;
@@ -253,7 +253,7 @@
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening function===//
     function ReFixCJK (e) {
-        var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|input|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
+        var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
         if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
         if (document.URL!==LastURL) {
@@ -264,7 +264,7 @@
         document.body.classList.remove("SafedByUser"); //Remove the SafedByUser if it is clicked by user.
         while (clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
-                if (debug_verbose===true) {console.log("FixCJK!: Not a valid click.");}
+                console.log("FixCJK!: Not a valid click on DOM element \u201C"+clickedNode.nodeName+"."+clickedNode.className+"\u201D");
                 return false;
             }
             if (debug_verbose===true) {console.log("Clicked: "+clickedNode.nodeName);}
@@ -759,18 +759,18 @@
     }
     /////=====The Recursion Implementation=====/////
     function FixPunctRecursion(node) {
-        SkippedTags=SkippedTagsForMarks;
+        var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
-        var node2fix=false;
         var currHTML="";
-        var SafeTags=/^(A|ABBR|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i;
-        var useProtection=false;
-        var hasSubElement=false;
+        var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements;
+        var useProtection=false; //Keep it false in production code.
+        var allSafe=true;
+        var node2fix=true;
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
         while (child) {
-            if ( child.nodeType === 3 && !(node.nodeName.match(SkippedTags)) && !(child.data.match(/^[\s]+$/mg))) {
+            if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) && !(child.data.match(/^[\s]+$/mg))) {
                 node2fix=true;
                 if (debug_verbose===true) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
@@ -781,8 +781,7 @@
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                //if  (child.classList.contains("CJK2Fix") && (!(child.nodeName.match(SafeTags)) || child.classList.contains("MarksFixedE135"))) {
-                if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(SkippedTags)) || child.classList.contains("MarksFixedE135"))) {
+                if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(tabooedTags)) || child.classList.contains("MarksFixedE135"))) {
                     currHTML=child.innerHTML;
                     if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m) && useProtection===true) {
                         currHTML=currHTML.replace(/\u2018/mg,'\uE862');
@@ -818,35 +817,44 @@
                     }
                 }
                 else {
-                    FixPunctRecursion(child);
+                    FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
                 }
-                var orig_class=child.className;
-                child.classList.remove("CJK2Fix");
-                child.classList.remove("MarksFixedE135");
-                child.classList.remove("FontsFixedE137");
-                child.classList.remove("\uE985");
-                child.classList.remove("\uE211");
-                if (child.classList.length===0 && child.id.length===0) {
-                    if (debug_verbose===true) {console.log("SUBNODE WITHOUT ID/CLASS: "+child.nodeName);}
-                    //It would be crazy to addListener just us tagNames.
-                }
-                else if (!(child.classList.contains(/[\uE985\uE211]/)) && !(child.nodeName.match(SafeTags))) {
-                    hasSubElement=true; //Do not fix if it contains non-mark subelements.
-                    if (debug_verbose===true) {console.log(node.nodeName+"."+node.className+"-->"+child.nodeName);}
-                }
-                child.className=orig_class;
+                //Test after fixing child:
+                if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSafe=false;} //\uE000 is Tux in Linux Libertine.
             }
             child=child.nextSibling;
         }
-        if (!(node instanceof SVGElement) && node.classList.contains("SafedByUser") && !(node.nodeName.match(SkippedTags))) {
+        if (allSafe===true && (!(node instanceof SVGElement))) {
+            var orig_class=node.className;
+            node.classList.remove("CJK2Fix");
+            node.classList.remove("MarksFixedE135");
+            node.classList.remove("FontsFixedE137");
+            node.classList.remove("\uE985");
+            node.classList.remove("\uE211");
+            node.classList.remove("Safe2FixCJK\uE000");
+            if (node.tagName.match(SafeTags)) {
+                //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
+                node.className=orig_class;
+                node.classList.add("Safe2FixCJK\uE000");
+            }
+            else if (node.classList.length===0 && node.id.length ===0) {
+                //It would be crazy if add listeners just by tags.
+                node.className=orig_class;
+                node.classList.add("Safe2FixCJK\uE000");
+            }
+            else {
+                node.className=orig_class;
+            }
+        }
+        //Force to fix if Safed by User
+        if (!(node instanceof SVGElement) && node.classList.contains("SafedByUser") ) {
             console.log("SAFED BY USER: "+node.nodeName+"."+node.className);
-            node2fix=true;
+            allSafe=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
-            hasSubElement=false;
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (node2fix===true && hasSubElement===false && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSafe===true && node2fix===true && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
@@ -1003,10 +1011,10 @@
     }
     ///==Fix punct in a currHTML===///
     function FixMarksInCurrHTML(currHTML,delete_all_spaces,AlsoChangeFullStop) {
-		//“ \u201C
-		//” \u201D
-		//‘ \u2018
-		//’ \u2019
+        //“ \u201C
+        //” \u201D
+        //‘ \u2018
+        //’ \u2019
         var changhai_style=false;
         var Squeezing=true;
         var CompressInd=false;
@@ -1119,7 +1127,7 @@
             //--TWO PUNCTS: [’”][{Right}] left-right--//
             tmp_str='$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';letter-spacing:'+kern_consec_lr+';">$2</span>$3';
             //old: currHTML=currHTML.replace(/((?:[\u3400-\u9FBF][\u0021-\u003B\u003D\u003F-\u201B\u201D-\u2FFF]*[^’”、，。：；！？）】〉》」』])|^)([\n]?[’”])([『「《〈【（])/mg,tmp_str);
-			currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF](?:<[^><]*>)?(?:[\s\u0020\u0023-\u003B\u003D\u003F-\u201B\u201D-\u2FFF](?:<[^><\uE135\uE211]*>)?)*[\s]?)([’”])([『「《〈【（])/mg,tmp_str);
+            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF](?:<[^><]*>)?(?:[\s\u0020\u0023-\u003B\u003D\u003F-\u201B\u201D-\u2FFF](?:<[^><\uE135\uE211]*>)?)*[\s]?)([’”])([『「《〈【（])/mg,tmp_str);
             //--TWO PUNCTS: [{Right}][“‘] right-right--//
             tmp_str='<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>'+'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$2</span>$3';
             currHTML=currHTML.replace(/([『「《〈【（])([“‘])([\n]?(?:<[^><]+>[ \n]?)*[\u0021-\u003B\u003D\u003F-\u2FFF]*[\u3400-\u9FBF])/mg,tmp_str);
