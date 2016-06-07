@@ -1,3 +1,15 @@
+## 0.12.0 (2016-06-08)
+Features:
+  - Fixing fonts and letter-spacing are separated, shorter but much better fixing methods can be used.
+  - The length limit of consecutive punctuation marks is full removed.
+
+Bugfixes:
+  - A lot of bugs have been fixed thanks to the new multi-pass implementation.
+
+## 0.11.5 (2016-06-07)
+Bugfixes:
+  - Various bugfixes thanks to a partial rewriting/cleaning up.
+
 ## 0.11.2 (2016-06-06)
 Features:
   - Add a webpage repairing framework. Currently it can fix the picture problem after applying "forced fixing". Other webpage repairings can be added in the future.
