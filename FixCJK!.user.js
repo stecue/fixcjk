@@ -254,7 +254,7 @@
     //===The actual listening function===//
     function ReFixCJK (e) {
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
-        if (debug_verbose===false) {console.log(e.target.nodeName);}
+        if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
         if (document.URL!==LastURL) {
             NumPureEng = 0;
@@ -264,7 +264,7 @@
         document.body.classList.remove("SafedByUser"); //Remove the SafedByUser if it is clicked by user.
         while (clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
-                if (debug_verbose===false) {console.log("FixCJK!: Not a valid click.");}
+                console.log("FixCJK!: Not a valid click on tag \u201C"+clickedNode.nodeName+"\u201D");
                 return false;
             }
             if (debug_verbose===true) {console.log("Clicked: "+clickedNode.nodeName);}
