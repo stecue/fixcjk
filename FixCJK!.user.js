@@ -707,7 +707,7 @@
         }
         var useRecursion=true;
         if (useLoop===true) {useRecursion=false;}
-        if (NumAllDOMs > 2000) {
+        if (NumAllDOMs > 21024) {
             useRecursion=false;
         }
         if (useRecursion===true) {
