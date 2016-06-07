@@ -765,7 +765,7 @@
         var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements;
         var useProtection=false; //Keep it false in production code.
         var allSafe=true;
-        var node2fix=true;
+        var node2fix=false;
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
@@ -854,7 +854,7 @@
             node.classList.remove("MarksFixedE135");
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (allSafe===true && node2fix===true && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
