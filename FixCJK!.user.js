@@ -10,10 +10,6 @@
 // @match             http://*/*
 // @match             https://*/*
 // @match             file:///*
-// @exclude           http://*edit*/*
-// @exclude           https://*edit*/*
-// @exclude           http://*action=edit*
-// @exclude           https://*action=edit*
 // @exclude           https://*jsfiddle.net*/*
 // @grant             GM_addStyle
 // ==/UserScript==
@@ -764,7 +760,7 @@
         var currHTML="";
         var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements;
         var useProtection=false; //Keep it false in production code.
-        var allSafe=true;
+        var allSubSafe=true;
         var node2fix=false;
         if (node.classList.contains("MarksFixedE135")) {
             return true;
@@ -820,11 +816,11 @@
                     FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
                 }
                 //Test after fixing child:
-                if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSafe=false;} //\uE000 is Tux in Linux Libertine.
+                if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSubSafe=false;} //\uE000 is Tux in Linux Libertine.
             }
             child=child.nextSibling;
         }
-        if (allSafe===true && (!(node instanceof SVGElement))) {
+        if (allSubSafe===true && (!(node instanceof SVGElement))) {
             var orig_class=node.className;
             node.classList.remove("CJK2Fix");
             node.classList.remove("MarksFixedE135");
@@ -849,12 +845,12 @@
         //Force to fix if Safed by User
         if (!(node instanceof SVGElement) && node.classList.contains("SafedByUser") ) {
             console.log("SAFED BY USER: "+node.nodeName+"."+node.className);
-            allSafe=true;
+            allSubSafe=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (allSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
@@ -1034,7 +1030,7 @@
         currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/mg,'$1$2');
         currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
         //fix quotations followed by HTML symbols:
-        currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])/g,'$1<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
+        currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])/g,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
         //Add space/backspace between ">" and "“"
         if (currHTML.match(/(>[\n]?)[ ]*([“‘])/mg)) {
             if (debug_04===true) {alert('Before Replacement: '+currHTML);}
