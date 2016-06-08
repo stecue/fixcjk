@@ -1074,7 +1074,7 @@
         }
         else {
             currHTML=currHTML.replace(/([\uEB1D\uEB19])[ ]?/mg,'$1');
-            currHTML=currHTML.replace(/[ ]?([\uEB1C\uEB18])/mg,'$1$2');
+            currHTML=currHTML.replace(/[ ]?([\uEB1C\uEB18])/mg,'$1');
         }
         ///--Group Left: [、，。：；！？）】〉》」』\uEB1D\uEB19] //Occupies the left half width.
         ///--Group Right:[『「《〈【（\uEB1C\uEB18] //Occupies the right half width.
