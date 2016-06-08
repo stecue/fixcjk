@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.12.0
+// @version           0.12.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -867,6 +867,7 @@
                     console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
                 }
                 node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
+                node.lang="zh";
             }
             node.classList.add("MarksFixedE135");
             return true;
@@ -886,7 +887,7 @@
         var currpunc=0;
         var numnodes=0;
         var maxChildDataLength=80;
-        var delete_all_spaces=true;
+        var delete_extra_spaces=true;
         var AlsoChangeFullStop=false;
         var all = document.getElementsByClassName('CJK2Fix');
         numnodes=0;
@@ -929,7 +930,7 @@
                             if_replace=true;
                             break;
                         }
-                        else if ((delete_all_spaces===true) && (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\n]?[ ][^ |$]/mg))) {
+                        else if ((delete_extra_spaces===true) && (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\n]?[ ][^ |$]/mg))) {
                             if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                             numnodes++;
                             puncnode.push(i);
@@ -1006,7 +1007,7 @@
         }
     }
     ///==Fix punct in a currHTML===///
-    function FixMarksInCurrHTML(currHTML,delete_all_spaces,AlsoChangeFullStop) {
+    function FixMarksInCurrHTML(currHTML,delete_extra_spaces,AlsoChangeFullStop) {
         //“ \u201C
         //” \u201D
         //‘ \u2018
@@ -1024,10 +1025,9 @@
             return true;
         }
         //We need to strip the space before and after quotation marks before fixing punctions, but not \n
-        if (delete_all_spaces===true) {
-            currHTML=currHTML.replace(/([\u3000-\u303F\uFF00-\uFFEF][\n]?)[ ]([^ |$])/g,'$1$2');
-            currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/mg,'$1$2');
-            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
+        if (delete_extra_spaces===true) {
+            currHTML=currHTML.replace(/([”’、，。：；！？）】〉》」』]+)[\s]{0,1}([^\s|$])/mg,'$1$2');
+            currHTML=currHTML.replace(/[\s]{0,1}([『「《〈【（“‘]+)([^\s|$])/mg,'$1$2');
         }
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> “,”
