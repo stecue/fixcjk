@@ -1026,16 +1026,8 @@
         //We need to strip the space before and after quotation marks before fixing punctions, but not \n
         if (delete_all_spaces===true) {
             currHTML=currHTML.replace(/([\u3000-\u303F\uFF00-\uFFEF][\n]?)[ ]([^ |$])/g,'$1$2');
-        }
-        currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/mg,'$1$2');
-        currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
-        //fix quotations followed by HTML symbols:
-        currHTML=currHTML.replace(/(&[^&;]+;)([“‘][\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF])/g,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:sans-serif;letter-spacing:-1em;">&nbsp;</span>$2');
-        //Add space/backspace between ">" and "“"
-        if (currHTML.match(/(>[\n]?)[ ]*([“‘])/mg)) {
-            if (debug_04===true) {alert('Before Replacement: '+currHTML);}
-            currHTML=currHTML.replace(/(>[\n]?)[ ]*([“‘])/mg,'$1\u200B$2');
-            if (debug_04===true) {alert('After Replacement: '+currHTML);}
+            currHTML=currHTML.replace(/[ ]?([“‘])[ ]?([\n]?[\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/mg,'$1$2');
+            currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+[\n]?)[ ]?([”’])[ ]?/mg,'$1$2');
         }
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> “,”
