@@ -1068,12 +1068,13 @@
         }
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,}/mg,'$1');
-            currHTML=currHTML.replace(/[\s]{0,}([『「《〈【（\uEB1C\uEB18]+)/mg,'$1');
+            //For changhai.org and similar sites.
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,2}/mg,'$1');
+            currHTML=currHTML.replace(/[\s]{0,2}([『「《〈【（\uEB1C\uEB18]+)/mg,'$1');
         }
         else {
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[ ]?/mg,'$1');
-            currHTML=currHTML.replace(/[ ]?([『「《〈【（\uEB1C\uEB18]+)/mg,'$1');
+            currHTML=currHTML.replace(/([\uEB1D\uEB19])[ ]?/mg,'$1');
+            currHTML=currHTML.replace(/[ ]?([\uEB1C\uEB18])/mg,'$1$2');
         }
         ///--Group Left: [、，。：；！？）】〉》」』\uEB1D\uEB19] //Occupies the left half width.
         ///--Group Right:[『「《〈【（\uEB1C\uEB18] //Occupies the right half width.
