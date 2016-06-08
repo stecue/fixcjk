@@ -866,7 +866,12 @@
                 if (debug_verbose===true) {
                     console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
                 }
-                node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
+                if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
+                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
+                }
+                else {
+                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
+                }
                 node.lang="zh";
             }
             node.classList.add("MarksFixedE135");
@@ -887,7 +892,7 @@
         var currpunc=0;
         var numnodes=0;
         var maxChildDataLength=80;
-        var delete_extra_spaces=true;
+        var delete_all_extra_spaces=true;
         var AlsoChangeFullStop=false;
         var all = document.getElementsByClassName('CJK2Fix');
         numnodes=0;
@@ -930,7 +935,7 @@
                             if_replace=true;
                             break;
                         }
-                        else if ((delete_extra_spaces===true) && (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\n]?[ ][^ |$]/mg))) {
+                        else if ((delete_all_extra_spaces===true) && (child.data.match(/[\u3000-\u303F\uFF00-\uFFEF][\n]?[ ][^ |$]/mg))) {
                             if (debug_04===true) {all[i].style.color='Purple';} //Punctions-->Purple;
                             numnodes++;
                             puncnode.push(i);
@@ -1007,7 +1012,7 @@
         }
     }
     ///==Fix punct in a currHTML===///
-    function FixMarksInCurrHTML(currHTML,delete_extra_spaces,AlsoChangeFullStop) {
+    function FixMarksInCurrHTML(currHTML,delete_all_extra_spaces,AlsoChangeFullStop) {
         //“ \u201C
         //” \u201D
         //‘ \u2018
@@ -1023,17 +1028,6 @@
             if (debug_04===true) {console.log(currHTML);}
             all[currpunc].innerHTML=currHTML;
             return true;
-        }
-        //We need to strip the space before and after quotation marks before fixing punctions, but not \n
-        if (delete_extra_spaces===true) {
-            if (document.URL.match(/changhai\.org/)) {
-                currHTML=currHTML.replace(/([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)[\s]{0,2}([^\s『「《〈【（“‘”’、，。：；！？）】〉》」』]|$)/mg,'$1$2');
-                currHTML=currHTML.replace(/([^\s『「《〈【（“‘”’、，。：；！？）】〉》」』]|^)[\s]{0,2}([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)/mg,'$1$2');
-            }
-            else {
-                currHTML=currHTML.replace(/([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)[ ]([^ 『「《〈【（“‘”’、，。：；！？）】〉》」』]|$)/mg,'$1$2');
-                currHTML=currHTML.replace(/([^ 『「《〈【（“‘”’、，。：；！？）】〉》」』]|^)[ ]([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)/mg,'$1$2');
-            }
         }
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> “,”
@@ -1071,6 +1065,15 @@
         while (currHTML.match(/\u2018[^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]+[^\u2019]*([\u2019\n]|$)/mg)) {
             currHTML=currHTML.replace(/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/mg,'\uEB18$2\uEB19');
             currHTML=currHTML.replace(/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\n|$)/mg,'\uEB18$2$3'); //We need the greedy method to get the longest match.
+        }
+        //Remove extra spaces if necessary
+        if (delete_all_extra_spaces===true) {
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,}/mg,'$1');
+            currHTML=currHTML.replace(/[\s]{0,}([『「《〈【（\uEB1C\uEB18]+)/mg,'$1');
+        }
+        else {
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[ ]?/mg,'$1');
+            currHTML=currHTML.replace(/[ ]?([『「《〈【（\uEB1C\uEB18]+)/mg,'$1');
         }
         ///--Group Left: [、，。：；！？）】〉》」』\uEB1D\uEB19] //Occupies the left half width.
         ///--Group Right:[『「《〈【（\uEB1C\uEB18] //Occupies the right half width.
