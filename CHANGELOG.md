@@ -1,3 +1,8 @@
+## 0.12.1 (2016-06-08)
+Features:
+  - Add "lang=zh" attibute to fixed DOM nodes. Better layout with Firefox.
+  - "Blank space removing" is more accurate.
+
 ## 0.12.0 (2016-06-08)
 Features:
   - Fixing fonts and letter-spacing are separated, shorter but much better fixing methods can be used.
