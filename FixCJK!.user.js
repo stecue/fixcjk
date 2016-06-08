@@ -1058,11 +1058,26 @@
             currHTML=currHTML.replace(/(<[^>]*)（([^<]*>)/mg,'$1\uEA19$2');
         }
         //Now let's fix the punctions.
+        //First we need to fix the "reverse-paired" punctuations.
+        var fixpair=false;
+        if (fixpair===true) {
+            var revpaired=/(^[^\u201C\u201D]*)[\u201D]([\w]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]+[\w]*)\u201C/m;
+            while (currHTML.match(revpaired)) {
+                currHTML=currHTML.replace(revpaired,'$1\uEB1C$2\uEB1D');
+            }
+        }
+        //Find paired CJK marks.
         var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/m;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
-        var semipaired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\n|$)/m;
+        //Find paired Latin marks.
+        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/m;
+        while (currHTML.match(paired)) {
+            currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
+        }
+        //"semipaired", just use at the beginning of a paragraph.
+        var semipaired=/^(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\n|$)/m;
         while (currHTML.match(semipaired)) {
             currHTML=currHTML.replace(semipaired,'\uEB1C$2$3'); //We need the greedy method to get the longest match.
         }
@@ -1070,14 +1085,10 @@
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
-        semipaired=/(\u2018)([^\u2019]*[\u3400-\u9FBF][^\u2019]*)(\n|$)/m;
+        //"semipaired", just use at the beginning of a paragraph.
+        semipaired=/^(\u2018)([^\u2019]*[\u3400-\u9FBF][^\u2019]*)(\n|$)/m;
         while (currHTML.match(semipaired)) {
             currHTML=currHTML.replace(semipaired,'\uEB18$2$3'); //We need the greedy method to get the longest match.
-        }
-        //Fix "mispaired" punctions.
-        var mispaired=/(^[^\u201C\u201D]*)[\u201D]([\w]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]+[\w]*)\u201C/m;
-        while (currHTML.match(mispaired)) {
-            currHTML=currHTML.replace(mispaired,'$1\uEB1C$2\uEB1D');
         }
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
@@ -1152,6 +1163,8 @@
         currHTML=currHTML.replace(/\uEA18/mg,'【');
         currHTML=currHTML.replace(/\uEA19/mg,'（');
         ///////==== Change quotation marks back =====/////
+        currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
+        currHTML=currHTML.replace(/\uEC1D/mg,'\u201D');
         currHTML=currHTML.replace(/\uEB1C/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201C</span>');
         currHTML=currHTML.replace(/\uEB1D/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
