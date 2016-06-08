@@ -1026,8 +1026,14 @@
         }
         //We need to strip the space before and after quotation marks before fixing punctions, but not \n
         if (delete_extra_spaces===true) {
-            currHTML=currHTML.replace(/([”’、，。：；！？）】〉》」』]+)[\s]{0,2}([^\s]|$)/mg,'$1$2');
-            currHTML=currHTML.replace(/([^\s]|^)[\s]{0,2}([『「《〈【（“‘]+)/mg,'$1$2');
+            if (document.URL.match(/changhai\.org/)) {
+                currHTML=currHTML.replace(/([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)[\s]{0,2}([^\s『「《〈【（“‘”’、，。：；！？）】〉》」』]|$)/mg,'$1$2');
+                currHTML=currHTML.replace(/([^\s『「《〈【（“‘”’、，。：；！？）】〉》」』]|^)[\s]{0,2}([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)/mg,'$1$2');
+            }
+            else {
+                currHTML=currHTML.replace(/([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)[ ]([^ 『「《〈【（“‘”’、，。：；！？）】〉》」』]|$)/mg,'$1$2');
+                currHTML=currHTML.replace(/([^ 『「《〈【（“‘”’、，。：；！？）】〉》」』]|^)[ ]([『「《〈【（“‘”’、，。：；！？）】〉》」』]+)/mg,'$1$2');
+            }
         }
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> “,”
