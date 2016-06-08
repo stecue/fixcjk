@@ -45,8 +45,8 @@
     var debug_03 = false;
     var debug_04 = false;
     ///=== The following variables should be strictly for internal use only.====///
-    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|tt|code|BUTTON|textarea|input|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|tt|code|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
     var t_stop = t_start;
