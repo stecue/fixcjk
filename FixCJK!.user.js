@@ -758,7 +758,7 @@
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
-        var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements;
+        var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
         var useProtection=false; //Keep it false in production code.
         var allSubSafe=true;
         var node2fix=false;
