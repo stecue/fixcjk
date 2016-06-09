@@ -47,7 +47,7 @@
     var re_to_check = /^uEEE/m; //use ^\uEEE for placeholder.
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|tt|code|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
     var t_stop = t_start;
