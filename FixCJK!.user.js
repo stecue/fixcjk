@@ -1029,32 +1029,32 @@
             if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
-        //"semipaired", not just use at the beginning of a paragraph.
-        var semipaired=/\u201C([^\u201D\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
+        //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
+        var unpaired_timeout=50; //not so important, therefore cannot spend too much time here.
+        var unpaired_start=performance.now();
+        var unpaired=/\u201C([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
+        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
-        semipaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,1})\u201D/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
+        unpaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,3})\u201D/m;
+        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
+        //For single quotations:
         paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/m;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
-        //"semipaired", just use at the beginning of a paragraph.
-        semipaired=/(^[^\u2018\u2019]*)\u2018([^\u2019\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u2019]*$)/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'$1\uEB18$2'); //We need the greedy method to get the longest match.
+        //"unpaired ‘ (\u2018)", not just use at the beginning of a paragraph.
+        unpaired_start=performance.now();
+        unpaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
+        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'\uEB18$1'); //We need the greedy method to get the longest match.
         }
-        //CJK’
-        semipaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB18$1'); //We need the greedy method to get the longest match.
-        }
-        semipaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'$1\uEB19'); //We need the greedy method to get the longest match.
+        //CJK’, otherwise words like it's might be affected.
+        unpaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
+        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
