@@ -239,7 +239,7 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 )
             ReFixCJK(e);
     },false);
-    ///===Time to exiting the main function===///
+    ///===Time to exit the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
         console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
@@ -714,7 +714,7 @@
                 FixPunctRecursion(allrecur[ir]);
             }
             var restoreProtection=false;
-            if (restoreProtection===true) { //Don't use! It will cause all event listeners to be destroyed!!
+            if (restoreProtection===true) { //Don't use it in production code! It will cause all event listeners to be destroyed!!
                 var tmpHTML=document.body.innerHTML;
                 tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
                 tmpHTML=tmpHTML.replace(/\uE863/mg,'\u2019');
@@ -781,9 +781,9 @@
                 }
             }
             else {
-                if (node.innerHTML.match(re_to_check)) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
+                if (node.innerHTML.match(re_to_check)) {console.log("Invalid type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
             }
-            if (child.nodeType===1 && !(child instanceof SVGElement))  {
+            if (child.nodeType===1 && !(child instanceof SVGElement))  {// fix this if!!
                 if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(tabooedTags)) || child.classList.contains("MarksFixedE135"))) {
                     currHTML=child.innerHTML;
                     if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m) && useProtection===true) {
