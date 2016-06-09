@@ -38,7 +38,7 @@
     var ifRound1=true;
     var ifRound2=true;
     var ifRound3=true;
-    var debug_verbose = true; //show/hide more information on console.
+    var debug_verbose = false; //show/hide more information on console.
     var debug_00 = false; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
@@ -741,6 +741,7 @@
             return true;
         }
         if (node.nodeName.match(tabooedTags)) {
+            //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
             node.classList.remove("Safe2FixCJK\uE000");
             node.classList.add("MarksFixedE135");
             return false;
@@ -800,6 +801,7 @@
             allSubSafe=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
+            //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
         }
         //Config and Filtering Done. Fix puncts if necessary.
         if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
@@ -819,6 +821,8 @@
                     if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
+                //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
+                //the blank spaces will be streched but not the "character-spacing" if using align=justify.
                 node.lang="zh";
             }
             node.classList.add("MarksFixedE135");
