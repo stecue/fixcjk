@@ -1,8 +1,9 @@
-## 0.12.2 (2016-06-09)
+## 0.12.3 (2016-06-09)
 Features:
   - Add "lang=zh" attibute to fixed DOM nodes. Better layout with Firefox.
   - "Blank space removing" is more accurate.
   - Try to fix mispaired CJK quotation marks.
+  - Also "squeeze" individual CJK quotation marks.
 
 Bugfixes:
   - Several bugfixes during code cleaning up.
