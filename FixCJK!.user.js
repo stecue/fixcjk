@@ -980,8 +980,8 @@
             return true;
         }
         //==We need to protect the quotation marks within tags first===//
-        // \uE862,\uE863 <==> “,”
-        // \uE972,\uE973 <==> ‘,’
+        // \uE862,\uE863 <==> ‘,’
+        // \uE972,\uE973 <==> “,”
         while (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m)) {
             currHTML=currHTML.replace(/(<[^>]*)‘([^<]*>)/mg,'$1\uE862$2');
             currHTML=currHTML.replace(/(<[^>]*)’([^<]*>)/mg,'$1\uE863$2');
@@ -1105,8 +1105,8 @@
             currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
         }
         if (SqueezeInd===true) {
-            currHTML=currHTML.replace(/(^|[<[^\uE211]*>]|[^><])\uE972/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left=-0.2em;">\uE972</span>');
-            currHTML=currHTML.replace(/\uE973($|[<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right=-0.2em;">\uE973</span>$2');
+            currHTML=currHTML.replace(/(^|[<[^\uE211]*>]|[^><])\uEB1C/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left=-0.2em;">\uEB1C</span>');
+            currHTML=currHTML.replace(/\uEB1D($|[<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right=-0.2em;">\uEB1D</span>$2');
         }
         ///=== Change the protected punctuations in tags back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
