@@ -33,6 +33,7 @@
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
     var CJKOnlyThreshold = 11024; // Only CJK if the number of elements reaches this threshold.
+    var loopThreshold = 2048;
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;
     var ifRound1=true;
@@ -704,7 +705,7 @@
         }
         var useRecursion=true;
         if (useLoop===true) {useRecursion=false;}
-        if (NumAllDOMs > 21024) {
+        if (document.getElementsByClassName("CJK2Fix") > loopThreshold) {
             useRecursion=false;
         }
         if (useRecursion===true) {
