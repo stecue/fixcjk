@@ -712,7 +712,7 @@
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
-                    //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the most deep element first through looping.
+                    //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
                     FixPunctRecursion(allrecur[ir]);
                 }
             }
