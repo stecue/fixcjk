@@ -1,5 +1,5 @@
 ## FixCJK!
-*跨平台 Firefox/Chrome/Chromium/Opera 用户脚本*
+*跨平台 Firefox/Chrome/Chromium/Opera 用户脚本，“搞定”CJK！*
 
 ### 简介
 **[FixCJK!](https://github.com/stecue/fixcjk/)** 是适用于简体中文用户的中文字体和标点修正脚本。主要功能为：
