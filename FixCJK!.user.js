@@ -969,7 +969,7 @@
         //‘<-->\u2018, ’<-->\u2019
         var changhai_style=false;
         var Squeezing=true;
-        var CompressInd=false;
+        var SqueezeInd=true;
         var tmp_str='';
         if (changhai_style===true) {
             //Simply inserting blanck space, like changhai.org.
@@ -1104,7 +1104,7 @@
         if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
             currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
         }
-        if (CompressInd===true) {
+        if (SqueezeInd===true) {
             currHTML=currHTML.replace(/(^|[<[^\uE211]*>]|[^><])\uE972/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left=-0.2em;">\uE972</span>');
             currHTML=currHTML.replace(/\uE973($|[<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right=-0.2em;">\uE973</span>$2');
         }
