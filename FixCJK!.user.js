@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        FixCJK!
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.12.1
+// @version           0.12.2
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -44,6 +44,7 @@
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
+    var re_to_check = /^uEEE/m; //use ^\uEEE for placeholder.
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|tt|code|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
@@ -753,8 +754,9 @@
             }
         }
     }
-    /////=====The Recursion Implementation=====/////
+    /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
+        if (node.innerHTML.match(re_to_check)) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
@@ -766,15 +768,20 @@
             return true;
         }
         while (child) {
-            if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) && !(child.data.match(/^[\s]+$/mg))) {
+            if (node.innerHTML.match(re_to_check)) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
+            if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
+                if (node.innerHTML.match(re_to_check)) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
                 node2fix=true;
                 if (debug_verbose===true) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
                 }
-                if (node.innerHTML.match('value="登录"') && debug_verbose===true) {
-                    console.log("WARNING: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
-                    console.log("WARNING: Wrong Operation because: "+child.data);
+                if (node.innerHTML.match(re_to_check) && node.nodeName.match(tabooedTags)) {
+                    console.log("ERROR: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
+                    console.log("ERROR: Wrong Operation because: "+child.data);
                 }
+            }
+            else {
+                if (node.innerHTML.match(re_to_check)) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
                 if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(tabooedTags)) || child.classList.contains("MarksFixedE135"))) {
@@ -833,7 +840,7 @@
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
             }
-            else if (node.classList.length===0 && node.id.length ===0) {
+            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -862,14 +869,16 @@
                 else
                     console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML);
             }
+            if (node.innerHTML.match(re_to_check)) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
-                if (debug_verbose===true) {
+                if (node.innerHTML.match(re_to_check)) {
                     console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
                 }
                 if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
+                    if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
                 node.lang="zh";
@@ -1059,11 +1068,13 @@
         }
         //Now let's fix the punctions.
         //First we need to fix the "reverse-paired" punctuations.
-        var fixpair=false;
-        if (fixpair===true) {
-            var revpaired=/(^[^\u201C\u201D]*)[\u201D]([\w]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]+[\w]*)\u201C/m;
+        var fixpair=true;
+        if (currHTML.match(re_to_check)) {console.log("Reversing "+currHTML);}
+        if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
+            var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
             while (currHTML.match(revpaired)) {
-                currHTML=currHTML.replace(revpaired,'$1\uEB1C$2\uEB1D');
+                if (currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
+                currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
             }
         }
         //Find paired CJK marks.
@@ -1074,21 +1085,35 @@
         //Find paired Latin marks.
         paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/m;
         while (currHTML.match(paired)) {
+            if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
-        //"semipaired", just use at the beginning of a paragraph.
-        var semipaired=/^(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\n|$)/m;
+        //"semipaired", not just use at the beginning of a paragraph.
+        var semipaired=/\u201C([^\u201D\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
         while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB1C$2$3'); //We need the greedy method to get the longest match.
+            currHTML=currHTML.replace(semipaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
+        }
+        semipaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,1})\u201D/m;
+        while (currHTML.match(semipaired)) {
+            currHTML=currHTML.replace(semipaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
         paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/m;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
         //"semipaired", just use at the beginning of a paragraph.
-        semipaired=/^(\u2018)([^\u2019]*[\u3400-\u9FBF][^\u2019]*)(\n|$)/m;
+        semipaired=/(^[^\u2018\u2019]*)\u2018([^\u2019\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u2019]*$)/m;
         while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB18$2$3'); //We need the greedy method to get the longest match.
+            currHTML=currHTML.replace(semipaired,'$1\uEB18$2'); //We need the greedy method to get the longest match.
+        }
+        //CJK’
+        semipaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
+        while (currHTML.match(semipaired)) {
+            currHTML=currHTML.replace(semipaired,'\uEB18$1'); //We need the greedy method to get the longest match.
+        }
+        semipaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
+        while (currHTML.match(semipaired)) {
+            currHTML=currHTML.replace(semipaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
