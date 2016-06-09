@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name              FixCJK!
-// @name:zh-CN        FixCJK!
+// @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.12.1
+// @version           0.12.2
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -44,6 +44,7 @@
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
+    var re_to_check = /^uEEE/m; //use ^\uEEE for placeholder.
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|tt|code|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
@@ -238,7 +239,7 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 )
             ReFixCJK(e);
     },false);
-    ///===Time to exiting the main function===///
+    ///===Time to exit the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
         console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
@@ -710,35 +711,10 @@
             if (debug_verbose===true) {console.log('Using Recursion');}
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
-                FixPunctRecursion(allrecur[ir]);
-            }
-            var restoreProtection=false;
-            if (restoreProtection===true) { //Don't use! It will cause all event listeners to be destroyed!!
-                var tmpHTML=document.body.innerHTML;
-                tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
-                tmpHTML=tmpHTML.replace(/\uE863/mg,'\u2019');
-                tmpHTML=tmpHTML.replace(/\uE972/mg,'\u201C');
-                tmpHTML=tmpHTML.replace(/\uE973/mg,'\u201D');
-                tmpHTML=tmpHTML.replace(/\uEA01/mg,'、');
-                tmpHTML=tmpHTML.replace(/\uEA02/mg,'，');
-                tmpHTML=tmpHTML.replace(/\uEA03/mg,'。');
-                tmpHTML=tmpHTML.replace(/\uEA04/mg,'：');
-                tmpHTML=tmpHTML.replace(/\uEA05/mg,'；');
-                tmpHTML=tmpHTML.replace(/\uEA06/mg,'！');
-                tmpHTML=tmpHTML.replace(/\uEA07/mg,'？');
-                tmpHTML=tmpHTML.replace(/\uEA08/mg,'）');
-                tmpHTML=tmpHTML.replace(/\uEA09/mg,'】');
-                tmpHTML=tmpHTML.replace(/\uEA10/mg,'〉');
-                tmpHTML=tmpHTML.replace(/\uEA11/mg,'》');
-                tmpHTML=tmpHTML.replace(/\uEA12/mg,'」');
-                tmpHTML=tmpHTML.replace(/\uEA13/mg,'』');
-                tmpHTML=tmpHTML.replace(/\uEA14/mg,'『');
-                tmpHTML=tmpHTML.replace(/\uEA15/mg,'「');
-                tmpHTML=tmpHTML.replace(/\uEA16/mg,'《');
-                tmpHTML=tmpHTML.replace(/\uEA17/mg,'〈');
-                tmpHTML=tmpHTML.replace(/\uEA18/mg,'【');
-                tmpHTML=tmpHTML.replace(/\uEA19/mg,'（');
-                document.body.innerHTML=tmpHTML;
+                if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
+                    //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
+                    FixPunctRecursion(allrecur[ir]);
+                }
             }
         }
         else {
@@ -753,69 +729,47 @@
             }
         }
     }
-    /////=====The Recursion Implementation=====/////
+    /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
+        if (node.innerHTML.match(re_to_check)) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
         var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-        var useProtection=false; //Keep it false in production code.
         var allSubSafe=true;
         var node2fix=false;
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
+        if (node.nodeName.match(tabooedTags)) {
+            //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
+            node.classList.remove("Safe2FixCJK\uE000");
+            node.classList.add("MarksFixedE135");
+            return false;
+        }
         while (child) {
-            if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) && !(child.data.match(/^[\s]+$/mg))) {
+            if (node.innerHTML.match(re_to_check)) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
+            if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
+                if (node.innerHTML.match(re_to_check)) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
                 node2fix=true;
                 if (debug_verbose===true) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
                 }
-                if (node.innerHTML.match('value="登录"') && debug_verbose===true) {
-                    console.log("WARNING: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
-                    console.log("WARNING: Wrong Operation because: "+child.data);
+                if (node.innerHTML.match(re_to_check) && node.nodeName.match(tabooedTags)) {
+                    console.log("ERROR: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
+                    console.log("ERROR: Wrong Operation because: "+child.data);
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(tabooedTags)) || child.classList.contains("MarksFixedE135"))) {
-                    currHTML=child.innerHTML;
-                    if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m) && useProtection===true) {
-                        currHTML=currHTML.replace(/\u2018/mg,'\uE862');
-                        currHTML=currHTML.replace(/\u2019/mg,'\uE863');
-                        currHTML=currHTML.replace(/\u201C/mg,'\uE972');
-                        currHTML=currHTML.replace(/\u201D/mg,'\uE973');
-                        currHTML=currHTML.replace(/、/mg,'\uEA01');
-                        currHTML=currHTML.replace(/，/mg,'\uEA02');
-                        currHTML=currHTML.replace(/。/mg,'\uEA03');
-                        currHTML=currHTML.replace(/：/mg,'\uEA04');
-                        currHTML=currHTML.replace(/；/mg,'\uEA05');
-                        currHTML=currHTML.replace(/！/mg,'\uEA06');
-                        currHTML=currHTML.replace(/？/mg,'\uEA07');
-                        currHTML=currHTML.replace(/）/mg,'\uEA08');
-                        currHTML=currHTML.replace(/】/mg,'\uEA09');
-                        currHTML=currHTML.replace(/〉/mg,'\uEA10');
-                        currHTML=currHTML.replace(/》/mg,'\uEA11');
-                        currHTML=currHTML.replace(/」/mg,'\uEA12');
-                        currHTML=currHTML.replace(/』/mg,'\uEA13');
-                        currHTML=currHTML.replace(/『/mg,'\uEA14');
-                        currHTML=currHTML.replace(/「/mg,'\uEA15');
-                        currHTML=currHTML.replace(/《/mg,'\uEA16');
-                        currHTML=currHTML.replace(/〈/mg,'\uEA17');
-                        currHTML=currHTML.replace(/【/mg,'\uEA18');
-                        currHTML=currHTML.replace(/（/mg,'\uEA19');
-                        if (debug_verbose===true) {
-                            console.log("WARNING: All subnodes of"+child.nodeName+"."+child.className+" will be destroyed!");
-                        }
-                        child.innerHTML=currHTML;
-                    }
-                    if (!child.classList.contains("MarksFixedE135")) {
-                        child.classList.add("MarksFixedE135");
-                    }
+                if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {
+                    child.classList.remove("Safe2FixCJK\uE000");
+                    child.classList.remove("CJK2Fix");
+                    child.classList.add("MarksFixedE135");
                 }
                 else {
                     FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
                 }
-                //Test after fixing child:
+                //Test again after fixing child:
                 if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSubSafe=false;} //\uE000 is Tux in Linux Libertine.
             }
             child=child.nextSibling;
@@ -833,7 +787,7 @@
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
             }
-            else if (node.classList.length===0 && node.id.length ===0) {
+            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -848,6 +802,7 @@
             allSubSafe=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
+            //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
         }
         //Config and Filtering Done. Fix puncts if necessary.
         if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
@@ -856,22 +811,19 @@
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
                 node.classList.remove("SafedByUser");
             }
-            if (debug_verbose===true) {
-                if (node.innerHTML.length > 20)
-                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
-                else
-                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML);
-            }
+            if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
+            if (node.innerHTML.match(re_to_check)) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
-                if (debug_verbose===true) {
-                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
-                }
+                if (node.innerHTML.match(re_to_check)) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
                 if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
+                    if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
+                //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
+                //the blank spaces will be streched but not the "character-spacing" if using align=justify.
                 node.lang="zh";
             }
             node.classList.add("MarksFixedE135");
@@ -1013,10 +965,8 @@
     }
     ///==Fix punct in a currHTML===///
     function FixMarksInCurrHTML(currHTML,delete_all_extra_spaces,AlsoChangeFullStop) {
-        //“ \u201C
-        //” \u201D
-        //‘ \u2018
-        //’ \u2019
+        //“<-->\u201C, ”<-->\u201D
+        //‘<-->\u2018, ’<-->\u2019
         var changhai_style=false;
         var Squeezing=true;
         var CompressInd=false;
@@ -1058,26 +1008,53 @@
             currHTML=currHTML.replace(/(<[^>]*)（([^<]*>)/mg,'$1\uEA19$2');
         }
         //Now let's fix the punctions.
+        //First we need to fix the "reverse-paired" punctuations.
+        var fixpair=true;
+        if (currHTML.match(re_to_check)) {console.log("Reversing "+currHTML);}
+        if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
+            var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
+            while (currHTML.match(revpaired)) {
+                if (currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
+                currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
+            }
+        }
+        //Find paired CJK marks.
         var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/m;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
-        var semipaired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\n|$)/m;
+        //Find paired Latin marks.
+        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/m;
+        while (currHTML.match(paired)) {
+            if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
+            currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
+        }
+        //"semipaired", not just use at the beginning of a paragraph.
+        var semipaired=/\u201C([^\u201D\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
         while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB1C$2$3'); //We need the greedy method to get the longest match.
+            currHTML=currHTML.replace(semipaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
+        }
+        semipaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,1})\u201D/m;
+        while (currHTML.match(semipaired)) {
+            currHTML=currHTML.replace(semipaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
         paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/m;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
-        semipaired=/(\u2018)([^\u2019]*[\u3400-\u9FBF][^\u2019]*)(\n|$)/m;
+        //"semipaired", just use at the beginning of a paragraph.
+        semipaired=/(^[^\u2018\u2019]*)\u2018([^\u2019\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u2019]*$)/m;
         while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB18$2$3'); //We need the greedy method to get the longest match.
+            currHTML=currHTML.replace(semipaired,'$1\uEB18$2'); //We need the greedy method to get the longest match.
         }
-        //Fix "mispaired" punctions.
-        var mispaired=/(^[^\u201C\u201D]*)[\u201D]([\w]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]+[\w]*)\u201C/m;
-        while (currHTML.match(mispaired)) {
-            currHTML=currHTML.replace(mispaired,'$1\uEB1C$2\uEB1D');
+        //CJK’
+        semipaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
+        while (currHTML.match(semipaired)) {
+            currHTML=currHTML.replace(semipaired,'\uEB18$1'); //We need the greedy method to get the longest match.
+        }
+        semipaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
+        while (currHTML.match(semipaired)) {
+            currHTML=currHTML.replace(semipaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
@@ -1152,6 +1129,8 @@
         currHTML=currHTML.replace(/\uEA18/mg,'【');
         currHTML=currHTML.replace(/\uEA19/mg,'（');
         ///////==== Change quotation marks back =====/////
+        currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
+        currHTML=currHTML.replace(/\uEC1D/mg,'\u201D');
         currHTML=currHTML.replace(/\uEB1C/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201C</span>');
         currHTML=currHTML.replace(/\uEB1D/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
