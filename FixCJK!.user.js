@@ -38,7 +38,7 @@
     var ifRound1=true;
     var ifRound2=true;
     var ifRound3=true;
-    var debug_verbose = false; //show/hide more information on console.
+    var debug_verbose = true; //show/hide more information on console.
     var debug_00 = false; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
@@ -735,11 +735,15 @@
         var child=node.firstChild;
         var currHTML="";
         var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-        var useProtection=false; //Keep it false in production code.
         var allSubSafe=true;
         var node2fix=false;
         if (node.classList.contains("MarksFixedE135")) {
             return true;
+        }
+        if (node.nodeName.match(tabooedTags)) {
+            node.classList.remove("Safe2FixCJK\uE000");
+            node.classList.add("MarksFixedE135");
+            return false;
         }
         while (child) {
             if (node.innerHTML.match(re_to_check)) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
@@ -753,9 +757,6 @@
                     console.log("ERROR: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
                     console.log("ERROR: Wrong Operation because: "+child.data);
                 }
-            }
-            else {
-                if (node.innerHTML.match(re_to_check)) {console.log("Invalid type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
                 if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {
@@ -807,22 +808,15 @@
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
                 node.classList.remove("SafedByUser");
             }
-            if (debug_verbose===true) {
-                if (node.innerHTML.length > 20)
-                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));
-                else
-                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML);
-            }
+            if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
             if (node.innerHTML.match(re_to_check)) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
-                if (node.innerHTML.match(re_to_check)) {
-                    console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);
-                }
+                if (node.innerHTML.match(re_to_check)) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
                 if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
-                    if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,20));}
+                    if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
                 node.lang="zh";
@@ -966,10 +960,8 @@
     }
     ///==Fix punct in a currHTML===///
     function FixMarksInCurrHTML(currHTML,delete_all_extra_spaces,AlsoChangeFullStop) {
-        //“ \u201C
-        //” \u201D
-        //‘ \u2018
-        //’ \u2019
+        //“<-->\u201C, ”<-->\u201D
+        //‘<-->\u2018, ’<-->\u2019
         var changhai_style=false;
         var Squeezing=true;
         var CompressInd=false;
