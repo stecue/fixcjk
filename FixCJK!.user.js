@@ -1010,10 +1010,12 @@
         //Now let's fix the punctions.
         //First we need to fix the "reverse-paired" punctuations.
         var fixpair=true;
+        var fixpair_timeout=10; //Don't spend too much time on this "bonus" function.
+        var fixpair_start=performance.now();
         if (currHTML.match(re_to_check)) {console.log("Reversing "+currHTML);}
         if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
             var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
-            while (currHTML.match(revpaired)) {
+            while (currHTML.match(revpaired) && (performance.now()-fixpair_start)<fixpair_timeout ) {
                 if (currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
                 currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
             }
@@ -1030,7 +1032,7 @@
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
-        var unpaired_timeout=50; //not so important, therefore cannot spend too much time here.
+        var unpaired_timeout=10; //not so important, therefore cannot spend too much time here.
         var unpaired_start=performance.now();
         var unpaired=/\u201C([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
         while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
@@ -1074,7 +1076,9 @@
         var reLR=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
         var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
         var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
-        while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m)) {
+        var sqz_start=performance.now();
+        var sqz_timeout=50; // 50ms per element seems long enough.
+        while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
                 tmp_str='<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2';
