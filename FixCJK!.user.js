@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name              FixCJK!
-// @name:zh-CN        FixCJK!
+// @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
 // @version           0.12.2
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
@@ -711,35 +711,9 @@
             if (debug_verbose===true) {console.log('Using Recursion');}
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
-                FixPunctRecursion(allrecur[ir]);
-            }
-            var restoreProtection=false;
-            if (restoreProtection===true) { //Don't use it in production code! It will cause all event listeners to be destroyed!!
-                var tmpHTML=document.body.innerHTML;
-                tmpHTML=tmpHTML.replace(/\uE862/mg,'\u2018');
-                tmpHTML=tmpHTML.replace(/\uE863/mg,'\u2019');
-                tmpHTML=tmpHTML.replace(/\uE972/mg,'\u201C');
-                tmpHTML=tmpHTML.replace(/\uE973/mg,'\u201D');
-                tmpHTML=tmpHTML.replace(/\uEA01/mg,'、');
-                tmpHTML=tmpHTML.replace(/\uEA02/mg,'，');
-                tmpHTML=tmpHTML.replace(/\uEA03/mg,'。');
-                tmpHTML=tmpHTML.replace(/\uEA04/mg,'：');
-                tmpHTML=tmpHTML.replace(/\uEA05/mg,'；');
-                tmpHTML=tmpHTML.replace(/\uEA06/mg,'！');
-                tmpHTML=tmpHTML.replace(/\uEA07/mg,'？');
-                tmpHTML=tmpHTML.replace(/\uEA08/mg,'）');
-                tmpHTML=tmpHTML.replace(/\uEA09/mg,'】');
-                tmpHTML=tmpHTML.replace(/\uEA10/mg,'〉');
-                tmpHTML=tmpHTML.replace(/\uEA11/mg,'》');
-                tmpHTML=tmpHTML.replace(/\uEA12/mg,'」');
-                tmpHTML=tmpHTML.replace(/\uEA13/mg,'』');
-                tmpHTML=tmpHTML.replace(/\uEA14/mg,'『');
-                tmpHTML=tmpHTML.replace(/\uEA15/mg,'「');
-                tmpHTML=tmpHTML.replace(/\uEA16/mg,'《');
-                tmpHTML=tmpHTML.replace(/\uEA17/mg,'〈');
-                tmpHTML=tmpHTML.replace(/\uEA18/mg,'【');
-                tmpHTML=tmpHTML.replace(/\uEA19/mg,'（');
-                document.body.innerHTML=tmpHTML;
+                if ( !(allrecur[ir].classList.contains("MarksFixedE135")) && !(allrecur[ir].parentNode.classList.contains("CJK2Fix"))) {
+                    FixPunctRecursion(allrecur[ir]);
+                }
             }
         }
         else {
@@ -783,46 +757,16 @@
             else {
                 if (node.innerHTML.match(re_to_check)) {console.log("Invalid type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
             }
-            if (child.nodeType===1 && !(child instanceof SVGElement))  {// fix this if!!
-                if  (child.classList.contains("CJK2Fix") && ((child.nodeName.match(tabooedTags)) || child.classList.contains("MarksFixedE135"))) {
-                    currHTML=child.innerHTML;
-                    if (currHTML.match(/<[^>]*[“”‘’、，。：；！？）】〉》」』『「《〈【（][^<]*>/m) && useProtection===true) {
-                        currHTML=currHTML.replace(/\u2018/mg,'\uE862');
-                        currHTML=currHTML.replace(/\u2019/mg,'\uE863');
-                        currHTML=currHTML.replace(/\u201C/mg,'\uE972');
-                        currHTML=currHTML.replace(/\u201D/mg,'\uE973');
-                        currHTML=currHTML.replace(/、/mg,'\uEA01');
-                        currHTML=currHTML.replace(/，/mg,'\uEA02');
-                        currHTML=currHTML.replace(/。/mg,'\uEA03');
-                        currHTML=currHTML.replace(/：/mg,'\uEA04');
-                        currHTML=currHTML.replace(/；/mg,'\uEA05');
-                        currHTML=currHTML.replace(/！/mg,'\uEA06');
-                        currHTML=currHTML.replace(/？/mg,'\uEA07');
-                        currHTML=currHTML.replace(/）/mg,'\uEA08');
-                        currHTML=currHTML.replace(/】/mg,'\uEA09');
-                        currHTML=currHTML.replace(/〉/mg,'\uEA10');
-                        currHTML=currHTML.replace(/》/mg,'\uEA11');
-                        currHTML=currHTML.replace(/」/mg,'\uEA12');
-                        currHTML=currHTML.replace(/』/mg,'\uEA13');
-                        currHTML=currHTML.replace(/『/mg,'\uEA14');
-                        currHTML=currHTML.replace(/「/mg,'\uEA15');
-                        currHTML=currHTML.replace(/《/mg,'\uEA16');
-                        currHTML=currHTML.replace(/〈/mg,'\uEA17');
-                        currHTML=currHTML.replace(/【/mg,'\uEA18');
-                        currHTML=currHTML.replace(/（/mg,'\uEA19');
-                        if (debug_verbose===true) {
-                            console.log("WARNING: All subnodes of"+child.nodeName+"."+child.className+" will be destroyed!");
-                        }
-                        child.innerHTML=currHTML;
-                    }
-                    if (!child.classList.contains("MarksFixedE135")) {
-                        child.classList.add("MarksFixedE135");
-                    }
+            if (child.nodeType===1 && !(child instanceof SVGElement))  {
+                if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {
+                    child.classList.remove("Safe2FixCJK\uE000");
+                    child.classList.remove("CJK2Fix");
+                    child.classList.add("MarksFixedE135");
                 }
                 else {
                     FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
                 }
-                //Test after fixing child:
+                //Test again after fixing child:
                 if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSubSafe=false;} //\uE000 is Tux in Linux Libertine.
             }
             child=child.nextSibling;
