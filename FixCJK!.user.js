@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.12.2
+// @version           0.12.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1103,6 +1103,10 @@
         if (debug_04===true) {all[currpunc].style.color="Pink";}
         if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
             currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
+        }
+        if (CompressInd===true) {
+            currHTML=currHTML.replace(/(^|[<[^\uE211]*>]|[^><])\uE972/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left=-0.2em;">\uE972</span>');
+            currHTML=currHTML.replace(/\uE973($|[<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right=-0.2em;">\uE973</span>$2');
         }
         ///=== Change the protected punctuations in tags back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
