@@ -1160,7 +1160,7 @@
         currHTML=currHTML.replace(/\uEB19/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
         ///=== Replacing and Restoring Ends ===///
         var time_replacing=performance.now()-time_squeezing;
-        if ( (performance.now()-FixMars_start)>200 ) {
+        if ( (performance.now()-FixMarks_start)>200 ) {
             console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.")
             console.log("Shifting:  "+time_shifting.toFixed(0)+" ms.");
             console.log("Squeezing: "+time_squeezing.toFixed(0)+" ms.");
