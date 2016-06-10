@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.12.3
+// @version           0.12.4
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -33,6 +33,7 @@
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
     var CJKOnlyThreshold = 11024; // Only CJK if the number of elements reaches this threshold.
+    var loopThreshold = 8192;
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;
     var ifRound1=true;
@@ -44,6 +45,7 @@
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
+    var debug_re_to_check = false; //"true" will slow down a lot!
     var re_to_check = /^uEEE/m; //use ^\uEEE for placeholder.
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -206,7 +208,7 @@
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
     }
     else {
-        FunFixPunct(useLoop,MaxNumLoops,returnLater);
+        window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),10);
     }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -232,12 +234,15 @@
             e.target.classList.add("SafedByUser");
             e.target.classList.remove("MarksFixedE135");
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
-            ReFixCJK(e);
+            //ReFix after other things are done.
+            setTimeout(ReFixCJK,10,e);
             if (document.URL.match(/zhihu\.com/mg))
                 FixLazy();
         }
-        else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 )
-            ReFixCJK(e);
+        else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
+            //ReFix after other things are done.
+            setTimeout(ReFixCJK,10,e);
+        }
     },false);
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();
@@ -698,13 +703,14 @@
     ///===The Actual Round 4===///
     function FunFixPunct(useLoop,MaxNumLoops,returnNow) {
         SkippedTags=SkippedTagsForMarks;
+        var recursion_start=0;
         //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
         if (returnNow===true) {
             return true;
         }
         var useRecursion=true;
         if (useLoop===true) {useRecursion=false;}
-        if (NumAllDOMs > 21024) {
+        if (document.getElementsByClassName("CJK2Fix") > loopThreshold) {
             useRecursion=false;
         }
         if (useRecursion===true) {
@@ -713,7 +719,14 @@
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
                     //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
+                    recursion_start=performance.now();
                     FixPunctRecursion(allrecur[ir]);
+                    if ( (performance.now()-t_start) > timeOut ) {
+                        processedAll=false;
+                        console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                        console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
+                        break;
+                    }
                 }
             }
         }
@@ -731,7 +744,7 @@
     }
     /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
-        if (node.innerHTML.match(re_to_check)) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
+        if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
@@ -748,14 +761,14 @@
             return false;
         }
         while (child) {
-            if (node.innerHTML.match(re_to_check)) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
+            if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
             if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
-                if (node.innerHTML.match(re_to_check)) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
+                if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
                 node2fix=true;
                 if (debug_verbose===true) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
                 }
-                if (node.innerHTML.match(re_to_check) && node.nodeName.match(tabooedTags)) {
+                if (debug_re_to_check===true && (node.innerHTML.match(re_to_check)) && node.nodeName.match(tabooedTags)) {
                     console.log("ERROR: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
                     console.log("ERROR: Wrong Operation because: "+child.data);
                 }
@@ -812,14 +825,14 @@
                 node.classList.remove("SafedByUser");
             }
             if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
-            if (node.innerHTML.match(re_to_check)) {console.log("Checking if contain punctuations to fix");}
+            if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
-                if (node.innerHTML.match(re_to_check)) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
+                if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
                 if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
-                    if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
+                    if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
                 //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
@@ -971,6 +984,7 @@
         var Squeezing=true;
         var SqueezeInd=true;
         var tmp_str='';
+        var FixMarks_start=performance.now();
         if (changhai_style===true) {
             //Simply inserting blanck space, like changhai.org.
             currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
@@ -1007,55 +1021,66 @@
             currHTML=currHTML.replace(/(<[^>]*)【([^<]*>)/mg,'$1\uEA18$2');
             currHTML=currHTML.replace(/(<[^>]*)（([^<]*>)/mg,'$1\uEA19$2');
         }
+        var time2protect=performance.now()-FixMarks_start;
         //Now let's fix the punctions.
         //First we need to fix the "reverse-paired" punctuations.
         var fixpair=true;
-        if (currHTML.match(re_to_check)) {console.log("Reversing "+currHTML);}
+        var fixpair_timeout=10; //Don't spend too much time on this "bonus" function.
+        var fixpair_start=performance.now();
+        if ( currHTML.length > 10240 ) {fixpair=false;}
+        if (debug_re_to_check===true && (currHTML.match(re_to_check))) {console.log("Reversing "+currHTML);}
         if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
             var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
-            while (currHTML.match(revpaired)) {
-                if (currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
+            while (currHTML.match(revpaired) && (performance.now()-fixpair_start)<fixpair_timeout ) {
+                if (debug_re_to_check===true && currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
                 currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
             }
         }
-        //Find paired CJK marks.
-        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/m;
+        var fixpair_stop=performance.now()-fixpair_start;
+        //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
+        var paired_start=performance.now();
+        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
         //Find paired Latin marks.
-        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/m;
+        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
-            if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
+            if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
-        //"semipaired", not just use at the beginning of a paragraph.
-        var semipaired=/\u201C([^\u201D\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
+        var paired_stop=performance.now()-paired_start;
+        //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
+        var unpaired_timeout=3; //not so important, therefore cannot spend too much time here.
+        var unpaired_start=performance.now();
+        var unpaired=/\u201C([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
-        semipaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,1})\u201D/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
+        unpaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,3})\u201D/m;
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
-        paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/m;
+        //For single quotations:
+        var paired_single_start=performance.now();
+        paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
-        //"semipaired", just use at the beginning of a paragraph.
-        semipaired=/(^[^\u2018\u2019]*)\u2018([^\u2019\u3400-\u9FBF]{0,1}[\u3400-\u9FBF][^\u2019]*$)/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'$1\uEB18$2'); //We need the greedy method to get the longest match.
+        var paired_single_stop=performance.now()-paired_single_start;
+        //"unpaired ‘ (\u2018)", not just use at the beginning of a paragraph.
+        unpaired_start=performance.now();
+        unpaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'\uEB18$1'); //We need the greedy method to get the longest match.
         }
-        //CJK’
-        semipaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'\uEB18$1'); //We need the greedy method to get the longest match.
+        //CJK’, otherwise words like it's might be affected.
+        unpaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+            currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
-        semipaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
-        while (currHTML.match(semipaired)) {
-            currHTML=currHTML.replace(semipaired,'$1\uEB19'); //We need the greedy method to get the longest match.
-        }
+        ///=== Unicode Shifting Ends ===///
+        var time2shift=performance.now()-FixMarks_start-time2protect;
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
@@ -1074,7 +1099,9 @@
         var reLR=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
         var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
         var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
-        while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m)) {
+        var sqz_start=performance.now();
+        var sqz_timeout=50; // 50ms per element seems long enough.
+        while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
                 tmp_str='<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2';
@@ -1109,6 +1136,8 @@
             currHTML=currHTML.replace(/([<[^\uE211]*>]|[^><])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
+        ///=== Squeezing Ends ===///
+        var time2squeeze=performance.now()-FixMarks_start-time2shift-time2protect;
         ///=== Change the protected punctuations in tags back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
@@ -1140,6 +1169,19 @@
         currHTML=currHTML.replace(/\uEB1D/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
         currHTML=currHTML.replace(/\uEB19/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
+        ///=== Replacing and Restoring Ends ===///
+        var time2replace=performance.now()-FixMarks_start-time2squeeze-time2shift-time2protect;
+        if ( (performance.now()-FixMarks_start)>200 ) {
+            console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.")
+            console.log("Protect: "+time2protect.toFixed(0)+" ms.");
+            console.log("Shift:   "+time2shift.toFixed(0)+" ms.");
+            console.log(" ----->rev: "+fixpair_stop.toFixed(0)+" ms.");
+            console.log(" ----->\u201C,\u201D: "+paired_stop.toFixed(0)+" ms."); 
+            console.log(" ----->\u2018,\u2019: "+paired_single_stop.toFixed(0)+" ms."); 
+            console.log("Squeeze: "+time2squeeze.toFixed(0)+" ms.");
+            console.log("Replace: "+time2replace.toFixed(0)+" ms.");
+            console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
+        }
         return currHTML;
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
