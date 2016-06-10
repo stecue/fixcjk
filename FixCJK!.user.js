@@ -233,12 +233,15 @@
             e.target.classList.add("SafedByUser");
             e.target.classList.remove("MarksFixedE135");
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
-            ReFixCJK(e);
+            //ReFix after other things are done.
+            setTimeout(ReFixCJK,10,e);
             if (document.URL.match(/zhihu\.com/mg))
                 FixLazy();
         }
-        else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 )
-            ReFixCJK(e);
+        else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
+            //ReFix after other things are done.
+            setTimeout(ReFixCJK,10,e);
+        }
     },false);
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();

@@ -1,3 +1,7 @@
+## 0.12.4 (2016-06-10)
+Features:
+  - Use the asynchronous feature to fire re-checking after other events are done.
+
 ## 0.12.3 (2016-06-09)
 Features:
   - Add "lang=zh" attibute to fixed DOM nodes. Better layout with Firefox.
