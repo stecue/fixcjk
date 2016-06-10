@@ -34,6 +34,9 @@
     var maxNumElements = 81024; // maximum number of elements to process.
     var CJKOnlyThreshold = 11024; // Only CJK if the number of elements reaches this threshold.
     var loopThreshold = 8192;
+    var noBonusLength = 11024; //no bonus functions such as fixing "reversed" pairs.
+    var noBonusTimeout = 20; //Longest time (in ms) to run bonus functions for each element.
+    var sqz_timeout=50; // 50ms per element seems long enough.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;
     var ifRound1=true;
@@ -45,8 +48,8 @@
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
-    var debug_re_to_check = false; //"true" will slow down a lot!
-    var re_to_check = /^uEEE/m; //use ^\uEEE for placeholder.
+    var debug_re_to_check = false; //"true" might slow down a lot!
+    var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
@@ -1025,9 +1028,9 @@
         //Now let's fix the punctions.
         //First we need to fix the "reverse-paired" punctuations.
         var fixpair=true;
-        var fixpair_timeout=10; //Don't spend too much time on this "bonus" function.
+        var fixpair_timeout = noBonusTimeout; //Don't spend too much time on this "bonus" function.
         var fixpair_start=performance.now();
-        if ( currHTML.length > 10240 ) {fixpair=false;}
+        if ( currHTML.length > noBonusLength ) {fixpair=false;}
         if (debug_re_to_check===true && (currHTML.match(re_to_check))) {console.log("Reversing "+currHTML);}
         if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
             var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
@@ -1051,14 +1054,14 @@
         }
         var paired_stop=performance.now()-paired_start;
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
-        var unpaired_timeout=3; //not so important, therefore cannot spend too much time here.
+        var unpaired_timeout = noBonusTimeout; //not so important, therefore cannot spend too much time here.
         var unpaired_start=performance.now();
         var unpaired=/\u201C([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
-        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
         unpaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,3})\u201D/m;
-        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
         //For single quotations:
@@ -1071,12 +1074,12 @@
         //"unpaired ‘ (\u2018)", not just use at the beginning of a paragraph.
         unpaired_start=performance.now();
         unpaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
-        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB18$1'); //We need the greedy method to get the longest match.
         }
         //CJK’, otherwise words like it's might be affected.
         unpaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
-        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
         ///=== Unicode Shifting Ends ===///
@@ -1100,7 +1103,6 @@
         var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
         var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
         var sqz_start=performance.now();
-        var sqz_timeout=50; // 50ms per element seems long enough.
         while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
@@ -1176,8 +1178,8 @@
             console.log("Protect: "+time2protect.toFixed(0)+" ms.");
             console.log("Shift:   "+time2shift.toFixed(0)+" ms.");
             console.log(" ----->rev: "+fixpair_stop.toFixed(0)+" ms.");
-            console.log(" ----->\u201C,\u201D: "+paired_stop.toFixed(0)+" ms."); 
-            console.log(" ----->\u2018,\u2019: "+paired_single_stop.toFixed(0)+" ms."); 
+            console.log(" ----->\u201C,\u201D: "+paired_stop.toFixed(0)+" ms.");
+            console.log(" ----->\u2018,\u2019: "+paired_single_stop.toFixed(0)+" ms.");
             console.log("Squeeze: "+time2squeeze.toFixed(0)+" ms.");
             console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
