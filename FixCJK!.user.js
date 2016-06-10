@@ -1020,11 +1020,13 @@
             currHTML=currHTML.replace(/(<[^>]*)【([^<]*>)/mg,'$1\uEA18$2');
             currHTML=currHTML.replace(/(<[^>]*)（([^<]*>)/mg,'$1\uEA19$2');
         }
+        var time2protect=performance.now()-FixMarks_start;
         //Now let's fix the punctions.
         //First we need to fix the "reverse-paired" punctuations.
         var fixpair=true;
         var fixpair_timeout=10; //Don't spend too much time on this "bonus" function.
         var fixpair_start=performance.now();
+        if ( currHTML.length > 10240 ) {fixpair=false;}
         if (currHTML.match(re_to_check)) {console.log("Reversing "+currHTML);}
         if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
             var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
@@ -1033,7 +1035,9 @@
                 currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
             }
         }
+        var fixpair_stop=performance.now()-fixpair_start;
         //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
+        var paired_start=performance.now();
         var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
@@ -1044,35 +1048,38 @@
             if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
+        var paired_stop=performance.now()-paired_start;
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
-        var unpaired_timeout=10; //not so important, therefore cannot spend too much time here.
+        var unpaired_timeout=3; //not so important, therefore cannot spend too much time here.
         var unpaired_start=performance.now();
         var unpaired=/\u201C([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u201C\u201D]*$)/m;
-        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
         unpaired=/(^[^\u201C\u201D]*[\u3400-\u9FBF][^\u201D\u3400-\u9FBF]{0,3})\u201D/m;
-        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
         //For single quotations:
+        var paired_single_start=performance.now();
         paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
+        var paired_single_stop=performance.now()-paired_single_start;
         //"unpaired ‘ (\u2018)", not just use at the beginning of a paragraph.
         unpaired_start=performance.now();
         unpaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3400-\u9FBF][^\u2018\u2019]*$)/m;
-        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB18$1'); //We need the greedy method to get the longest match.
         }
         //CJK’, otherwise words like it's might be affected.
         unpaired=/(^[^\u2018\u2019]*[\u3400-\u9FBF])\u2019/m;
-        while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
+        while ( currHTML.length< 10240 && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
         ///=== Unicode Shifting Ends ===///
-        var time_shifting=performance.now()-FixMarks_start;
+        var time2shift=performance.now()-FixMarks_start-time2protect;
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
@@ -1129,7 +1136,7 @@
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
-        var time_squeezing=performance.now()-FixMarks_start-time_shifting;
+        var time2squeeze=performance.now()-FixMarks_start-time2shift-time2protect;
         ///=== Change the protected punctuations in tags back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
@@ -1162,12 +1169,16 @@
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
         currHTML=currHTML.replace(/\uEB19/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
         ///=== Replacing and Restoring Ends ===///
-        var time_replacing=performance.now()-FixMarks_start-time_squeezing-time_shifting;
+        var time2replace=performance.now()-FixMarks_start-time2squeeze-time2shift-time2protect;
         if ( (performance.now()-FixMarks_start)>200 ) {
             console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.")
-            console.log("Shifting:  "+time_shifting.toFixed(0)+" ms.");
-            console.log("Squeezing: "+time_squeezing.toFixed(0)+" ms.");
-            console.log("Replacing: "+time_replacing.toFixed(0)+" ms.");
+            console.log("Protect: "+time2protect.toFixed(0)+" ms.");
+            console.log("Shift:   "+time2shift.toFixed(0)+" ms.");
+            console.log(" ----->rev: "+fixpair_stop.toFixed(0)+" ms.");
+            console.log(" ----->\u201C,\u201D: "+paired_stop.toFixed(0)+" ms."); 
+            console.log(" ----->\u2018,\u2019: "+paired_single_stop.toFixed(0)+" ms."); 
+            console.log("Squeeze: "+time2squeeze.toFixed(0)+" ms.");
+            console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
         return currHTML;

@@ -1,6 +1,7 @@
 ## 0.12.4 (2016-06-10)
 Features:
   - Use the asynchronous feature to fire re-checking after other events are done.
+  - Add more timers.
 
 ## 0.12.3 (2016-06-09)
 Features:
