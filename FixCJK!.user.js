@@ -719,7 +719,8 @@
                     FixPunctRecursion(allrecur[ir]);
                     if ( (performance.now()-t_start) > timeOut ) {
                         processedAll=false;
-                        console.log("FixCJK!: Time out. Last recursion took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                        console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                        console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
                         break;
                     }
                 }
@@ -979,6 +980,7 @@
         var Squeezing=true;
         var SqueezeInd=true;
         var tmp_str='';
+        var FixMarks_start=performance.now();
         if (changhai_style===true) {
             //Simply inserting blanck space, like changhai.org.
             currHTML=currHTML.replace(/([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
@@ -1028,7 +1030,7 @@
                 currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
             }
         }
-        //Find paired CJK marks.
+        //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
         var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
@@ -1066,6 +1068,8 @@
         while (currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
+        ///=== Unicode Shifting Ends ===///
+        var time_shifting=performance.now()-FixMarks_start;
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
@@ -1121,6 +1125,8 @@
             currHTML=currHTML.replace(/([<[^\uE211]*>]|[^><])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
+        ///=== Squeezing Ends ===///
+        var time_squeezing=performance.now()-time_shifting;
         ///=== Change the protected punctuations in tags back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
@@ -1152,6 +1158,15 @@
         currHTML=currHTML.replace(/\uEB1D/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
         currHTML=currHTML.replace(/\uEB19/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
+        ///=== Replacing and Restoring Ends ===///
+        var time_replacing=performance.now()-time_squeezing;
+        if ( (performance.now()-FixMars_start)>200 ) {
+            console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.")
+            console.log("Shifting:  "+time_shifting.toFixed(0)+" ms.");
+            console.log("Squeezing: "+time_squeezing.toFixed(0)+" ms.");
+            console.log("Replacing: "+time_replacing.toFixed(0)+" ms.");
+            console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
+        }
         return currHTML;
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
