@@ -1,7 +1,8 @@
-## 0.12.4 (2016-06-10)
+## 0.12.5 (2016-06-10)
 Features:
   - Use the asynchronous feature to fire re-checking after other events are done.
   - Add more timers.
+  - Modify SimSun search pattern to match more styles.
 
 Bugfixes:
   - Turn off the debug flags in the "release" version to restore the performance.
