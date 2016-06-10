@@ -207,7 +207,7 @@
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
     }
     else {
-        FunFixPunct(useLoop,MaxNumLoops,returnLater);
+        window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),10);
     }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -1129,7 +1129,7 @@
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
-        var time_squeezing=performance.now()-time_shifting;
+        var time_squeezing=performance.now()-FixMarks_start-time_shifting;
         ///=== Change the protected punctuations in tags back==///
         currHTML=currHTML.replace(/\uE862/mg,'\u2018');
         currHTML=currHTML.replace(/\uE863/mg,'\u2019');
@@ -1162,7 +1162,7 @@
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
         currHTML=currHTML.replace(/\uEB19/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
         ///=== Replacing and Restoring Ends ===///
-        var time_replacing=performance.now()-time_squeezing;
+        var time_replacing=performance.now()-FixMarks_start-time_squeezing-time_shifting;
         if ( (performance.now()-FixMarks_start)>200 ) {
             console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.")
             console.log("Shifting:  "+time_shifting.toFixed(0)+" ms.");
