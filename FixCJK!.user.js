@@ -33,7 +33,7 @@
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
     var CJKOnlyThreshold = 11024; // Only CJK if the number of elements reaches this threshold.
-    var loopThreshold = 2048;
+    var loopThreshold = 8192;
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;
     var ifRound1=true;
@@ -699,6 +699,7 @@
     ///===The Actual Round 4===///
     function FunFixPunct(useLoop,MaxNumLoops,returnNow) {
         SkippedTags=SkippedTagsForMarks;
+        var recursion_start=0;
         //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
         if (returnNow===true) {
             return true;
@@ -714,7 +715,13 @@
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
                     //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
+                    recursion_start=performance.now();
                     FixPunctRecursion(allrecur[ir]);
+                    if ( (performance.now()-t_start) > timeOut ) {
+                        processedAll=false;
+                        console.log("FixCJK!: Time out. Last recursion took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                        break;
+                    }
                 }
             }
         }
@@ -1022,12 +1029,12 @@
             }
         }
         //Find paired CJK marks.
-        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/m;
+        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
         //Find paired Latin marks.
-        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/m;
+        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
@@ -1044,7 +1051,7 @@
             currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
         //For single quotations:
-        paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/m;
+        paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
