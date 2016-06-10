@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.12.5
+// @version           0.13.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -239,6 +239,7 @@
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
+            setTimeout(addSpaces,10);
             if (document.URL.match(/zhihu\.com/mg))
                 FixLazy();
         }
@@ -256,7 +257,19 @@
         console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
-    //===The actual listening function===//
+    //===The actual listening functions===//
+    function addSpaces() {
+        addSpacesHelper(document.getElementsByClassName("SafedByUser"));
+        addSpacesHelper(document.getElementsByClassName("Safe2FixCJK\uE000"));
+        function addSpacesHelper(allE) {
+            for (var is=0;is<allE.length;is++) {
+                if ( !(allE[is].parentNode.classList.contains("SafedByUser") || allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
+                    allE[is].innerHTML=allE[is].innerHTML.replace(/([\w])([\u3400-\u9FBF])/g,'$1 $2');
+                    allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])([\w])/g,'$1 $2');
+                }
+            }
+        }
+    }
     function ReFixCJK (e) {
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
         if (debug_verbose===true) {console.log(e.target.nodeName);}
@@ -352,7 +365,10 @@
             }
         }
         else {
-            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
+            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again. (But I did fix the spaces between CJK & \w');
+        }
+        if ((t_start-t_last)*ItvScl > t_interval) {
+            addSpaces();
         }
         NumClicks++;
         LastMod=document.lastModified;
@@ -551,10 +567,10 @@
                                 }
                                 else {
                                     if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-                                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
+                                    if (debug_02===true) if (child.data.match(re_to_check)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
                                     all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
-                                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_applied:'+all[i].style.fontFamily);}
-                                    if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
+                                    if (debug_02===true) if (child.data.match(re_to_check)) {console.log('after_applied:'+all[i].style.fontFamily);}
+                                    if (debug_02===true) if (child.data.match(re_to_check)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
                                     if (all[i].style.fontFamily.length<1) {
                                         if (debug_verbose===true) {console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));}
                                     }
@@ -566,18 +582,18 @@
                                     //all[i].style.color="Grey";
                                 }
                             }
-                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                            if (debug_02===true) if (child.data.match(re_to_check)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                         }
                         if (child.data.match(/[\u3400-\u9FBF]/)) {
                             if_replace = true;
-                            if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                            if (debug_02===true) if (child.data.match(re_to_check)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                             if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
                             font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                             if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
                                 //do nothing if already replaced;
                                 if (debug_02===true) {all[i].style.color="Black";}
                                 if_replace = false;
-                                if (debug_02===true) if (child.data.match(/目前量子多体的书/g)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
+                                if (debug_02===true) if (child.data.match(re_to_check)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
                             }          //break;
 
                         }
@@ -588,7 +604,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 if (if_replace === true) {
                     if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
-                    if (debug_02===true) {if (all[i].innerHTML.match(/目前量子多体的书/g)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
+                    if (debug_02===true) {if (all[i].innerHTML.match(re_to_check)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
                     //Test if contains Sans
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
@@ -825,7 +841,8 @@
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
-                node.classList.remove("SafedByUser");
+                //If we need to fix the spaces then we need to keep the "SafedByUser" class.
+                //node.classList.remove("SafedByUser");
             }
             if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
