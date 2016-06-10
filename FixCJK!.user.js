@@ -45,6 +45,7 @@
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
+    var debug_re_to_check = false; //"true" will slow down a lot!
     var re_to_check = /^uEEE/m; //use ^\uEEE for placeholder.
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -743,7 +744,7 @@
     }
     /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
-        if (node.innerHTML.match(re_to_check)) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
+        if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
@@ -760,14 +761,14 @@
             return false;
         }
         while (child) {
-            if (node.innerHTML.match(re_to_check)) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
+            if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
             if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
-                if (node.innerHTML.match(re_to_check)) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
+                if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
                 node2fix=true;
                 if (debug_verbose===true) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
                 }
-                if (node.innerHTML.match(re_to_check) && node.nodeName.match(tabooedTags)) {
+                if (debug_re_to_check===true && (node.innerHTML.match(re_to_check)) && node.nodeName.match(tabooedTags)) {
                     console.log("ERROR: Wrong Operation on: "+node.nodeName+"."+node.className+":: "+node.textContent);
                     console.log("ERROR: Wrong Operation because: "+child.data);
                 }
@@ -824,14 +825,14 @@
                 node.classList.remove("SafedByUser");
             }
             if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
-            if (node.innerHTML.match(re_to_check)) {console.log("Checking if contain punctuations to fix");}
+            if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
-                if (node.innerHTML.match(re_to_check)) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
+                if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
                 if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
-                    if (node.innerHTML.match(re_to_check)) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
+                    if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
                 //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
@@ -1027,11 +1028,11 @@
         var fixpair_timeout=10; //Don't spend too much time on this "bonus" function.
         var fixpair_start=performance.now();
         if ( currHTML.length > 10240 ) {fixpair=false;}
-        if (currHTML.match(re_to_check)) {console.log("Reversing "+currHTML);}
+        if (debug_re_to_check===true && (currHTML.match(re_to_check))) {console.log("Reversing "+currHTML);}
         if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
             var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
             while (currHTML.match(revpaired) && (performance.now()-fixpair_start)<fixpair_timeout ) {
-                if (currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
+                if (debug_re_to_check===true && currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
                 currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
             }
         }
@@ -1045,7 +1046,7 @@
         //Find paired Latin marks.
         paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
-            if (currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
+            if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
         var paired_stop=performance.now()-paired_start;
