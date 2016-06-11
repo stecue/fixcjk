@@ -169,6 +169,7 @@
         font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         if (font_str.match(re_simsun)) {
             all[i].classList.add("CJK2Fix");
+            all[i].classList.add("Space2Add");
             //console.log(all[i].className);
             continue;
         }
@@ -176,6 +177,7 @@
         while (child) {
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].classList.add("CJK2Fix");
+                all[i].classList.add("Space2Add");
                 //console.log(all[i].className);
                 break;
             }
@@ -239,7 +241,7 @@
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
-            setTimeout(addSpaces,10);
+            //setTimeout(addSpaces,10);
             if (document.URL.match(/zhihu\.com/mg))
                 FixLazy();
         }
@@ -260,12 +262,21 @@
     //===The actual listening functions===//
     function addSpaces() {
         addSpacesHelper(document.getElementsByClassName("SafedByUser"));
-        addSpacesHelper(document.getElementsByClassName("Safe2FixCJK\uE000"));
+        addSpacesHelper(document.getElementsByClassName("Space2Add"));
         function addSpacesHelper(allE) {
             for (var is=0;is<allE.length;is++) {
                 if ( !(allE[is].parentNode.classList.contains("SafedByUser") || allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
-                    allE[is].innerHTML=allE[is].innerHTML.replace(/([\w])([\u3400-\u9FBF])/g,'$1 $2');
-                    allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])([\w])/g,'$1 $2');
+                    if (allE[is].classList.contains("Safe2FixCJK\uE000")) {
+                        var useSpan=false;
+                        if (useSpan===true) {
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.])((?:<[^><]*>){0,2}[\u3400-\u9FBF])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
+                        }
+                        else {
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.])((?:<[^><]*>){0,2}[\u3400-\u9FBF])/mg,'$1 $2');
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1 $2');
+                        }
+                    }
                 }
             }
         }
@@ -367,7 +378,7 @@
         else {
             console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again. (But I did fix the spaces between CJK & \w');
         }
-        if ((t_start-t_last)*ItvScl > t_interval) {
+        if ((t_start-t_last)*ItvScl*2 < t_interval) {
             addSpaces();
         }
         NumClicks++;
@@ -569,6 +580,7 @@
                                     if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
                                     if (debug_02===true) if (child.data.match(re_to_check)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
                                     all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
+                                    all[i].classList.remove("Safe2Add");
                                     if (debug_02===true) if (child.data.match(re_to_check)) {console.log('after_applied:'+all[i].style.fontFamily);}
                                     if (debug_02===true) if (child.data.match(re_to_check)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
                                     if (all[i].style.fontFamily.length<1) {
@@ -793,10 +805,14 @@
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {
+                if  (child.nodeName.match(tabooedTags) ) {
+                //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
                     child.classList.add("MarksFixedE135");
+                }
+                else if (child.classList.contains("MarksFixedE135")) {
+                    //Fixed, do nothing.
                 }
                 else {
                     FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
@@ -814,6 +830,7 @@
             node.classList.remove("\uE985");
             node.classList.remove("\uE211");
             node.classList.remove("Safe2FixCJK\uE000");
+            node.classList.remove("Space2Add");
             if (node.tagName.match(SafeTags)) {
                 //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
                 node.className=orig_class;
