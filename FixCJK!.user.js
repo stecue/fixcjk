@@ -49,6 +49,7 @@
     var debug_03 = false;
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
+    var debug_spaces = true;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -261,8 +262,10 @@
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening functions===//
     function addSpaces() {
+        if (debug_spaces===true) console.log('Adding spaces...');
         addSpacesHelper(document.getElementsByClassName("SafedByUser"));
         addSpacesHelper(document.getElementsByClassName("Space2Add"));
+        var font_str = '';
         function addSpacesHelper(allE) {
             for (var is=0;is<allE.length;is++) {
                 if ( !(allE[is].parentNode.classList.contains("SafedByUser") || allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
@@ -273,8 +276,13 @@
                             allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
                         }
                         else {
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.])((?:<[^><]*>){0,2}[\u3400-\u9FBF])/mg,'$1 $2');
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1 $2');
+                            font_str=dequote(window.getComputedStyle(allE[is], null).getPropertyValue('font-family'));
+                            if (font_str.match(/General Punct[^,]*,[^,]*Ubuntu Mono/)) {
+                                if (debug_spaces===true) console.log('“宋体”,skipped.');
+                                continue;
+                            }
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.’”](?:<[^\uE985\uE211><]*>){0,2})([\u3400-\u9FBF])/mg,'$1\u2009$2');
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])((?:<[^\uE985\uE211><]*>){0,2}[“‘\(\[\u0391-\u03FF\w])/mg,'$1\u2009$2');
                         }
                     }
                 }
@@ -875,6 +883,9 @@
                 //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
                 //the blank spaces will be streched but not the "character-spacing" if using align=justify.
                 node.lang="zh";
+                if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/)) {
+                    node.textAlign="justify";
+                }
             }
             node.classList.add("MarksFixedE135");
             return true;
@@ -1061,13 +1072,13 @@
         var time2protect=performance.now()-FixMarks_start;
         //Now let's fix the punctions.
         //First we need to fix the "reverse-paired" punctuations.
-        var fixpair=true;
+        var fixpair=false; //the current code has problems if unpaired quotation marks are present.
         var fixpair_timeout = noBonusTimeout; //Don't spend too much time on this "bonus" function.
         var fixpair_start=performance.now();
         if ( currHTML.length > noBonusLength ) {fixpair=false;}
         if (debug_re_to_check===true && (currHTML.match(re_to_check))) {console.log("Reversing "+currHTML);}
         if (fixpair===true) { //[\w,./<>?;:[]\{}|`~!@#$%^&*()_+-=]*
-            var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/m;
+            var revpaired=/(^[^\u201C\u201D]?(?:[^\u201C\u201D]*\u201C[^\u201C\u201D]*\u201D)*[^\u201C\u201D]*)\u201D([^\u201C\u201D]{2,})\u201C/;
             while (currHTML.match(revpaired) && (performance.now()-fixpair_start)<fixpair_timeout ) {
                 if (debug_re_to_check===true && currHTML.match(re_to_check)) {console.log("Pair reversed: "+(performance.now()-t_start).toString());}
                 currHTML=currHTML.replace(revpaired,'$1\u201C$2\u201D');
@@ -1076,12 +1087,12 @@
         var fixpair_stop=performance.now()-fixpair_start;
         //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
         var paired_start=performance.now();
-        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
+        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/g;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
         //Find paired Latin marks.
-        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/mg;
+        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/g;
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
@@ -1121,8 +1132,8 @@
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,2}/mg,'$1');
-            currHTML=currHTML.replace(/[\s]{0,2}([『「《〈【（\uEB1C\uEB18]+)/mg,'$1');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,2}/g,'$1');
+            currHTML=currHTML.replace(/([^\s])[\s]{0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
         }
         else {
             currHTML=currHTML.replace(/([\uEB1D\uEB19])[ ]?/mg,'$1');

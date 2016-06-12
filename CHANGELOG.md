@@ -1,3 +1,10 @@
+## 0.13.0 (2016-06-11)
+Features:
+  - Double-click to add spaces.
+
+Bugfixes:
+  - Fix a bug in fixing "reverse-paired" marks. The function is too buggy and disabled by default.
+
 ## 0.12.5 (2016-06-10)
 Features:
   - Use the asynchronous feature to fire re-checking after other events are done.
