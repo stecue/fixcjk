@@ -1,6 +1,7 @@
 ## 0.13.0 (2016-06-11)
 Features:
   - Double-click to add spaces.
+  - Use "justify" as the default align.
 
 Bugfixes:
   - Fix a bug in fixing "reverse-paired" marks. The function is too buggy and disabled by default.

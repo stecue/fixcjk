@@ -28,6 +28,7 @@
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
+    var useJustify = true; //Make justify as the default alignment.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
@@ -883,8 +884,8 @@
                 //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
                 //the blank spaces will be streched but not the "character-spacing" if using align=justify.
                 node.lang="zh";
-                if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/)) {
-                    node.textAlign="justify";
+                if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
+                    node.style.textAlign="justify";
                 }
             }
             node.classList.add("MarksFixedE135");
