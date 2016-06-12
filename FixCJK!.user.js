@@ -269,8 +269,10 @@
         var font_str = '';
         function addSpacesHelper(allE) {
             for (var is=0;is<allE.length;is++) {
-                if ( !(allE[is].parentNode.classList.contains("SafedByUser") || allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
-                    if (allE[is].classList.contains("Safe2FixCJK\uE000")) {
+                        if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
+                if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
+                    if (allE[is].classList.contains("Safe2FixCJK\uE000") || allE[is].classList.contains("SafedByUser")) {
+                        if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
                         var useSpan=false;
                         if (useSpan===true) {
                             allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.])((?:<[^><]*>){0,2}[\u3400-\u9FBF])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
