@@ -282,8 +282,8 @@
                                 if (debug_spaces===true) console.log('“宋体”,skipped.');
                                 continue;
                             }
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.’”](?:<[^\uE985\uE211><]*>){0,2})([\u3400-\u9FBF])/mg,'$1\u2009$2');
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])((?:<[^\uE985\uE211><]*>){0,2}[“‘\(\[\u0391-\u03FF\w])/mg,'$1\u2009$2');
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\]_+-={},.’”](?:<[^\uE985\uE211><]*>){0,2})([\u3400-\u9FBF])/mg,'$1\u2009$2');
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])((?:<[^\uE985\uE211><]*>){0,2}[“‘_+-={}\(\[\u0391-\u03FF\w])/mg,'$1\u2009$2');
                         }
                     }
                 }
