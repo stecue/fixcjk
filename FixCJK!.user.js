@@ -327,7 +327,11 @@
                             //en:zh;
                             tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
                             //Special treatment of ’” because of lacking signature in the closing tag (</span>)
-                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>){0,2}[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            /////first after tags
+                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            /////then without tags
+                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            //now zh:en
                             tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x2009;$2');
                             tmp_str=tmp_str.replace(/\uED20/mg,'');
                             allE[is].innerHTML=tmp_str;
@@ -1131,17 +1135,17 @@
             }
         }
         var fixpair_stop=performance.now()-fixpair_start;
-        //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
         var paired_start=performance.now();
-        var paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/g;
-        while (currHTML.match(paired)) {
-            currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
-        }
-        //Find paired Latin marks.
-        paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\E000-ED00\uFF00-\uFFEF]*)(\u201D)/g;
+        //Find and preserve paired Latin marks.
+        var paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/g;
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
+        }
+        //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
+        paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/g;
+        while (currHTML.match(paired)) {
+            currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
         var paired_stop=performance.now()-paired_start;
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
