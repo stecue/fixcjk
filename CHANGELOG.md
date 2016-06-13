@@ -2,10 +2,12 @@
 Features:
   - Double-click to add spaces.
   - Use "justify" as the default align.
+  - Also squeeze the first CJK quotation marks.
 
 Bugfixes:
   - Fix a bug in fixing "reverse-paired" marks. The function is too buggy and disabled by default.
   - Blank spaces at the beginning of a line is not deleted anymore.
+  - Elements without text nodes can also be fixed.
 
 ## 0.12.5 (2016-06-10)
 Features:

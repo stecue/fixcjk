@@ -50,11 +50,11 @@
     var debug_03 = false;
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
-    var debug_spaces = true;
+    var debug_spaces = false;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var t_start = performance.now();
     var t_stop = t_start;
@@ -97,7 +97,7 @@
     var qHei = LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
-    var qserif = qsig_sun+','+LatinSerif + ',' + CJKserif + ',' + 'serif'; //To replace "serif"
+    var qserif = LatinSerif + ',' + CJKserif + ',' + 'serif'+','+qsig_sun; //To replace "serif"
     var qmono = qsig_sun+','+ LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     var i = 0;
     var max = all.length;
@@ -172,7 +172,6 @@
         if (font_str.match(re_simsun)) {
             all[i].classList.add("CJK2Fix");
             all[i].classList.add("Space2Add");
-            //console.log(all[i].className);
             continue;
         }
         child = all[i].firstChild;
@@ -183,9 +182,7 @@
                 if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
                     all[i].parentNode.classList.add("CJK2Fix");
                     all[i].parentNode.classList.add("Space2Add");
-                    if (all[i].parentNode.innerHTML.match(/Freeland/)) console.log(all[i].parentNode.innerHTML);
                 }
-                //console.log(all[i].className);
                 break;
             }
             child=child.nextSibling;
@@ -249,9 +246,10 @@
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
-            //setTimeout(addSpaces,10);
-            if (document.URL.match(/zhihu\.com/mg))
+            if (document.URL.match(/zhihu\.com/mg)) {
                 FixLazy();
+                setTimeout(addSpaces,5);
+            }
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
@@ -270,7 +268,8 @@
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening functions===//
     function addSpaces() {
-        if (debug_spaces===true) console.log('Adding spaces...');
+        var t_spaces=performance.now();
+        if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
         var checkSpaces=true;
         if (checkSpaces===true) {
             checkSpacesHelper(document.getElementsByClassName("SafedByUser"));
@@ -280,22 +279,22 @@
             for (var ic=0;ic<allE.length;ic++) {
                 font_str=dequote(window.getComputedStyle(allE[ic], null).getPropertyValue('font-family'));
                 if (font_str.match(/General Punct[^,]*[,][^,]*宋/)) {
-                    //console.log(currE.innerHTML.slice(0,20));
+                    if (debug_spaces===true) {console.log(currE.innerHTML.slice(0,20));}
                     var currE=allE[ic];
                     var toBODY=false; //This is some problem with "toBODY=TRUE" now.
                     if (toBODY===true) {
                         while (currE.nodeName !== "BODY") {
-                            currE.classList.add("noExtraSpaces");
+                            currE.classList.add("noAddedSpances");
                         }
                     }
                     else {
-                        currE.classList.add("noExtraSpaces");
-                        currE.parentNode.classList.add("noExtraSpaces");
+                        currE.classList.add("noAddedSpances");
+                        currE.parentNode.classList.add("noAddedSpances");
                     }
                 }
             }
-            var allNoES=document.getElementsByClassName("noExtraSpaces");
-            console.log(allNoES.length);
+            var allNoES=document.getElementsByClassName("noAddedSpances");
+            if (debug_spaces===true) {console.log(allNoES.length);}
             for (ic=0;ic<allNoES.length;ic++) {
                 allNoES[ic].classList.remove("Space2Add");
             }
@@ -313,13 +312,31 @@
                             allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
                         }
                         else {
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03ff\)\]\-_+={},.’”](?:<[^\ue985\ue211><]*>){0,2})[ ]?([\u3400-\u9fbf])/mg,'$1&#x2009;$2');
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9fbf])[ ]?((?:<[^\ue985\ue211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03ff\w])/mg,'$1&#x2009;$2');
+                            var tmp_str=allE[is].innerHTML;
+                            //protect the Latins in tags
+                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u2009]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
+                            while (tmp_str.match(re_zhen) ) {
+                                tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
+                                if (debug_spaces===true) {console.log(tmp_str);}
+                            }
+                            var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u2009]?[\u3400-\u9FBF][^><]*>)/mg;
+                            while (tmp_str.match(re_enzh) ) {
+                                tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
+                                if (debug_spaces===true) {console.log(tmp_str);}
+                            }
+                            //en:zh;
+                            tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            //Special treatment of ’” because of lacking signature in the closing tag (</span>)
+                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>){0,2}[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x2009;$2');
+                            tmp_str=tmp_str.replace(/\uED20/mg,'');
+                            allE[is].innerHTML=tmp_str;
                         }
                     }
                 }
             }
         }
+        console.log("FixCJK: Adding spaces took "+((performance.now()-t_spaces)/1000).toFixed(3)+" seconds.");
     }
     function ReFixCJK (e) {
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
@@ -818,7 +835,7 @@
         var currHTML="";
         var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
         var allSubSafe=true;
-        var node2fix=false;
+        var node2fix=true;
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
@@ -832,7 +849,6 @@
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
             if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
                 if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Found as Type 3 subnode: "+child.nodeName+"."+child.className+"@"+node.nodeName+":: "+child.data);}
-                node2fix=true;
                 if (debug_verbose===true) {
                     console.log("Permitted to check: "+node.nodeName+"."+node.className);
                 }
@@ -847,6 +863,7 @@
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
                     child.classList.add("MarksFixedE135");
+                    node2fix=false;
                 }
                 else if (child.classList.contains("MarksFixedE135")) {
                     //Fixed, do nothing.
@@ -909,13 +926,13 @@
                     if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
-                //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
-                //the blank spaces will be streched but not the "character-spacing" if using align=justify.
-                node.lang="zh";
                 if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
                     node.style.textAlign="justify";
                 }
             }
+            //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
+            //the blank spaces will be streched but not the "character-spacing" if using align=justify.
+            node.lang="zh";
             node.classList.add("MarksFixedE135");
             return true;
         }
@@ -1165,6 +1182,7 @@
             currHTML=currHTML.replace(/([^\s])[\s]{0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
         }
         else {
+            //Delete at most 1 spaces before and after because of the wider CJK marks.
             currHTML=currHTML.replace(/([\uEB1D\uEB19])[ ]?/mg,'$1');
             currHTML=currHTML.replace(/[ ]?([\uEB1C\uEB18])/mg,'$1');
         }
@@ -1208,8 +1226,10 @@
             currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="\uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
         }
         if (SqueezeInd===true) {
-            //Do not squeeze the first or the last punctuation marks in a paragraph. Too risky.
+            //Do not squeeze the last punctuation marks in a paragraph. Too risky.
             currHTML=currHTML.replace(/([<[^\uE211]*>]|[^><])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
+            //But the first punctuation marks in a paragraph seems OK.
+            currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$1</span>');
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
