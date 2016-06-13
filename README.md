@@ -10,6 +10,7 @@
 4. 对于矢量粗体，将使用字体文件提供的真粗体而不是合成伪粗体（最初目的是绕过 Linux 版 Chrome/Chromium 的[这个 bug](https://bugs.chromium.org/p/chromium/issues/detail?id=448478)）。
 5. 设定中文全角标点字体。对于[弯引号](https://www.zhihu.com/question/19616011)，根据上下文自动识别并设定为全角字体。
 6. 对中文标点进行空白压缩和间距调整，使版面疏密更协调（尤其是标点较多且存在中英文混合排版时）。
+7. 中英文之间自动加空格，类似于[这个扩展](https://chrome.google.com/webstore/detail/%E7%82%BA%E4%BB%80%E9%BA%BC%E4%BD%A0%E5%80%91%E5%B0%B1%E6%98%AF%E4%B8%8D%E8%83%BD%E5%8A%A0%E5%80%8B%E7%A9%BA%E6%A0%BC%E5%91%A2%EF%BC%9F/paphcfdffjnbcgkokihcdjliihicmbpd/reviews?hl=zh-CN)。
 
 ### 用法
 **脚本安装：**较新的浏览器都需要附加组件来安装和使用脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome/Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。
@@ -21,6 +22,8 @@
 **0.11 分支**默认启用重写的递归式检测算法并新增“**长单击强制标点修正**”功能。新引擎仅在已知安全的情况下进行标点替换作业，对包含大量 JavaScript 脚本和“事件监听器”的网页（比如[新浪图片](http://photo.sina.com.cn/#dir)）的兼容性大大提高。但是这也可能造成在某些页面元素中标点修正功能失效，即使触发“单击重检查”也无法修正。此时可以在**该页面元素上**（*不是*其他页面空白处）长按鼠标左键（> 0.8 秒）再松开，期间不要移动鼠标位置。脚本被这种“长单击”触发后，将试图强制修正**该页面元素内**的中文标点。**注意：**强制标点修正可能导致该页面元素所包含的各个子元素的事件监听器失效，动态效果消失；但是对于静态页面应当可以放心使用。无论如何，请尽量避免在页面最外层的空白处长单击。因为页面最外层的元素往往包含最多的子元素，长单击最外层可能使得整个页面的动态效果消失。
 
 **0.12 分支**使用了新的标点修正算法。代码更简洁、系统化并覆盖了绝大多数需要进行空白压缩的情形；从根本上避免了大量问题。从这个版本开始，理论上任意长度的连续标点都可以被正确处理。
+
+**0.13 分支**添加了“中英文之间自动加空格”的功能。目前仍处于试验阶段，仅在“**双击**”之后触发。
 
 ### 已知问题
 
