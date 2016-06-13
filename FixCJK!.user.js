@@ -80,10 +80,10 @@
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
-    var sig_sun = 'RealCJKBold 宋'; // signature to check if change is sucssful or not.
-    var sig_hei = 'RealCJKBold 黑'; // signature to check if change is sucssful or not.
-    var sig_bold = 'RealCJKBold 粗'; // signature to check if change is sucssful or not.
-    var sig_default = 'RealCJKBold 默'; // signature to check if change is sucssful or not.
+    var sig_sun = 'RealCJKBold\u2009宋'; // signature to check if change is sucssful or not.
+    var sig_hei = 'RealCJKBold\u2009黑'; // signature to check if change is sucssful or not.
+    var sig_bold = 'RealCJKBold\u2009粗'; // signature to check if change is sucssful or not.
+    var sig_default = 'RealCJKBold\u2009默'; // signature to check if change is sucssful or not.
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sun = '"' + sig_sun + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
@@ -271,29 +271,50 @@
     //===The actual listening functions===//
     function addSpaces() {
         if (debug_spaces===true) console.log('Adding spaces...');
+        var checkSpaces=true;
+        if (checkSpaces===true) {
+            checkSpacesHelper(document.getElementsByClassName("SafedByUser"));
+            checkSpacesHelper(document.getElementsByClassName("Space2Add"));
+        }
+        function checkSpacesHelper(allE) {
+            for (var ic=0;ic<allE.length;ic++) {
+                font_str=dequote(window.getComputedStyle(allE[ic], null).getPropertyValue('font-family'));
+                if (font_str.match(/General Punct[^,]*[,][^,]*宋/)) {
+                    //console.log(currE.innerHTML.slice(0,20));
+                    var currE=allE[ic];
+                    var toBODY=false; //This is some problem with "toBODY=TRUE" now.
+                    if (toBODY===true) {
+                        while (currE.nodeName !== "BODY") {
+                            currE.classList.add("noExtraSpaces");
+                        }
+                    }
+                    else {
+                        currE.classList.add("noExtraSpaces");
+                        currE.parentNode.classList.add("noExtraSpaces");
+                    }
+                }
+            }
+            var allNoES=document.getElementsByClassName("noExtraSpaces");
+            console.log(allNoES.length);
+            for (ic=0;ic<allNoES.length;ic++) {
+                allNoES[ic].classList.remove("Space2Add");
+            }
+        }
         addSpacesHelper(document.getElementsByClassName("SafedByUser"));
         addSpacesHelper(document.getElementsByClassName("Space2Add"));
         var font_str = '';
         function addSpacesHelper(allE) {
             for (var is=0;is<allE.length;is++) {
-                if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
-                if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
+                if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000") && allE[is].parentNode.classList.contains("Space2Add")) ) {
                     if (allE[is].classList.contains("Safe2FixCJK\uE000") || allE[is].classList.contains("SafedByUser")) {
-                        if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
                         var useSpan=false;
                         if (useSpan===true) {
                             allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.])((?:<[^><]*>){0,2}[\u3400-\u9FBF])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
                             allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
                         }
                         else {
-                            font_str=dequote(window.getComputedStyle(allE[is], null).getPropertyValue('font-family'));
-                            if (font_str.match(/General Punct[^,]*[,][^,]*RealCJKBold 宋/)) {
-                                if (debug_spaces===true) console.log(font_str+': “宋体”,skipped.');
-                            }
-                            else {
-                                allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\]\-_+={},.’”](?:<[^\uE985\uE211><]*>){0,2})([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
-                                allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x2009;$2');
-                            }
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03ff\)\]\-_+={},.’”](?:<[^\ue985\ue211><]*>){0,2})[ ]?([\u3400-\u9fbf])/mg,'$1&#x2009;$2');
+                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9fbf])[ ]?((?:<[^\ue985\ue211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03ff\w])/mg,'$1&#x2009;$2');
                         }
                     }
                 }
@@ -1227,7 +1248,7 @@
         ///=== Replacing and Restoring Ends ===///
         var time2replace=performance.now()-FixMarks_start-time2squeeze-time2shift-time2protect;
         if ( (performance.now()-FixMarks_start)>200 ) {
-            console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.")
+            console.log("FIXME: String Operation Too Slow: "+(performance.now()-FixMarks_start).toFixed(0)+" ms.");
             console.log("Protect: "+time2protect.toFixed(0)+" ms.");
             console.log("Shift:   "+time2shift.toFixed(0)+" ms.");
             console.log(" ----->rev: "+fixpair_stop.toFixed(0)+" ms.");
