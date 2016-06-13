@@ -2,7 +2,7 @@
 *全功能、跨平台的中英文网页字体修正和排版美化脚本，“搞定”CJK！*
 
 ### 简介
-**[FixCJK!](https://github.com/stecue/fixcjk/)** 是为 Gecko&#8203;/&#8203;Webkit&#8203;/&#8203;Blink 内核浏览器编写的用户脚本，适用平台包括但不限于：Firefox&#8203;/&#8203;Icecat&#8203;/&#8203;Chrome&#8203;/&#8203;Chromium&#8203;/&#8203;Opera，以及各种 Webkit&#8203;/&#8203;Blink 内核的“国产”浏览器。主要功能为：
+**[FixCJK!](https://github.com/stecue/fixcjk/)** 是为 Gecko&#8203;/&#8203;Webkit&#8203;/&#8203;Blink 内核浏览器编写的用户脚本，适用平台包括但不限于：Firefox&#8203;/&#8203;Icecat&#8203;/&#8203;Chrome&#8203;/&#8203;Chromium&#8203;/&#8203;Opera，以及各种采用 Webkit&#8203;/&#8203;Blink 内核的“国产”浏览器。主要功能为：
 
 1. 强力字体设置。忽略浏览器和系统设置，直接强力设定映射为“无衬线（sans-serif）”和“有衬线（serif）”的实际字体列表。
 2. 替换中易宋体为矢量字体。
