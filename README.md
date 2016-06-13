@@ -1,8 +1,8 @@
 ## FixCJK!
-*跨平台 Firefox/Chrome/Chromium/Opera 用户脚本，“搞定”CJK！*
+*全功能、跨平台的中英文网页字体修正和排版美化脚本，“搞定”CJK！*
 
 ### 简介
-**[FixCJK!](https://github.com/stecue/fixcjk/)** 是适用于简体中文用户的中文字体和标点修正脚本。主要功能为：
+**[FixCJK!](https://github.com/stecue/fixcjk/)** 是为 Gecko/Webkit/Blink 内核浏览器编写的用户脚本，适用平台包括但不限于：Firefox/Icecat/Chrome/Chromium/Opera，以及各种 Webkit/Blink 内核的“国产”浏览器。主要功能为：
 
 1. 强力字体设置。忽略浏览器和系统设置，直接强力设定映射为“无衬线（sans-serif）”和“有衬线（serif）”的实际字体列表。
 2. 替换中易宋体为矢量字体。
@@ -11,6 +11,8 @@
 5. 设定中文全角标点字体。对于[弯引号](https://www.zhihu.com/question/19616011)，根据上下文自动识别并设定为全角字体。
 6. 对中文标点进行空白压缩和间距调整，使版面疏密更协调（尤其是标点较多且存在中英文混合排版时）。
 7. 中英文之间自动加空格，类似于[这个扩展](https://chrome.google.com/webstore/detail/%E7%82%BA%E4%BB%80%E9%BA%BC%E4%BD%A0%E5%80%91%E5%B0%B1%E6%98%AF%E4%B8%8D%E8%83%BD%E5%8A%A0%E5%80%8B%E7%A9%BA%E6%A0%BC%E5%91%A2%EF%BC%9F/paphcfdffjnbcgkokihcdjliihicmbpd/reviews?hl=zh-CN)。
+
+其中功能 **1-4** 及 **7** 对所有浏览器的所有版本均有效；功能 **5-6** 只保证在最新 Gecko 和 Webkit/Blink 内核上可用。
 
 ### 用法
 **脚本安装：**较新的浏览器都需要附加组件来安装和使用脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome/Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。
