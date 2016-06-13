@@ -93,12 +93,12 @@
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
-    var qSimSun = LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
+    var qSimSun = qsig_sun+','+LatinInSimSun + ',' + CJKserif;
     var qHei = LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
-    var qserif = LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
-    var qmono = LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
+    var qserif = qsig_sun+','+LatinSerif + ',' + CJKserif + ',' + 'serif'; //To replace "serif"
+    var qmono = qsig_sun+','+ LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     var i = 0;
     var max = all.length;
     var child = all[i].firstChild;
@@ -181,9 +181,9 @@
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("Space2Add");
                 if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
-                  all[i].parentNode.classList.add("CJK2Fix");
-                  all[i].parentNode.classList.add("Space2Add");
-                  if (all[i].parentNode.innerHTML.match(/Freeland/)) console.log(all[i].parentNode.innerHTML);
+                    all[i].parentNode.classList.add("CJK2Fix");
+                    all[i].parentNode.classList.add("Space2Add");
+                    if (all[i].parentNode.innerHTML.match(/Freeland/)) console.log(all[i].parentNode.innerHTML);
                 }
                 //console.log(all[i].className);
                 break;
@@ -245,6 +245,7 @@
         if (((performance.now()-downtime) > 800) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) < 3) {
             e.target.classList.add("SafedByUser");
             e.target.classList.remove("MarksFixedE135");
+            NumClicks=1;
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
@@ -257,6 +258,7 @@
             setTimeout(ReFixCJK,10,e);
         }
     },false);
+    document.body.addEventListener("dblclick",function() {setTimeout(addSpaces,10);},false);
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
@@ -274,7 +276,7 @@
         var font_str = '';
         function addSpacesHelper(allE) {
             for (var is=0;is<allE.length;is++) {
-                        if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
+                if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
                 if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000")) ) {
                     if (allE[is].classList.contains("Safe2FixCJK\uE000") || allE[is].classList.contains("SafedByUser")) {
                         if (allE[is].classList.contains("SafedByUser")) console.log(allE[is]);
@@ -285,12 +287,13 @@
                         }
                         else {
                             font_str=dequote(window.getComputedStyle(allE[is], null).getPropertyValue('font-family'));
-                            if (font_str.match(/General Punct[^,]*,[^,]*Ubuntu Mono/)) {
-                                if (debug_spaces===true) console.log('“宋体”,skipped.');
-                                continue;
+                            if (font_str.match(/General Punct[^,]*[,][^,]*RealCJKBold 宋/)) {
+                                if (debug_spaces===true) console.log(font_str+': “宋体”,skipped.');
                             }
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\]_+-={},.’”](?:<[^\uE985\uE211><]*>){0,2})([\u3400-\u9FBF])/mg,'$1\u2009$2');
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])((?:<[^\uE985\uE211><]*>){0,2}[“‘_+-={}\(\[\u0391-\u03FF\w])/mg,'$1\u2009$2');
+                            else {
+                                allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\]\-_+={},.’”](?:<[^\uE985\uE211><]*>){0,2})([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                                allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF])((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x2009;$2');
+                            }
                         }
                     }
                 }
@@ -306,7 +309,7 @@
             LastURL=document.URL;
         }
         var clickedNode=e.target;
-        document.body.classList.remove("SafedByUser"); //Remove the SafedByUser if it is clicked by user.
+        document.body.classList.remove("SafedByUser"); //Remove the SafedByUser of the "BODY" element if it is clicked by user.
         while (clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
                 console.log("FixCJK!: Not a valid click on DOM element \u201C"+clickedNode.nodeName+"."+clickedNode.className+"\u201D");
@@ -393,9 +396,6 @@
         }
         else {
             console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again. (But I did fix the spaces between CJK & \w');
-        }
-        if ((t_start-t_last)*ItvScl*2 < t_interval) {
-            addSpaces();
         }
         NumClicks++;
         LastMod=document.lastModified;
@@ -822,7 +822,7 @@
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
                 if  (child.nodeName.match(tabooedTags) ) {
-                //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
+                    //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
                     child.classList.add("MarksFixedE135");
