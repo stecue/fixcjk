@@ -1233,7 +1233,7 @@
             //Do not squeeze the last punctuation marks in a paragraph. Too risky.
             currHTML=currHTML.replace(/([<[^\uE211]*>]|[^><])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
             //But the first punctuation marks in a paragraph seems OK.
-            currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.5em;">$1</span>');
+            currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.3em;">$1</span>');
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
