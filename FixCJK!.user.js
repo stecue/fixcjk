@@ -180,6 +180,11 @@
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("Space2Add");
+                if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
+                  all[i].parentNode.classList.add("CJK2Fix");
+                  all[i].parentNode.classList.add("Space2Add");
+                  if (all[i].parentNode.innerHTML.match(/Freeland/)) console.log(all[i].parentNode.innerHTML);
+                }
                 //console.log(all[i].className);
                 break;
             }
