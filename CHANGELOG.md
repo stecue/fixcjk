@@ -1,3 +1,7 @@
+## 0.13.1 (2016-06-13)
+Bugfixes:
+  - Use narrow non-break space instead of thin space.
+
 ## 0.13.0 (2016-06-11)
 Features:
   - Double-click to add spaces.

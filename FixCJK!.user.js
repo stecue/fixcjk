@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.0
+// @version           0.13.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -80,10 +80,10 @@
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
-    var sig_sun = 'RealCJKBold\u2009宋'; // signature to check if change is sucssful or not.
-    var sig_hei = 'RealCJKBold\u2009黑'; // signature to check if change is sucssful or not.
-    var sig_bold = 'RealCJKBold\u2009粗'; // signature to check if change is sucssful or not.
-    var sig_default = 'RealCJKBold\u2009默'; // signature to check if change is sucssful or not.
+    var sig_sun = 'RealCJKBold\u202F宋'; // signature to check if change is sucssful or not.
+    var sig_hei = 'RealCJKBold\u202F黑'; // signature to check if change is sucssful or not.
+    var sig_bold = 'RealCJKBold\u202F粗'; // signature to check if change is sucssful or not.
+    var sig_default = 'RealCJKBold\u202F默'; // signature to check if change is sucssful or not.
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sun = '"' + sig_sun + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
@@ -314,25 +314,25 @@
                         else {
                             var tmp_str=allE[is].innerHTML;
                             //protect the Latins in tags
-                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u2009]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
+                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u202F]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
                             while (tmp_str.match(re_zhen) ) {
                                 tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
-                            var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u2009]?[\u3400-\u9FBF][^><]*>)/mg;
+                            var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u202F]?[\u3400-\u9FBF][^><]*>)/mg;
                             while (tmp_str.match(re_enzh) ) {
                                 tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
                             //en:zh;
-                            tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
                             //Special treatment of ’” because of lacking signature in the closing tag (</span>)
                             /////first after tags
-                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
                             /////then without tags
-                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u2009]?([\u3400-\u9FBF])/mg,'$1&#x2009;$2');
+                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
                             //now zh:en
-                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x2009;$2');
+                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x202F;$2');
                             tmp_str=tmp_str.replace(/\uED20/mg,'');
                             allE[is].innerHTML=tmp_str;
                         }
@@ -1233,7 +1233,7 @@
             //Do not squeeze the last punctuation marks in a paragraph. Too risky.
             currHTML=currHTML.replace(/([<[^\uE211]*>]|[^><])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
             //But the first punctuation marks in a paragraph seems OK.
-            currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$1</span>');
+            currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.3em;">$1</span>');
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="\uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
