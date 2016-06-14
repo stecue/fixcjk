@@ -54,8 +54,9 @@
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
+    var fullyBannedTags='code,pre,tt';
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */gi;
@@ -84,6 +85,7 @@
     var sig_hei = 'RealCJKBold\u202F黑'; // signature to check if change is sucssful or not.
     var sig_bold = 'RealCJKBold\u202F粗'; // signature to check if change is sucssful or not.
     var sig_default = 'RealCJKBold\u202F默'; // signature to check if change is sucssful or not.
+    var sig_mono= 'RealCJKBold\u202F均';
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sun = '"' + sig_sun + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
@@ -93,12 +95,12 @@
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
-    var qSimSun = qsig_sun+','+LatinInSimSun + ',' + CJKserif;
+    var qSimSun = sig_mono+','+qsig_sun+','+LatinInSimSun + ',' + CJKserif;
     var qHei = LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
     var qserif = LatinSerif + ',' + CJKserif + ',' + 'serif'+','+qsig_sun; //To replace "serif"
-    var qmono = qsig_sun+','+ LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
+    var qmono = sig_mono+','+LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     var i = 0;
     var max = all.length;
     var child = all[i].firstChild;
@@ -142,7 +144,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F宋;\n src:local(SimHei);\n unicode-range: U+A0-FF,U+2500-2FFF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F宋;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -268,6 +270,25 @@
     }
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening functions===//
+    function banFullyBanned() {
+        var bannedTagList=fullyBannedTags.split(',');
+        for (var itag=0;itag<bannedTagList.length;itag++) {
+            var all2Ban=document.getElementsByTagName(bannedTagList[itag]);
+            for (var iele=0;iele<all2Ban.length;iele++) {
+                banHelper(all2Ban[iele]);
+            }
+        }
+        function banHelper(node) {
+            var child=node.firstChild;
+            while (child) {
+                if ( child.nodeType===1 && !(child instanceof SVGElement) ) {
+                    banHelper(child);
+                }
+                child=child.nextSibling;
+            }
+            node.classList.add("fullyBanned");
+        }
+    }
     function addSpaces() {
         var t_spaces=performance.now();
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
@@ -279,7 +300,7 @@
         function checkSpacesHelper(allE) {
             for (var ic=0;ic<allE.length;ic++) {
                 font_str=dequote(window.getComputedStyle(allE[ic], null).getPropertyValue('font-family'));
-                if (font_str.match(/General Punct[^,]*[,][^,]*宋/)) {
+                if (font_str.match(/General Punct[^,]*[,][^,]*均/)) {
                     if (debug_spaces===true) {console.log(currE.innerHTML.slice(0,20));}
                     var currE=allE[ic];
                     var toBODY=false; //This is some problem with "toBODY=TRUE" now.
@@ -313,29 +334,34 @@
                             allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
                         }
                         else {
-                            var tmp_str=allE[is].innerHTML;
-                            //protect the Latins in tags
-                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u202F]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
-                            while (tmp_str.match(re_zhen) ) {
-                                tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
-                                if (debug_spaces===true) {console.log(tmp_str);}
+                            if ( !(allE[is].classList.contains("fullyBanned")) ) {
+                                var tmp_str=allE[is].innerHTML;
+                                //protect the Latins in tags
+                                var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u202F]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
+                                while (tmp_str.match(re_zhen) ) {
+                                    tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
+                                    if (debug_spaces===true) {console.log(tmp_str);}
+                                }
+                                var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u202F]?[\u3400-\u9FBF][^><]*>)/mg;
+                                while (tmp_str.match(re_enzh) ) {
+                                    tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
+                                    if (debug_spaces===true) {console.log(tmp_str);}
+                                }
+                                //en:zh;
+                                tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                                //Special treatment of ’” because of lacking signature in the closing tag (</span>)
+                                /////first after tags
+                                tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                                /////then without tags
+                                tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                                //now zh:en
+                                tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x202F;$2');
+                                tmp_str=tmp_str.replace(/\uED20/mg,'');
+                                allE[is].innerHTML=tmp_str;
                             }
-                            var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u202F]?[\u3400-\u9FBF][^><]*>)/mg;
-                            while (tmp_str.match(re_enzh) ) {
-                                tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
-                                if (debug_spaces===true) {console.log(tmp_str);}
+                            else {
+                                if (debug_spaces===true) {console.log("Skipping banned tags:"+allE[is].tagName);}
                             }
-                            //en:zh;
-                            tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
-                            //Special treatment of ’” because of lacking signature in the closing tag (</span>)
-                            /////first after tags
-                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
-                            /////then without tags
-                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
-                            //now zh:en
-                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x202F;$2');
-                            tmp_str=tmp_str.replace(/\uED20/mg,'');
-                            allE[is].innerHTML=tmp_str;
                         }
                     }
                 }
@@ -430,6 +456,7 @@
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
+            banFullyBanned();
             FunFixPunct(useLoop,2,returnLater);
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
@@ -805,6 +832,7 @@
         }
         if (useRecursion===true) {
             if (debug_verbose===true) {console.log('Using Recursion');}
+            banFullyBanned();
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
@@ -874,7 +902,7 @@
                     //Fixed, do nothing.
                 }
                 else {
-                    FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
+                    FixPunctRecursion(child); //This is the recursion part. The child.class might be changed. TODO: use node2fix=FixPun...?
                 }
                 //Test again after fixing child:
                 if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSubSafe=false;} //\uE000 is Tux in Linux Libertine.
@@ -924,7 +952,11 @@
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
                 if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
-                if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
+                if (node.classList.contains("fullyBanned")) {
+                    node.classList.remove("Safe2FixCJK\uE000"); //Do not performan fixing on "fully banned" tags.
+                    node.classList.remove("Space2Add");
+                }
+                else if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
