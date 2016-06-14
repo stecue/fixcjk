@@ -1,3 +1,7 @@
+## 0.14.0 (2016-06-14)
+Features:
+  - Rewrite SimSun selector and more SimSun fonts can be captured.
+
 ## 0.13.1 (2016-06-13)
 Bugfixes:
   - Use narrow non-break space instead of thin space.
