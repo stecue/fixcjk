@@ -1,4 +1,4 @@
-## 0.13.1 (2016-06-12)
+## 0.13.1 (2016-06-13)
 Bugfixes:
   - Use narrow non-break space instead of thin space.
 
