@@ -44,7 +44,7 @@
     var ifRound2=true;
     var ifRound3=true;
     var debug_verbose = false; //show/hide more information on console.
-    var debug_00 = true; //debug codes before Rounds 1/2/3/4.
+    var debug_00 = false; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
     var debug_03 = false;
@@ -142,7 +142,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F宋;\n src:local(SimHei);\n unicode-range: U+A0-FF,U+2500-257F;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F宋;\n src:local(SimHei);\n unicode-range: U+A0-FF,U+2500-2FFF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
