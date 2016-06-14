@@ -17,7 +17,7 @@
 ### 用法
 **脚本安装：**较新的浏览器都需要附加组件来安装和使用脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。
 
-**字体设置：**推荐下载安装 [Noto Sans CJK SC 字体](https://www.google.com/get/noto/help/cjk/)和 [Ubuntu Mono 字体](https://www.google.com/fonts/specimen/Ubuntu+Mono)。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
+**字体设置：**推荐下载安装 [Noto Sans CJK SC](https://www.google.com/get/noto/help/cjk/) 字体和 [Ubuntu Mono](https://www.google.com/fonts/specimen/Ubuntu+Mono) 字体。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
 
 **0.10 分支**新增“**点击重检查**”功能。遇到在页面初次载入时尚未出现的动态内容，可在**需要修正的页面元素处**单击。点击后脚本将重新检查所有需要修正的网页元素。点击重检查的允许最小间隔时间默认为 1 到 2 秒。间隔时间过短的连续点击将被忽略。
 
