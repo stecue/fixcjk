@@ -44,7 +44,7 @@
     var ifRound2=true;
     var ifRound3=true;
     var debug_verbose = false; //show/hide more information on console.
-    var debug_00 = false; //debug codes before Rounds 1/2/3/4.
+    var debug_00 = true; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
     var debug_03 = false;
@@ -142,7 +142,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F宋;\n src:SimSun;\n unicode-range: U+2500-257F;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F宋;\n src:local(SimHei);\n unicode-range: U+A0-FF,U+2500-257F;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -150,7 +150,7 @@
         punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
     }
-    if (debug_00===true) alert(punctStyle);
+    if (debug_00===true) console.log(punctStyle);
     GM_addStyle(punctStyle);
     ///----------------------------
     qpreCJK = dequote(qpreCJK);
@@ -162,7 +162,7 @@
     qserif = dequote(qserif);//LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
     qmono = dequote(qmono);//LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     CJKPunct=dequote(CJKPunct)+','+sig_punct;
-    if (debug_00===true) {alert('Entering Loops...');}
+    if (debug_00===true) {console.log('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
     for (i=0;i < all.length;i++) {
