@@ -4,4 +4,4 @@
 * Add a "preserved Tags" class. <code>, <tt> are generally safe but the format should be preserved.
 * Change italic CJK to other fonts.
 * ~~Fix the "SAFED by USER" rule.~~
-* Fix the "nomore spaces rule" on some pages,e.g. sciencenet.cn.
+* ~~Fix the "nomore spaces rule" on some pages,e.g. sciencenet.cn.~~

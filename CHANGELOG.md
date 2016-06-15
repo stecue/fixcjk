@@ -3,6 +3,7 @@ Features:
   - Rewrite SimSun selector and more SimSun fonts can be captured.
   - Rewrite the "signature" mechenism and the SimSun/mono filter for space adding.
   - New replacing method of SimSun/SimHei. More ASCII/UNICODE figures are supported.
+  - Use `span` instead of blank spaces while inserting spaces.
 
 Bugfixes:
   - Several bugfixes thanks to the new selector.
