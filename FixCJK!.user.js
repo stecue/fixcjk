@@ -250,8 +250,9 @@
     document.body.addEventListener("mouseup",function (e){
         if (((performance.now()-downtime) > 800) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) < 3) {
             e.target.classList.add("SafedByUser");
+            e.target.classList.add("CJK2Fix");
             e.target.classList.remove("MarksFixedE135");
-            console.log("Safed By User:"+e.target.nodeName+"!");
+            e.target.classList.remove("CJKTested");
             NumClicks=1;
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
@@ -908,6 +909,7 @@
             allSubSafe=true;
             node.classList.add("CJK2Fix");
             node.classList.remove("MarksFixedE135");
+            node2fix=true;
             //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
         }
         //Config and Filtering Done. Fix puncts if necessary.
