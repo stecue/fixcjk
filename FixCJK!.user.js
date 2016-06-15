@@ -56,6 +56,7 @@
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var privateClassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,SimSun2Fix,CJKTested';
     var SkippedTags=SkippedTagsForFonts;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -893,13 +894,10 @@
         }
         if (allSubSafe===true && (!(node instanceof SVGElement))) {
             var orig_class=node.className;
-            node.classList.remove("CJK2Fix");
-            node.classList.remove("MarksFixedE135");
-            node.classList.remove("FontsFixedE137");
-            node.classList.remove("\uE985");
-            node.classList.remove("\uE211");
-            node.classList.remove("Safe2FixCJK\uE000");
-            node.classList.remove("Space2Add");
+            var privateClasses=privateClassList.split(',');
+            for (var ip=0;ip<privateClasses.length;ip++) {
+                node.classList.remove(privateClasses[ip]);
+            }
             if (node.tagName.match(SafeTags)) {
                 //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
                 node.className=orig_class;
