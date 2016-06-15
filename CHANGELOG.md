@@ -1,6 +1,10 @@
 ## 0.14.0 (2016-06-14)
 Features:
   - Rewrite SimSun selector and more SimSun fonts can be captured.
+  - Rewrite the "signature" mechenism and the SimSun/mono filter for space adding.
+
+Bugfixes:
+  - Several bugfixes thanks to the new selector.
 
 ## 0.13.1 (2016-06-13)
 Bugfixes:

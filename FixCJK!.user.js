@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.82
+// @version           0.13.83
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -170,6 +170,7 @@
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
     for (i=0;i < all.length;i++) {
+        if (performance.now()-t_stop>300) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
         if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
             continue;
         }
@@ -408,33 +409,6 @@
             console.log('Probably pure English/Latin site, re-checking skipped.');
             return true;
         }
-        var all=document.getElementsByTagName('*');
-        for (var ire=0;ire < all.length;ire++) {
-            if ((all[ire].nodeName.match(SkippedTags)) || all[ire] instanceof SVGElement || all[ire].classList.contains("CJKTested")){
-                continue;
-            }
-            all[ire].classList.add("CJKTested");
-            font_str=dequote(window.getComputedStyle(all[ire], null).getPropertyValue('font-family'));
-            if (font_str.match(re_simsun)) {
-                all[ire].classList.add("CJK2Fix");
-                all[ire].classList.add("SimSun2Fix");
-                all[ire].classList.add("Space2Add");
-                continue;
-            }
-            child = all[ire].firstChild;
-            while (child) {
-                if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
-                    all[ire].classList.add("CJK2Fix");
-                    all[ire].classList.add("Space2Add");
-                    if (!(all[ire].parentNode.nodeName.match(SkippedTags))) {
-                        all[ire].parentNode.classList.add("CJK2Fix");
-                        all[ire].parentNode.classList.add("Space2Add");
-                    }
-                    break;
-                }
-                child=child.nextSibling;
-            }
-        }
         if (debug_verbose===true) {alert('FixCJK!: '+NumClicks.toString());}
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
@@ -461,7 +435,7 @@
             var NumFixed=0;
             var NumReFix=0;
             for (i=0;i<ReFixAll.length;i++) {
-                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement){
+                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
                     continue;
                 }
                 else if (ReFixAll[i].className.match("SafedByUser")) {
@@ -586,6 +560,11 @@
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
     function FixAllFonts () {
+        if (debug_verbose===true) {
+            console.log("Round 1: "+ifRound1.toString());
+            console.log("Round 2: "+ifRound2.toString());
+            console.log("Round 3: "+ifRound3.toString());
+        }
         SkippedTags=SkippedTagsForFonts;
         /// ===== First round: Replace all bold fonts to CJKBold ===== ///
         t_stop=performance.now();
@@ -662,6 +641,9 @@
             //First fix all SimSun parts in Round2.
             var allSuns=document.getElementsByClassName("SimSun2Fix");
             for (var isun=0;isun< allSuns.length;isun++) {
+                if (allSuns[isun].classList.contains("FontsFixedE137")) {
+                    continue;
+                }
                 font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
                 if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
                     allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qSimSun);
@@ -682,13 +664,15 @@
                         if (debug_verbose===true) {console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
                     }
                 }
-                //Only change if current node (not child node) contains CJK characters.
+                if (all[i].classList.contains("FontsFixedE137") ) {
+                    continue;
+                }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
-                    if_replace=false;
+                    continue; 
                 }
-                if (if_replace === true) {
+                else {
                     if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
                     if (debug_02===true) {if (all[i].innerHTML.match(re_to_check)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
                     //Test if contains Sans
