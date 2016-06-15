@@ -4,6 +4,7 @@ Features:
   - Rewrite the "signature" mechenism and the SimSun/mono filter for space adding.
   - New replacing method of SimSun/SimHei. More ASCII/UNICODE figures are supported.
   - Use `span` instead of blank spaces while inserting spaces.
+  - Do not replace SimSun if font-size > 18px.
 
 Bugfixes:
   - Several bugfixes thanks to the new selector.

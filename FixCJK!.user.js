@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.87
+// @version           0.13.88
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -179,9 +179,12 @@
         font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
         if (debug_01===true) console.log(font_str);
         if (font_str.match(re_simsun)) {
-            all[i].classList.add("CJK2Fix");
-            all[i].classList.add("SimSun2Fix");
-            all[i].classList.add("Space2Add");
+            var font_size=(window.getComputedStyle(all[i], null).getPropertyValue('font-size')).slice(0,-2);
+            if (font_size < 18) {
+                all[i].classList.add("CJK2Fix");
+                all[i].classList.add("SimSun2Fix");
+                all[i].classList.add("Space2Add");
+            }
             continue;
         }
         child = all[i].firstChild;
