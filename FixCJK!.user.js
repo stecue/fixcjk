@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.88
+// @version           0.13.89
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -185,6 +185,11 @@
                 all[i].classList.add("SimSun2Fix");
                 all[i].classList.add("Space2Add");
             }
+            else {
+                all[i].style.fontFamily=font_str;
+                all[i].classList.add("CJK2Fix");
+                all[i].classList.add("Space2Add");
+            }
             continue;
         }
         child = all[i].firstChild;
@@ -260,10 +265,10 @@
             NumClicks=1;
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
-            setTimeout(ReFixCJK,10,e);
+            setTimeout(ReFixCJK,5,e);
             if (document.URL.match(/zhihu\.com/mg)) {
                 FixLazy();
-                setTimeout(addSpaces,5);
+                setTimeout(addSpaces,15);
             }
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
@@ -688,7 +693,7 @@
                         if (font_str.match(re_simsun)) {
                             //all[i].style.color='Fuchsia';
                             //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                            //all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
                         }
                         else {
                             //all[i].style.color='Fuchsia';
@@ -1127,13 +1132,13 @@
         var fixpair_stop=performance.now()-fixpair_start;
         var paired_start=performance.now();
         //Find and preserve paired Latin marks.
-        var paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/g;
+        var paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
         //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
-        paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/g;
+        paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
