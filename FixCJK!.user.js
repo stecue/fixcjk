@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.99
+// @version           0.13.80
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -51,12 +51,11 @@
     var debug_03 = false;
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
-    var debug_spaces = true;
+    var debug_spaces = false;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
-    var privateClassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,SimSun2Fix,CJKTested';
     var SkippedTags=SkippedTagsForFonts;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -83,12 +82,12 @@
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
-    var sig_sim = 'RealCJKBold\u202F易'; //Just for SimSun;
-    var sig_song = 'RealCJKBold\u202F宋'; // signature to check if change is sucssful or not.
-    var sig_hei = 'RealCJKBold\u202F黑'; // signature to check if change is sucssful or not.
-    var sig_bold = 'RealCJKBold\u202F粗'; // signature to check if change is sucssful or not.
-    var sig_default = 'RealCJKBold\u202F默'; // signature to check if change is sucssful or not.
-    var sig_mono= 'RealCJKBold\u202F均';
+    var sig_sim = 'RealCJKBold\u00A0易'; //Just for SimSun;
+    var sig_song = 'RealCJKBold\u00A0宋'; // signature to check if change is sucssful or not.
+    var sig_hei = 'RealCJKBold\u00A0黑'; // signature to check if change is sucssful or not.
+    var sig_bold = 'RealCJKBold\u00A0粗'; // signature to check if change is sucssful or not.
+    var sig_default = 'RealCJKBold\u00A0默'; // signature to check if change is sucssful or not.
+    var sig_mono= 'RealCJKBold\u00A0均';
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sim = '"' + sig_sim + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_song= '"'+sig_song+'"';
@@ -147,7 +146,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u202F易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u00A0易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -342,25 +341,25 @@
                             if ( !(allE[is].classList.contains("preCode")) ) {
                                 var tmp_str=allE[is].innerHTML;
                                 //protect the Latins in tags
-                                var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u202F]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
+                                var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u00A0]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
                                 while (tmp_str.match(re_zhen) ) {
                                     tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
                                     if (debug_spaces===true) {console.log(tmp_str);}
                                 }
-                                var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u202F]?[\u3400-\u9FBF][^><]*>)/mg;
+                                var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u00A0]?[\u3400-\u9FBF][^><]*>)/mg;
                                 while (tmp_str.match(re_enzh) ) {
                                     tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
                                     if (debug_spaces===true) {console.log(tmp_str);}
                                 }
                                 //en:zh;
-                                tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                                tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1&nbsp;$2');
                                 //Special treatment of ’” because of lacking signature in the closing tag (</span>)
                                 /////first after tags
-                                tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                                tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1&nbsp;$2');
                                 /////then without tags
-                                tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                                tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1&nbsp;$2');
                                 //now zh:en
-                                tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x202F;$2');
+                                tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&nbsp;$2');
                                 tmp_str=tmp_str.replace(/\uED20/mg,'');
                                 allE[is].innerHTML=tmp_str;
                             }
