@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.0
+// @version           0.13.99
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -893,6 +893,7 @@
         }
         if (allSubSafe===true && (!(node instanceof SVGElement))) {
             var orig_class=node.className;
+            var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix';
             node.classList.remove("CJK2Fix");
             node.classList.remove("MarksFixedE135");
             node.classList.remove("FontsFixedE137");
@@ -900,6 +901,8 @@
             node.classList.remove("\uE211");
             node.classList.remove("Safe2FixCJK\uE000");
             node.classList.remove("Space2Add");
+            node.classList.remove("CJKTested");
+            node.classList.remove("SimSun2Fix");
             if (node.tagName.match(SafeTags)) {
                 //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
                 node.className=orig_class;
