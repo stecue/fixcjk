@@ -5,6 +5,7 @@
 * Change italic CJK to other fonts.
 * ~~Fix the "SAFED by USER" rule.~~
 * ~~Fix the "nomore spaces rule" on some pages,e.g. sciencenet.cn.~~
-* Fix the "dangling punctuations".
-* Add `&#8203;` before and after slash?
-* Add a "half-safe" class for `div`?
+* (0.15) Fix the "dangling punctuations".
+* (0.15) Add `&#8203;` before and after slash?
+* (0.15) Add a "half-safe" class for `div`?
+* (0.15) Add variable length space to the end of each paragraph?

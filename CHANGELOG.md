@@ -1,3 +1,7 @@
+## 0.14.1 (2016-06-16)
+Bugfixes:
+  - `&nbsp;` is taken into account as `[\s]` or `[\u0020\u00A0]`.
+
 ## 0.14.0 (2016-06-15)
 Features:
   - Rewrite SimSun selector and more SimSun fonts can be captured.

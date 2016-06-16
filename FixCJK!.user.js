@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.0
+// @version           0.14.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -84,12 +84,12 @@
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
-    var sig_sim = 'RealCJKBold\u00A0易'; //Just for SimSun;
-    var sig_song = 'RealCJKBold\u00A0宋'; // signature to check if change is sucssful or not.
-    var sig_hei = 'RealCJKBold\u00A0黑'; // signature to check if change is sucssful or not.
-    var sig_bold = 'RealCJKBold\u00A0粗'; // signature to check if change is sucssful or not.
-    var sig_default = 'RealCJKBold\u00A0默'; // signature to check if change is sucssful or not.
-    var sig_mono= 'RealCJKBold\u00A0均';
+    var sig_sim = 'RealCJKBold\u0020易'; //Just for SimSun;
+    var sig_song = 'RealCJKBold\u0020宋'; // signature to check if change is sucssful or not.
+    var sig_hei = 'RealCJKBold\u0020黑'; // signature to check if change is sucssful or not.
+    var sig_bold = 'RealCJKBold\u0020粗'; // signature to check if change is sucssful or not.
+    var sig_default = 'RealCJKBold\u0020默'; // signature to check if change is sucssful or not.
+    var sig_mono= 'RealCJKBold\u0020均';
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sim = '"' + sig_sim + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_song= '"'+sig_song+'"';
@@ -148,7 +148,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u00A0易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -359,14 +359,14 @@
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
                             //en:zh;
-                            tmp_str=tmp_str.replace(/([\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            tmp_str=tmp_str.replace(/([\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF](?:<[^\uE985\uE211><]*>){0,2})(?:[\u0020\u00A0]|&nbsp;)?([\u3400-\u9FBF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>$2');
                             //Special treatment of ’” because of lacking signature in the closing tag (</span>)
                             /////first after tags
-                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})(?:[\u0020\u00A0]|&nbsp;)?([\u3400-\u9FBF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>$2');
                             /////then without tags
-                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})(?:[\u0020\u00A0]|&nbsp;)?([\u3400-\u9FBF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>$2');
                             //now zh:en
-                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[‘“\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])(?:[\u0020\u00A0]|&nbsp;)?((?:<[^\uE985\uE211><]*>){0,2}[‘“\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF])/mg,'$1<span class="\uE211 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>$2');
                             //now en["']zh (TODO in 0.14.1)
                             //now zh['"]en (TODO in 0.14.1)
                             tmp_str=tmp_str.replace(/\uED20/mg,'');
@@ -1179,8 +1179,8 @@
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,2}/g,'$1');
-            currHTML=currHTML.replace(/([^\s])[\s]{0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\s]|&nbsp;){0,2}/g,'$1');
+            currHTML=currHTML.replace(/([^\s])(?:[\s]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
         }
         else {
             //Delete at most 1 spaces before and after because of the wider CJK marks.
