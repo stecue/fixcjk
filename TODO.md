@@ -8,4 +8,4 @@
 * (0.15) Fix the "dangling punctuations".
 * (0.15) Add `&#8203;` before and after slash?
 * (0.15) Add a "half-safe" class for `div`?
-* (0.15) Add variable length space to the end of each paragraph?
+* (0.15) Add variable length space to the end of each paragraph? (seems no harm to add a `br` before `p`?)
