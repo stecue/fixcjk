@@ -1,3 +1,14 @@
+## 0.14.0 (2016-06-15)
+Features:
+  - Rewrite SimSun selector and more SimSun fonts can be captured.
+  - Rewrite the "signature" mechenism and the SimSun/mono filter for space adding.
+  - New replacing method of SimSun/SimHei. More ASCII/UNICODE figures are supported.
+  - Use `span` instead of blank spaces while inserting spaces.
+  - Do not replace SimSun if font-size > 18px.
+
+Bugfixes:
+  - Several bugfixes thanks to the new selector.
+
 ## 0.13.2 (2016-06-15)
 Bugfixes:
   - Fix a regression which prevents "forced recheck".

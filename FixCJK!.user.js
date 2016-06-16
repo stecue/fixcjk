@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.2
+// @version           0.14.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -16,8 +16,9 @@
 (function () {
     'use strict';
     // You can change the the following fonts/settings until the "var FixPunct=" line.
-    var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font. Regular weight.
-    var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Serif fonts for CJK. "SimSun" with regular weight will be replaced by the font specified here. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
+    var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
+    var CJKSimSun= '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
+    var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
     var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Sans CJK SC,"WenQuanYi Micro Hei",SimHei,SimSun'; //The font to use for CJK quotation marks.
@@ -54,8 +55,11 @@
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
+    var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix';
+    var preCodeTags='code,pre,tt';
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */gi;
@@ -80,12 +84,15 @@
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
-    var sig_sun = 'RealCJKBold\u202F宋'; // signature to check if change is sucssful or not.
-    var sig_hei = 'RealCJKBold\u202F黑'; // signature to check if change is sucssful or not.
-    var sig_bold = 'RealCJKBold\u202F粗'; // signature to check if change is sucssful or not.
-    var sig_default = 'RealCJKBold\u202F默'; // signature to check if change is sucssful or not.
+    var sig_sim = 'RealCJKBold\u00A0易'; //Just for SimSun;
+    var sig_song = 'RealCJKBold\u00A0宋'; // signature to check if change is sucssful or not.
+    var sig_hei = 'RealCJKBold\u00A0黑'; // signature to check if change is sucssful or not.
+    var sig_bold = 'RealCJKBold\u00A0粗'; // signature to check if change is sucssful or not.
+    var sig_default = 'RealCJKBold\u00A0默'; // signature to check if change is sucssful or not.
+    var sig_mono= 'RealCJKBold\u00A0均';
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
-    var qsig_sun = '"' + sig_sun + '"'; //Quoted sinagure; Actually no need to quote.
+    var qsig_sim = '"' + sig_sim + '"'; //Quoted sinagure; Actually no need to quote.
+    var qsig_song= '"'+sig_song+'"';
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
     var qsig_bold = '"' + sig_bold + '"';
     var qsig_default = '"' + sig_default + '"';
@@ -93,12 +100,11 @@
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
-    var qSimSun = qsig_sun+','+LatinInSimSun + ',' + CJKserif;
-    var qHei = LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
+    var qSimSun = qsig_sim+','+LatinInSimSun + ',' + CJKSimSun;
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
-    var qserif = LatinSerif + ',' + CJKserif + ',' + 'serif'+','+qsig_sun; //To replace "serif"
-    var qmono = qsig_sun+','+ LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
+    var qserif = LatinSerif + ',' + CJKserif +','+qsig_song+ ',' + 'serif'; //To replace "serif"
+    var qmono = sig_mono+','+LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     var i = 0;
     var max = all.length;
     var child = all[i].firstChild;
@@ -142,6 +148,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u00A0易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -149,29 +156,40 @@
         punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
     }
-    if (debug_00===true) alert(punctStyle);
+    if (debug_00===true) console.log(punctStyle);
     GM_addStyle(punctStyle);
     ///----------------------------
     qpreCJK = dequote(qpreCJK);
     qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
-    qHei = dequote(qHei);//LatinInSimSun + ',' + CJKsans + ',' + qsig_hei;
     qBold = dequote(qBold);//LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     qsans = dequote(qsans);//LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
     qserif = dequote(qserif);//LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
     qmono = dequote(qmono);//LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     CJKPunct=dequote(CJKPunct)+','+sig_punct;
-    if (debug_00===true) {alert('Entering Loops...');}
+    if (debug_00===true) {console.log('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
     for (i=0;i < all.length;i++) {
+        if (performance.now()-t_stop>300) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
         if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
             continue;
         }
+        all[i].classList.add("CJKTested");
         font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+        if (debug_01===true) console.log(font_str);
         if (font_str.match(re_simsun)) {
-            all[i].classList.add("CJK2Fix");
-            all[i].classList.add("Space2Add");
+            var font_size=(window.getComputedStyle(all[i], null).getPropertyValue('font-size')).slice(0,-2);
+            if (font_size < 18) {
+                all[i].classList.add("CJK2Fix");
+                all[i].classList.add("SimSun2Fix");
+                all[i].classList.add("Space2Add");
+            }
+            else {
+                all[i].style.fontFamily=font_str;
+                all[i].classList.add("CJK2Fix");
+                all[i].classList.add("Space2Add");
+            }
             continue;
         }
         child = all[i].firstChild;
@@ -241,14 +259,16 @@
     document.body.addEventListener("mouseup",function (e){
         if (((performance.now()-downtime) > 800) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) < 3) {
             e.target.classList.add("SafedByUser");
+            e.target.classList.add("CJK2Fix");
             e.target.classList.remove("MarksFixedE135");
+            e.target.classList.remove("CJKTested");
             NumClicks=1;
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
-            setTimeout(ReFixCJK,10,e);
+            setTimeout(ReFixCJK,5,e);
             if (document.URL.match(/zhihu\.com/mg)) {
                 FixLazy();
-                setTimeout(addSpaces,5);
+                setTimeout(addSpaces,15);
             }
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
@@ -267,10 +287,29 @@
     }
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening functions===//
+    function labelPreCode() {
+        var bannedTagList=preCodeTags.split(',');
+        for (var itag=0;itag<bannedTagList.length;itag++) {
+            var all2Ban=document.getElementsByTagName(bannedTagList[itag]);
+            for (var iele=0;iele<all2Ban.length;iele++) {
+                banHelper(all2Ban[iele]);
+            }
+        }
+        function banHelper(node) {
+            var child=node.firstChild;
+            while (child) {
+                if ( child.nodeType===1 && !(child instanceof SVGElement) ) {
+                    banHelper(child);
+                }
+                child=child.nextSibling;
+            }
+            node.classList.add("preCode");
+        }
+    }
     function addSpaces() {
         var t_spaces=performance.now();
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
-        var checkSpaces=true;
+        var checkSpaces=false; //seems no need to check first at all.
         if (checkSpaces===true) {
             checkSpacesHelper(document.getElementsByClassName("SafedByUser"));
             checkSpacesHelper(document.getElementsByClassName("Space2Add"));
@@ -278,7 +317,7 @@
         function checkSpacesHelper(allE) {
             for (var ic=0;ic<allE.length;ic++) {
                 font_str=dequote(window.getComputedStyle(allE[ic], null).getPropertyValue('font-family'));
-                if (font_str.match(/General Punct[^,]*[,][^,]*宋/)) {
+                if (font_str.match(/General Punct[^,]*[,][^,]*均/)) {
                     if (debug_spaces===true) {console.log(currE.innerHTML.slice(0,20));}
                     var currE=allE[ic];
                     var toBODY=false; //This is some problem with "toBODY=TRUE" now.
@@ -301,40 +340,40 @@
         }
         addSpacesHelper(document.getElementsByClassName("SafedByUser"));
         addSpacesHelper(document.getElementsByClassName("Space2Add"));
-        var font_str = '';
         function addSpacesHelper(allE) {
+            //Now the tag protection is fixed, I'll alway use the "useSpan" method (different from 0.13.0)
             for (var is=0;is<allE.length;is++) {
                 if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000") && allE[is].parentNode.classList.contains("Space2Add")) ) {
                     if (allE[is].classList.contains("Safe2FixCJK\uE000") || allE[is].classList.contains("SafedByUser")) {
-                        var useSpan=false;
-                        if (useSpan===true) {
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\w\u0391-\u03FF\)\],.])((?:<[^><]*>){0,2}[\u3400-\u9FBF])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
-                            allE[is].innerHTML=allE[is].innerHTML.replace(/([\u3400-\u9FBF](?:<[^><]*>){0,2})([\(\[\u0391-\u03FF\w])/mg,'$1<span style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica;">&nbsp;</span>$2');
-                        }
-                        else {
+                        if ( !(allE[is].classList.contains("preCode")) ) {
                             var tmp_str=allE[is].innerHTML;
                             //protect the Latins in tags
-                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u202F]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
+                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u00A0]?)([“‘\u0021-\u003B\u003D\u003F-\u007E\u0391-\u03FF][^><]*>)/mg;
                             while (tmp_str.match(re_zhen) ) {
                                 tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
-                            var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u202F]?[\u3400-\u9FBF][^><]*>)/mg;
+                            var re_enzh=/(<[^><]*[\u0021-\u003B\u003D\u003F-\u007E\u0391-\u03FF’”])([\u0020\u00A0]?[\u3400-\u9FBF][^><]*>)/mg;
                             while (tmp_str.match(re_enzh) ) {
                                 tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
                             //en:zh;
-                            tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                            tmp_str=tmp_str.replace(/([\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
                             //Special treatment of ’” because of lacking signature in the closing tag (</span>)
                             /////first after tags
-                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
                             /////then without tags
-                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u202F]?([\u3400-\u9FBF])/mg,'$1&#x202F;$2');
+                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
                             //now zh:en
-                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1&#x202F;$2');
+                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[‘“\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            //now en["']zh (TODO in 0.14.1)
+                            //now zh['"]en (TODO in 0.14.1)
                             tmp_str=tmp_str.replace(/\uED20/mg,'');
                             allE[is].innerHTML=tmp_str;
+                        }
+                        else {
+                            if (debug_spaces===true) {console.log("Skipping banned tags:"+allE[is].tagName);}
                         }
                     }
                 }
@@ -398,7 +437,7 @@
             var NumFixed=0;
             var NumReFix=0;
             for (i=0;i<ReFixAll.length;i++) {
-                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement){
+                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
                     continue;
                 }
                 else if (ReFixAll[i].className.match("SafedByUser")) {
@@ -429,6 +468,7 @@
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
+            labelPreCode();
             FunFixPunct(useLoop,2,returnLater);
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
@@ -522,9 +562,25 @@
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
     function FixAllFonts () {
+        if (debug_verbose===true) {
+            console.log("Round 1: "+ifRound1.toString());
+            console.log("Round 2: "+ifRound2.toString());
+            console.log("Round 3: "+ifRound3.toString());
+        }
         SkippedTags=SkippedTagsForFonts;
         /// ===== First round: Replace all bold fonts to CJKBold ===== ///
         t_stop=performance.now();
+        //First fix all SimSun parts in Round 1&2.
+        var allSuns=document.getElementsByClassName("SimSun2Fix");
+        for (var isun=0;isun< allSuns.length;isun++) {
+            if (allSuns[isun].classList.contains("FontsFixedE137")) {
+                continue;
+            }
+            font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
+            if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
+                allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qSimSun);
+            }
+        }
         all = document.getElementsByClassName('CJK2Fix');
         if (ifRound1===true) {
             for (i = 0; i < all.length; i++) {
@@ -595,6 +651,7 @@
         }
         t_stop=performance.now();
         if (ifRound2===true) {
+            //Now fix the rest.
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
                     if ((performance.now()-t_stop)*invForLimit > timeOut) {
@@ -609,70 +666,15 @@
                         if (debug_verbose===true) {console.log('FixCJK!: Round 2 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
                     }
                 }
-                child = all[i].firstChild;
-                if_replace = false;
-                //Only change if current node (not child node) contains CJK characters.
+                if (all[i].classList.contains("FontsFixedE137") ) {
+                    continue;
+                }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
-                //console.log(child.nodeType);
-                while (child) {
-                    if (child.nodeType == 3) {
-                        //all[i].style.color='Teal'; //text-->teal;
-                        //Just check and fix the improper SimSun use
-                        if (font_str.match(re_simsun)) {
-                            if (debug_02===true) {all[i].style.color="Sienna";}
-                            if (fweight == 'bold' || fweight > 500) {
-                                //all[i].style.color="Grey";
-                                if_replace = false;
-                                //console.log(child.data);
-                                //return false;
-                            }
-                            else {
-                                if (debug_02===true) {all[i].style.color="Orange";}
-                                if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/)) {
-                                    //do nothing if already replaced;
-                                    if (debug_02===true) {all[i].style.color="Grey";}
-                                    if_replace = false;
-                                }
-                                else {
-                                    if (debug_02 ===true) {all[i].style.color="Indigo";} //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-                                    if (debug_02===true) if (child.data.match(re_to_check)) {tmp_idx=i;console.log('before:'+all[i].style.fontFamily);}
-                                    all[i].style.fontFamily = dequote(genPunct+','+font_str.replace(re_simsun, qSimSun));
-                                    all[i].classList.remove("Safe2Add");
-                                    if (debug_02===true) if (child.data.match(re_to_check)) {console.log('after_applied:'+all[i].style.fontFamily);}
-                                    if (debug_02===true) if (child.data.match(re_to_check)) {console.log('after_calculated:'+window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family'));}
-                                    if (all[i].style.fontFamily.length<1) {
-                                        if (debug_verbose===true) {console.log(font_str);console.log(font_str.replace(re_simsun, qSimSun));}
-                                    }
-                                    if (!(has_genfam(all[i].style.fontFamily))) {
-                                        all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
-                                    }              //all[i].style.color="Indigo"; //Improperly used SimSun. It shouldn't be used for non-CJK fonts.
-
-                                    if_replace = false;
-                                    //all[i].style.color="Grey";
-                                }
-                            }
-                            if (debug_02===true) if (child.data.match(re_to_check)) {console.log('///////after_noCJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                        }
-                        if (child.data.match(/[\u3400-\u9FBF]/)) {
-                            if_replace = true;
-                            if (debug_02===true) if (child.data.match(re_to_check)) {console.log('|||||||testing_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                            if (debug_02===true) {all[i].style.color="Cyan"; }//CJK-->Cyan
-                            font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-                            if (font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default)) {
-                                //do nothing if already replaced;
-                                if (debug_02===true) {all[i].style.color="Black";}
-                                if_replace = false;
-                                if (debug_02===true) if (child.data.match(re_to_check)) {console.log('XXXXXXXXXXXXtesting_CJK:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}
-                            }          //break;
-
-                        }
-                    }
-                    child = child.nextSibling;
+                if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
+                    continue; 
                 }
-                //Just to make sure "font_str" is already updated.
-                font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-                if (if_replace === true) {
+                else {
                     if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
                     if (debug_02===true) {if (all[i].innerHTML.match(re_to_check)) {console.log('\\\\\\\\\\\\afterall:'+i.toString()+'::'+all[i].style.fontFamily+'\n-->if_replace:'+if_replace);}}
                     //Test if contains Sans
@@ -693,7 +695,7 @@
                         if (font_str.match(re_simsun)) {
                             //all[i].style.color='Fuchsia';
                             //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                            //all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
                         }
                         else {
                             //all[i].style.color='Fuchsia';
@@ -754,7 +756,7 @@
                     continue;
                 }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-                if (!(font_str.match(sig_sun) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
+                if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
@@ -768,16 +770,9 @@
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                     }
                     else {
-                        if (debug_03 === true) { all[i].style.color='Fuchsia'; }
-                        if (font_str.match(re_simsun)) {
-                            if (debug_03 === true) {all[i].style.color='Sienna'; }
-                            //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
-                        }
-                        else {
-                            if (debug_03 === true) { all[i].style.color='Olive';}
-                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
-                        }
+                        //SimSun should be taken care of throught the "SimSun2Fix" class.
+                        if (debug_03 === true) { all[i].style.color='Olive';}
+                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                     }
                 }
                 else {
@@ -804,6 +799,7 @@
         }
         if (useRecursion===true) {
             if (debug_verbose===true) {console.log('Using Recursion');}
+            labelPreCode();
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
@@ -837,7 +833,6 @@
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
         var currHTML="";
-        var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
         var allSubSafe=true;
         var node2fix=true;
         if (node.classList.contains("MarksFixedE135")) {
@@ -849,6 +844,12 @@
             node.classList.add("MarksFixedE135");
             return false;
         }
+        //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
+        //the blank spaces will be streched but not the "character-spacing" if using align=justify.
+        if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
+            node.style.textAlign="justify";
+        }
+        node.lang="zh";
         while (child) {
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
             if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
@@ -873,7 +874,7 @@
                     //Fixed, do nothing.
                 }
                 else {
-                    FixPunctRecursion(child); //This is the recursion part. The child.class might be changed.
+                    FixPunctRecursion(child); //This is the recursion part. The child.class might be changed. TODO: use node2fix=FixPun...?
                 }
                 //Test again after fixing child:
                 if (!(child.classList.contains("Safe2FixCJK\uE000"))) {allSubSafe=false;} //\uE000 is Tux in Linux Libertine.
@@ -882,13 +883,10 @@
         }
         if (allSubSafe===true && (!(node instanceof SVGElement))) {
             var orig_class=node.className;
-            node.classList.remove("CJK2Fix");
-            node.classList.remove("MarksFixedE135");
-            node.classList.remove("FontsFixedE137");
-            node.classList.remove("\uE985");
-            node.classList.remove("\uE211");
-            node.classList.remove("Safe2FixCJK\uE000");
-            node.classList.remove("Space2Add");
+            var CJKclasses=CJKclassList.split(',');
+            for (var icl=0;icl<CJKclasses.length;icl++) {
+                node.classList.remove(CJKclasses[icl]);
+            }
             if (node.tagName.match(SafeTags)) {
                 //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
                 node.className=orig_class;
@@ -924,20 +922,18 @@
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
                 if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
-                if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
+                if (node.classList.contains("preCode")) {
+                    node.classList.remove("Safe2FixCJK\uE000"); //Do not performan fixing on "fully banned" tags.
+                    node.classList.remove("Space2Add");
+                }
+                else if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
                 }
                 else {
                     if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
                 }
-                if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
-                    node.style.textAlign="justify";
-                }
             }
-            //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
-            //the blank spaces will be streched but not the "character-spacing" if using align=justify.
-            node.lang="zh";
             node.classList.add("MarksFixedE135");
             return true;
         }
@@ -1138,13 +1134,13 @@
         var fixpair_stop=performance.now()-fixpair_start;
         var paired_start=performance.now();
         //Find and preserve paired Latin marks.
-        var paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/g;
+        var paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
         //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
-        paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/g;
+        paired=/(\u201C)([^\u201D]*[\u3400-\u9FBF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
