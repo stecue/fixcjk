@@ -1,6 +1,11 @@
-## 0.14.1 (2016-06-16)
+## 0.14.3 (2016-06-17)
+Features:
+  - Limit the tags that can be ignored while adding spaces to prevent unwanted effects.
+  - Ignore some tags such as `math` to speed up.
+
 Bugfixes:
   - `&nbsp;` is taken into account as `[\s]` or `[\u0020\u00A0]`.
+  - Do not add extra spaces between CJK and Latin quotation marks if the context is in SimSun.
 
 ## 0.14.0 (2016-06-15)
 Features:
