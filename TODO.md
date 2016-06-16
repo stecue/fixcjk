@@ -5,4 +5,5 @@
 * Change italic CJK to other fonts.
 * ~~Fix the "SAFED by USER" rule.~~
 * ~~Fix the "nomore spaces rule" on some pages,e.g. sciencenet.cn.~~
+* Fix the "dangling punctuations".
 * Add a "half-safe" class for `div`?
