@@ -6,4 +6,5 @@
 * ~~Fix the "SAFED by USER" rule.~~
 * ~~Fix the "nomore spaces rule" on some pages,e.g. sciencenet.cn.~~
 * Fix the "dangling punctuations".
+* Add `&#8203;` before and after slash?
 * Add a "half-safe" class for `div`?
