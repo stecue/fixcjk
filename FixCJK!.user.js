@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.13.89
+// @version           0.14.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -348,25 +348,27 @@
                         if ( !(allE[is].classList.contains("preCode")) ) {
                             var tmp_str=allE[is].innerHTML;
                             //protect the Latins in tags
-                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u00A0]?)([“‘_+={}\-\(\[\u0391-\u03FF\w][^><]*>)/mg;
+                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u00A0]?)([“‘\u0021-\u003B\u003D\u003F-\u007E\u0391-\u03FF][^><]*>)/mg;
                             while (tmp_str.match(re_zhen) ) {
                                 tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
-                            var re_enzh=/(<[^><]*[\w\u0391-\u03FF\)\]\-_+={},.’”])([\u0020\u00A0]?[\u3400-\u9FBF][^><]*>)/mg;
+                            var re_enzh=/(<[^><]*[\u0021-\u003B\u003D\u003F-\u007E\u0391-\u03FF’”])([\u0020\u00A0]?[\u3400-\u9FBF][^><]*>)/mg;
                             while (tmp_str.match(re_enzh) ) {
                                 tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
                             //en:zh;
-                            tmp_str=tmp_str.replace(/([\w\u0391-\u03FF\)\]\-_+={},.](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            tmp_str=tmp_str.replace(/([\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
                             //Special treatment of ’” because of lacking signature in the closing tag (</span>)
                             /////first after tags
                             tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
                             /////then without tags
                             tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
                             //now zh:en
-                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[“‘_+={}\-\(\[\u0391-\u03FF\w])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[‘“\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            //now en["']zh (TODO in 0.14.1)
+                            //now zh['"]en (TODO in 0.14.1)
                             tmp_str=tmp_str.replace(/\uED20/mg,'');
                             allE[is].innerHTML=tmp_str;
                         }
