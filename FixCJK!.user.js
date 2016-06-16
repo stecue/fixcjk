@@ -58,7 +58,7 @@
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    if (document.URL.match(/wikipedia\.org/)) {
+    if (document.body.classList.contains("mediawiki")) {
         SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
     }
     var ignoredTags=/^(math)$/i;

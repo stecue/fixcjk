@@ -2,6 +2,7 @@
 Features:
   - Limit the tags that can be ignored while adding spaces to prevent unwanted effects.
   - Ignore some tags such as `math` to speed up.
+  - Use custom settings for mediawiki contents.
 
 Bugfixes:
   - `&nbsp;` is taken into account as `[\s]` or `[\u0020\u00A0]`.
