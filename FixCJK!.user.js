@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.3
+// @version           0.14.80
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -62,6 +62,7 @@
         SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|DIV|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
     }
     var ignoredTags=/^(math)$/i;
+    var enoughSpaceList='toggle-comment,answer-date-link';
     var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
@@ -188,12 +189,16 @@
             if (font_size < 18) {
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("SimSun2Fix");
-                all[i].classList.add("Space2Add");
+                if (!inTheClassOf(all[i],enoughSpaceList)) {
+                    all[i].classList.add("Space2Add");
+                }
             }
             else {
                 all[i].style.fontFamily=font_str;
                 all[i].classList.add("CJK2Fix");
-                all[i].classList.add("Space2Add");
+                if (!inTheClassOf(all[i],enoughSpaceList)) {
+                    all[i].classList.add("Space2Add");
+                }
             }
             continue;
         }
@@ -201,10 +206,14 @@
         while (child) {
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].classList.add("CJK2Fix");
-                all[i].classList.add("Space2Add");
+                if (!inTheClassOf(all[i],enoughSpaceList)) {
+                    all[i].classList.add("Space2Add");
+                }
                 if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
                     all[i].parentNode.classList.add("CJK2Fix");
-                    all[i].parentNode.classList.add("Space2Add");
+                    if (!inTheClassOf(all[i].parentNode,enoughSpaceList) && !inTheClassOf(all[i],enoughSpaceList)) {
+                        all[i].parentNode.classList.add("Space2Add");
+                    }
                 }
                 break;
             }
@@ -530,6 +539,15 @@
         t_last=performance.now();
     }
     ///===various aux functions===///
+    function inTheClassOf(node,cList) {
+        var classes=cList.split(',');
+        for (var i=0;i<classes.length;i++) {
+            if (node.classList.contains(classes[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
     function check_fonts(font_var, fvname) {
         var fl = font_var.split(',');
         for (i = 0; i < fl.length; i++) {
@@ -884,9 +902,10 @@
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
-        if (node.nodeName.match(tabooedTags)) {
+        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,enoughSpaceList)) {
             //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
             node.classList.remove("Safe2FixCJK\uE000");
+            node.classList.remove("Space2Add");
             node.classList.add("MarksFixedE135");
             return false;
         }
@@ -909,7 +928,7 @@
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                if  (child.nodeName.match(tabooedTags) ) {
+                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,enoughSpaceList) ) {
                     //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
@@ -943,7 +962,7 @@
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
             }
-            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags))) {
+            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpaceList))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -962,7 +981,7 @@
             //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpaceList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
