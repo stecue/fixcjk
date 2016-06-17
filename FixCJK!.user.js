@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.0
+// @version           0.14.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -58,7 +58,12 @@
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix';
+    if (document.body.classList.contains("mediawiki")) {
+        SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|DIV|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    }
+    var ignoredTags=/^(math)$/i;
+    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM';
+    var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
     var t_stop = t_start;
@@ -84,12 +89,12 @@
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
         FixPunct=true;
     }
-    var sig_sim = 'RealCJKBold\u00A0易'; //Just for SimSun;
-    var sig_song = 'RealCJKBold\u00A0宋'; // signature to check if change is sucssful or not.
-    var sig_hei = 'RealCJKBold\u00A0黑'; // signature to check if change is sucssful or not.
-    var sig_bold = 'RealCJKBold\u00A0粗'; // signature to check if change is sucssful or not.
-    var sig_default = 'RealCJKBold\u00A0默'; // signature to check if change is sucssful or not.
-    var sig_mono= 'RealCJKBold\u00A0均';
+    var sig_sim = 'RealCJKBold\u0020易'; //Just for SimSun;
+    var sig_song = 'RealCJKBold\u0020宋'; // signature to check if change is sucssful or not.
+    var sig_hei = 'RealCJKBold\u0020黑'; // signature to check if change is sucssful or not.
+    var sig_bold = 'RealCJKBold\u0020粗'; // signature to check if change is sucssful or not.
+    var sig_default = 'RealCJKBold\u0020默'; // signature to check if change is sucssful or not.
+    var sig_mono= 'RealCJKBold\u0020均';
     var sig_punct = '\uE135'; //will be attached to CJKPunct; This is used in punct fixing not font fixing(?)
     var qsig_sim = '"' + sig_sim + '"'; //Quoted sinagure; Actually no need to quote.
     var qsig_song= '"'+sig_song+'"';
@@ -148,7 +153,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u00A0易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2FFF;}';
     var useCSSforSimSun=false;
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -270,6 +275,9 @@
                 FixLazy();
                 setTimeout(addSpaces,15);
             }
+            else if (document.URL.match(re_autospace_url)) {
+                setTimeout(addSpaces,15);
+            }
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
@@ -348,27 +356,34 @@
                         if ( !(allE[is].classList.contains("preCode")) ) {
                             var tmp_str=allE[is].innerHTML;
                             //protect the Latins in tags
-                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u00A0]?)([“‘\u0021-\u003B\u003D\u003F-\u007E\u0391-\u03FF][^><]*>)/mg;
+                            var re_zhen=/(<[^><]*[\u3400-\u9FBF][\u0020\u00A0]?)([“‘\u0021-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF][^><]*>)/mg;
                             while (tmp_str.match(re_zhen) ) {
                                 tmp_str=tmp_str.replace(re_zhen,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
-                            var re_enzh=/(<[^><]*[\u0021-\u003B\u003D\u003F-\u007E\u0391-\u03FF’”])([\u0020\u00A0]?[\u3400-\u9FBF][^><]*>)/mg;
+                            var re_enzh=/(<[^><]*[\u0021-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF’”])([\u0020\u00A0]?[\u3400-\u9FBF][^><]*>)/mg;
                             while (tmp_str.match(re_enzh) ) {
                                 tmp_str=tmp_str.replace(re_enzh,'$1\uED20$2'); //use \uED20 to replace spaces
                                 if (debug_spaces===true) {console.log(tmp_str);}
                             }
                             //en:zh;
-                            tmp_str=tmp_str.replace(/([\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            re_enzh=/([\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}((?:<[\u002F]?(?:span|sup|b|i|strong|em|u|var|a)[^\uE985\uE211><]*>){0,5})(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
+                            var space2BeAdded='<span class="\uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>';
+                            var enzh_withSpace='$1$2'+space2BeAdded+'$3';
+                            tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                             //Special treatment of ’” because of lacking signature in the closing tag (</span>)
                             /////first after tags
-                            tmp_str=tmp_str.replace(/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            re_enzh=/((?:<[^\uE985\uE211><]*>)+[\u201D\u2019])(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}((?:<[\u002F]?(?:span|sup|b|i|strong|em|u|var|a)[^\uE985\uE211><]*>){0,5})(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
+                            tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                             /////then without tags
-                            tmp_str=tmp_str.replace(/([^>][\u201D\u2019](?:<[^\uE985\uE211><]*>){0,2})[\u0020\u00A0]?([\u3400-\u9FBF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
+                            re_enzh=/([^>][\u201D\u2019])(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}((?:<[\u002F]?(?:span|sup|b|i|strong|em|u|var|a)[^\uE985\uE211><]*>){0,5})(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
+                            tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                             //now zh:en
-                            tmp_str=tmp_str.replace(/([\u3400-\u9FBF])[ ]?((?:<[^\uE985\uE211><]*>){0,2}[‘“\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u007E\u0391-\u03FF])/mg,'$1<span class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">&nbsp;</span>$2');
-                            //now en["']zh (TODO in 0.14.1)
-                            //now zh['"]en (TODO in 0.14.1)
+                            re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}((?:<[\u002F]?(?:span|sup|b|i|strong|em|u|var|a)[^\uE985\uE211><]*>){0,5})(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}([‘“\u0021\u0023-\u0026\u0028-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])/img;
+                            var zhen_withSpace='$1'+space2BeAdded+'$2$3';
+                            tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
+                            //now en["']zh (TODO in 0.15?)
+                            //now zh['"]en (TODO in 0.15?)
                             tmp_str=tmp_str.replace(/\uED20/mg,'');
                             allE[is].innerHTML=tmp_str;
                         }
@@ -379,7 +394,38 @@
                 }
             }
         }
+        window.setTimeout(removeSpacesForSimSun,10);
         console.log("FixCJK: Adding spaces took "+((performance.now()-t_spaces)/1000).toFixed(3)+" seconds.");
+    }
+    function removeSpacesForSimSun() {
+        var allS=document.getElementsByClassName("\uE699");
+        var font_str='';
+        for (var i=0;i<allS.length;i++) {
+            font_str=((dequote(window.getComputedStyle(allS[i].parentNode, null).getPropertyValue('font-family'))).split(','))[1];
+            if (font_str.match(re_simsun)) {
+                allS[i].innerHTML='';
+            }
+            else if (font_str.match(/RealCJKBold.易/))  {
+                allS[i].parentNode.classList.add("checkSpacedQM");
+            }
+        }
+        allS=document.getElementsByClassName("checkSpacedQM");
+        for (i=0;i<allS.length;i++){
+            var toRemoved=/(<span[^><]*\uE699[^><]*>\u0020<\/span>)((?:<[^><\uE985\uE211]*>)*[\u2018\u201C])/g;
+            if (allS[i].innerHTML.match(toRemoved)) {
+                allS[i].innerHTML=allS[i].innerHTML.replace(toRemoved,'$2');
+            }
+            //No closing tag: En"Zh
+            toRemoved=/([\u2019\u201D])<span[^><]*\uE699[^><]*>\u0020<\/span>/g;
+            if (allS[i].innerHTML.match(toRemoved)) {
+                allS[i].innerHTML=allS[i].innerHTML.replace(toRemoved,'$1');
+            }
+            //With closing tag: En"Zh
+            toRemoved=/((?:^|[^>]|<[^><\uE211\uE985]*>)[\u2019\u201D](?:<[^><\uE211\uE985]*>)+)(<span[^><]*\uE699[^><]*>\u0020<\/span>)/mg;
+            if (allS[i].innerHTML.match(toRemoved)) {
+                allS[i].innerHTML=allS[i].innerHTML.replace(toRemoved,'$1');
+            }
+        }
     }
     function ReFixCJK (e) {
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
@@ -870,6 +916,11 @@
                     child.classList.add("MarksFixedE135");
                     node2fix=false;
                 }
+                else if (child.nodeName.match(ignoredTags)) {
+                    //Simply do nothing. Such as <math> tag.
+                    child.classList.add("Safe2FixCJK\uE000");
+                    child.classList.add("MarksFixedE135");
+                }
                 else if (child.classList.contains("MarksFixedE135")) {
                     //Fixed, do nothing.
                 }
@@ -1179,8 +1230,8 @@
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)[\s]{0,2}/g,'$1');
-            currHTML=currHTML.replace(/([^\s])[\s]{0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\s]|&nbsp;){0,2}/g,'$1');
+            currHTML=currHTML.replace(/([^\s])(?:[\s]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
         }
         else {
             //Delete at most 1 spaces before and after because of the wider CJK marks.
