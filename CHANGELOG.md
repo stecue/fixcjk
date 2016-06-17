@@ -1,6 +1,6 @@
 ## 0.15.0
 Features:
-  - Add a "banned classes" mechnism to better control elements.
+  - Add a "banned classes" mechanism to better control elements.
 
 ## 0.14.3 (2016-06-17)
 Features:
