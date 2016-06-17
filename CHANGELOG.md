@@ -1,3 +1,7 @@
+## 0.15.0
+Features:
+  - Add a "banned classes" mechnism to better control elements.
+
 ## 0.14.3 (2016-06-17)
 Features:
   - Limit the tags that can be ignored while adding spaces to prevent unwanted effects.
