@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.80
+// @version           0.15.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -52,18 +52,20 @@
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
+	var useWrap=false;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
-    var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    if (document.body.classList.contains("mediawiki")) {
-        SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|DIV|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    }
+    var SafeTags=/^(A|ABBR|UL|LI|SUB|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    //if (document.body.classList.contains("mediawiki")) {
+    //    SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|DIV|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    //}
     var ignoredTags=/^(math)$/i;
-    var enoughSpaceList='toggle-comment,answer-date-link';
-    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM';
+    var enoughSpacedList='toggle-comment,answer-date-link'; //Currently all classes on zhihu.com.
+    var safeClassList='zm-editable-content,entry-content,_CommentItem_content_CYqW,t_f,news_info'; //Make them the same as "SafedByUser". 
+    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -177,9 +179,12 @@
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
     for (i=0;i < all.length;i++) {
-        if (performance.now()-t_stop>300) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
-        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
+        if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
+        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTested")){
             continue;
+        }
+        if (inTheClassOf(all[i],safeClassList)) {
+            all[i].classList.add("SafedByUser");
         }
         all[i].classList.add("CJKTested");
         font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
@@ -189,14 +194,14 @@
             if (font_size < 18) {
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("SimSun2Fix");
-                if (!inTheClassOf(all[i],enoughSpaceList)) {
+                if (!inTheClassOf(all[i],enoughSpacedList)) {
                     all[i].classList.add("Space2Add");
                 }
             }
             else {
                 all[i].style.fontFamily=font_str;
                 all[i].classList.add("CJK2Fix");
-                if (!inTheClassOf(all[i],enoughSpaceList)) {
+                if (!inTheClassOf(all[i],enoughSpacedList)) {
                     all[i].classList.add("Space2Add");
                 }
             }
@@ -204,22 +209,25 @@
         }
         child = all[i].firstChild;
         while (child) {
+            var realSibling=child.nextSibling;
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].classList.add("CJK2Fix");
-                if (!inTheClassOf(all[i],enoughSpaceList)) {
+                if (!inTheClassOf(all[i],enoughSpacedList)) {
                     all[i].classList.add("Space2Add");
                 }
                 if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
                     all[i].parentNode.classList.add("CJK2Fix");
-                    if (!inTheClassOf(all[i].parentNode,enoughSpaceList) && !inTheClassOf(all[i],enoughSpaceList)) {
+                    if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList)) {
                         all[i].parentNode.classList.add("Space2Add");
                     }
                 }
                 break;
             }
-            child=child.nextSibling;
+            child=realSibling;
         }
     }
+    if (useWrap===true) wrapCJK();
+	//return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
@@ -250,6 +258,9 @@
     }
     else {
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),10);
+        if (document.URL.match(/zhihu\.com/mg)) {
+            setTimeout(FixLazy,15);
+        }
     }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -274,6 +285,7 @@
         if (((performance.now()-downtime) > 800) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) < 3) {
             e.target.classList.add("SafedByUser");
             e.target.classList.add("CJK2Fix");
+            e.target.classList.add("Space2Add");
             e.target.classList.remove("MarksFixedE135");
             e.target.classList.remove("CJKTested");
             NumClicks=1;
@@ -291,6 +303,10 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
+            if (document.URL.match(/zhihu\.com/mg)) {
+                setTimeout(FixLazy,15);
+            }
+
         }
     },false);
     document.body.addEventListener("dblclick",function() {setTimeout(addSpaces,10);},false);
@@ -495,8 +511,18 @@
                 if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
                     continue;
                 }
+                else if (inTheClassOf(ReFixAll[i],safeClassList)) {
+                    //I need to add "SafedByUser" before checking "CJKTested", otherwise "CJK2Fix" label will be add to the element.
+                    ReFixAll[i].classList.add("SafedByUser");
+                }
+            }
+            for (i=0;i<ReFixAll.length;i++) {
+                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
+                    continue;
+                }
                 else if (ReFixAll[i].className.match("SafedByUser")) {
                     ReFixAll[i].classList.add("CJK2Fix");
+                    ReFixAll[i].classList.add("Space2Add");
                     NumReFix++;
                 }
                 else if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/))) {
@@ -506,20 +532,23 @@
                 else {
                     child = ReFixAll[i].firstChild;
                     while (child) {
+                        var realSibling=child.nextSibling;
                         if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                             if (debug_verbose===true) {
                                 console.log(ReFixAll[i].className+':: '+child.data);
                                 console.log(ReFixAll[i].outerHTML);
                             }
                             ReFixAll[i].classList.add("CJK2Fix");
+                            ReFixAll[i].classList.add("Space2Add");
                             //ReFixAll[i].className=(ReFixAll[i].className).replace(/(?: CJK2Fix)+/g,' CJK2Fix');
                             NumReFix++;
                             break;
                         }
-                        child=child.nextSibling;
+                        child=realSibling;
                     }
                 }
             }
+            if (useWrap===true) wrapCJK();
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
@@ -539,6 +568,38 @@
         t_last=performance.now();
     }
     ///===various aux functions===///
+    function wrapCJK() {
+        var allCJK=document.getElementsByClassName("CJK2Fix");
+        for (var i=0;i<allCJK.length;i++) {
+            var child=allCJK[i].firstChild;
+            while(child) {
+                var realSibling=child.nextSibling;
+                if (child.nodeType===3  && (child.data.match(/[\u3400-\u9FBF]/)) ) {
+                    wrapCJKHelper(child);
+                }
+                child=realSibling;
+            }
+        }
+        function wrapCJKHelper(child) {
+            var iNode=document.createElement("font");
+            var iText=document.createTextNode(child.data);
+            iNode.appendChild(iText);
+            iNode.classList.add("wrappedCJK2Fix");
+            iNode.classList.add("CJKTested");
+            iNode.classList.add("Space2Add");
+            iNode.classList.add("Safe2FixCJK\uE000");
+            //iNode.style.color="Plum";
+            child.parentNode.insertBefore(iNode,child.nextSibling);
+            child.data="";
+        }
+        var allWrapped=document.getElementsByClassName("wrappedCJK2Fix");
+        for (var i=0;i<allWrapped.length;i++) {
+            if (allWrapped[i].classList.contains("FontsFixedE137")) {
+                continue;
+            }
+            allWrapped[i].classList.add("CJK2Fix");
+        }
+    }
     function inTheClassOf(node,cList) {
         var classes=cList.split(',');
         for (var i=0;i<classes.length;i++) {
@@ -668,6 +729,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 while (child) {
+                    var realSibling=child.nextSibling;
                     if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
                         //Test if contains SimSun
                         if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
@@ -696,7 +758,7 @@
                             //console.log(all[i].style.fontFamily);
                         }
                     }
-                    child = child.nextSibling;
+                    child = realSibling;
                 }
             }
         }
@@ -902,7 +964,7 @@
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
-        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,enoughSpaceList)) {
+        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,enoughSpacedList)) {
             //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
             node.classList.remove("Safe2FixCJK\uE000");
             node.classList.remove("Space2Add");
@@ -928,7 +990,7 @@
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,enoughSpaceList) ) {
+                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,enoughSpacedList) ) {
                     //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
@@ -962,7 +1024,7 @@
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
             }
-            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpaceList))) {
+            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -976,12 +1038,13 @@
             console.log("SAFED BY USER: "+node.nodeName+"."+node.className);
             allSubSafe=true;
             node.classList.add("CJK2Fix");
+            node.classList.add("Space2Add");
             node.classList.remove("MarksFixedE135");
             node2fix=true;
             //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpaceList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (node.classList.contains("SafedByUser")) {
                 if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
