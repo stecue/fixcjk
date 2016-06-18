@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.83
+// @version           0.14.84
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -57,14 +57,14 @@
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
-    var SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    if (document.body.classList.contains("mediawiki")) {
-        SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|DIV|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    }
+    var SafeTags=/^(A|ABBR|UL|LI|SUB|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    //if (document.body.classList.contains("mediawiki")) {
+    //    SafeTags=/^(A|ABBR|UL|LI|SUB|SUP|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR|TD|IMG|SPAN|DIV|MATH)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    //}
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently all classes on zhihu.com.
     var safeClassList='zm-editable-content,entry-content,_CommentItem_content_CYqW,t_f,news_info'; //Make them the same as "SafedByUser". 
-    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM';
+    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -178,8 +178,8 @@
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
     for (i=0;i < all.length;i++) {
-        if (performance.now()-t_stop>300) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
-        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement){
+        if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
+        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTested")){
             continue;
         }
         if (inTheClassOf(all[i],safeClassList)) {
@@ -208,6 +208,7 @@
         }
         child = all[i].firstChild;
         while (child) {
+            var realSibling=child.nextSibling;
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].classList.add("CJK2Fix");
                 if (!inTheClassOf(all[i],enoughSpacedList)) {
@@ -221,9 +222,10 @@
                 }
                 break;
             }
-            child=child.nextSibling;
+            child=realSibling;
         }
     }
+    wrapCJK();
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
@@ -528,6 +530,7 @@
                 else {
                     child = ReFixAll[i].firstChild;
                     while (child) {
+                        var realSibling=child.nextSibling;
                         if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                             if (debug_verbose===true) {
                                 console.log(ReFixAll[i].className+':: '+child.data);
@@ -539,10 +542,11 @@
                             NumReFix++;
                             break;
                         }
-                        child=child.nextSibling;
+                        child=realSibling;
                     }
                 }
             }
+            wrapCJK();
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
@@ -562,6 +566,38 @@
         t_last=performance.now();
     }
     ///===various aux functions===///
+    function wrapCJK() {
+        var allCJK=document.getElementsByClassName("CJK2Fix");
+        for (var i=0;i<allCJK.length;i++) {
+            var child=allCJK[i].firstChild;
+            while(child) {
+                var realSibling=child.nextSibling;
+                if (child.nodeType===3) {
+                    wrapCJKHelper(child);
+                }
+                child=realSibling;
+            }
+        }
+        function wrapCJKHelper(child) {
+            var iNode=document.createElement("span");
+            var iText=document.createTextNode(child.data);
+            iNode.appendChild(iText);
+            iNode.classList.add("wrappedCJK2Fix");
+            iNode.classList.add("CJKTested");
+            iNode.classList.add("Space2Add");
+            iNode.classList.add("Safe2FixCJK\uE000");
+            //iNode.style.color="Lavender";
+            child.parentNode.insertBefore(iNode,child.nextSibling);
+            child.data="";
+        }
+        var allWrapped=document.getElementsByClassName("wrappedCJK2Fix");
+        for (var i=0;i<allWrapped.length;i++) {
+            if (allWrapped[i].classList.contains("FontsFixedE137")) {
+                continue;
+            }
+            allWrapped[i].classList.add("CJK2Fix");
+        }
+    }
     function inTheClassOf(node,cList) {
         var classes=cList.split(',');
         for (var i=0;i<classes.length;i++) {
@@ -691,6 +727,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 while (child) {
+                    var realSibling=child.nextSibling;
                     if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
                         //Test if contains SimSun
                         if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
@@ -719,7 +756,7 @@
                             //console.log(all[i].style.fontFamily);
                         }
                     }
-                    child = child.nextSibling;
+                    child = realSibling;
                 }
             }
         }
