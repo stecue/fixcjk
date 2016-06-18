@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.14.84
+// @version           0.15.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -52,6 +52,7 @@
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
+	var useWrap=false;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -225,7 +226,8 @@
             child=realSibling;
         }
     }
-    wrapCJK();
+    if (useWrap===true) wrapCJK();
+	//return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
@@ -546,7 +548,7 @@
                     }
                 }
             }
-            wrapCJK();
+            if (useWrap===true) wrapCJK();
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
@@ -572,21 +574,21 @@
             var child=allCJK[i].firstChild;
             while(child) {
                 var realSibling=child.nextSibling;
-                if (child.nodeType===3) {
+                if (child.nodeType===3  && (child.data.match(/[\u3400-\u9FBF]/)) ) {
                     wrapCJKHelper(child);
                 }
                 child=realSibling;
             }
         }
         function wrapCJKHelper(child) {
-            var iNode=document.createElement("span");
+            var iNode=document.createElement("font");
             var iText=document.createTextNode(child.data);
             iNode.appendChild(iText);
             iNode.classList.add("wrappedCJK2Fix");
             iNode.classList.add("CJKTested");
             iNode.classList.add("Space2Add");
             iNode.classList.add("Safe2FixCJK\uE000");
-            //iNode.style.color="Lavender";
+            //iNode.style.color="Plum";
             child.parentNode.insertBefore(iNode,child.nextSibling);
             child.data="";
         }
