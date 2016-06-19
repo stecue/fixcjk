@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.50
+// @version           0.15.51
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -58,10 +58,10 @@
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
-    var SafeTags=/^(A|ABBR|UL|LI|SUB|P|I|B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
+    var SafeTags=/^(B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
     var ignoredTags=/^(math)$/i;
-    var enoughSpacedList='toggle-comment,answer-date-link'; //Currently all classes on zhihu.com.
-    var safeClassList='zm-editable-content,entry-content,_CommentItem_content_CYqW,t_f,news_info'; //Make them the same as "SafedByUser". 
+    var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
+    var safeClassList='listNotAvailable'; //Make them the same as "SafedByUser". 
     var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
@@ -224,7 +224,7 @@
         }
     }
     if (useWrap===true) wrapCJK();
-	//return true;
+    //return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
@@ -325,16 +325,24 @@
                 banHelper(all2Ban[iele]);
             }
         }
-        function banHelper(node) {
-            var child=node.firstChild;
-            while (child) {
-                if ( child.nodeType===1 && !(child instanceof SVGElement) ) {
-                    banHelper(child);
-                }
-                child=child.nextSibling;
+    }
+    function labelEnoughSpacedList() {
+        var bannedClassList=enoughSpacedList.split(',');
+        for (var i=0;i<bannedClassList.length;i++) {
+            var all2Ban=document.getElementsByClassName(bannedClassList[i]);
+            for (var ie=0;ie<all2Ban.length;ie++)
+                banHelper(all2Ban[ie]);
+        }        
+    }
+    function banHelper(node) {
+        var child=node.firstChild;
+        while (child) {
+            if ( child.nodeType===1 && !(child instanceof SVGElement) ) {
+                banHelper(child);
             }
-            node.classList.add("preCode");
+            child=child.nextSibling;
         }
+        node.classList.add("preCode");
     }
     function addSpaces() {
         var t_spaces=performance.now();
@@ -550,6 +558,7 @@
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
             labelPreCode();
+            labelEnoughSpacedList()
             FunFixPunct(useLoop,2,returnLater);
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
@@ -923,6 +932,7 @@
         if (useRecursion===true) {
             if (debug_verbose===true) {console.log('Using Recursion');}
             labelPreCode();
+            labelEnoughSpacedList()
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
