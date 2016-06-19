@@ -52,7 +52,7 @@
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
-	var useWrap=false;
+    var useWrap=true;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
