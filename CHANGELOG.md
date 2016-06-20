@@ -1,6 +1,7 @@
 ## 0.15.0
 Features:
   - Add a "banned classes" mechanism to better control elements.
+  - Double click also triggers ReFixCJK.
 
 ## 0.14.3 (2016-06-17)
 Features:

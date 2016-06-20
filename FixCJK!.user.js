@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.60
+// @version           0.15.61
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -56,7 +56,6 @@
     var useWrap=true;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
-    var dbck=false;
     var refixing=false;
     var waitForDoubleClick=200;
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -285,7 +284,7 @@
     var downY=0;
     document.body.addEventListener("mousedown",function (e){downtime=performance.now();downX=e.clientX;downY=e.clientY;},false);
     document.body.addEventListener("mouseup",function (e){
-        if (e.button>0 || dbck===true) {
+        if (e.button>0 ) {
             //do nothing if right button clicked.
             return true;
         }
@@ -295,7 +294,7 @@
             e.target.classList.add("PunctSpace2Fix");
             e.target.classList.remove("MarksFixedE135");
             e.target.classList.remove("CJKTested");
-            NumClicks=1;
+            NumClicks=0;
             if (debug_verbose===true) {console.log(e.target.nodeName+"."+e.target.className+":: "+(Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)).toString());}
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
@@ -305,16 +304,12 @@
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
-            setTimeout(ReFixCJK,waitForDoubleClick,e);
+            setTimeout(ReFixCJK,5,e);
         }
     },false);
     document.body.addEventListener("dblclick",function() {
-        dbck=true;
-        setTimeout(addSpaces,10);
+        addSpaces();
         //Prevent ReFixing for a certain time;
-        setTimeout(function () {
-            dbck=false;
-        },waitForDoubleClick);
     },false);
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();
@@ -469,12 +464,7 @@
         }
     }
     function ReFixCJK (e) {
-        if (dbck===true ) {
-            if (debug_wrap===true) {console.log("Double clicked, skipping this refix...");}
-            refixing=false;
-            return false;
-        }
-        else if (refixing===true) {
+        if (refixing===true) {
             if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
             refixing=false;
             return false;
@@ -524,7 +514,7 @@
                 AllCJKFixed[i].classList.remove("CJK2Fix");
             }
         }
-        if ((NumClicks < 2) || (t_start-t_last)*ItvScl > t_interval ) {
+        if ((NumClicks < 1) || (t_start-t_last)*ItvScl > t_interval ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
             FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
@@ -636,7 +626,7 @@
             //iNode.style.color="Plum";
             child.parentNode.insertBefore(iNode,child.nextSibling);
             //child.parentNode.classList.add("MarksFixedE135");
-            child.data="\u200B";
+            child.data=""; //or "\u200B?"
         }
     }
     function inTheClassOf(node,cList) {
