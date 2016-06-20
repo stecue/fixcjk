@@ -631,7 +631,7 @@
             iNode.classList.add("CJKTested");
             iNode.classList.add("PunctSpace2Fix");
             iNode.classList.add("CJK2Fix");
-            iNode.classList.add("FontsFixedE137");
+            iNode.classList.add("FontsFixedE137"); //I've used the \u200B so that the original child shouldn't disappear.
             iNode.classList.add("Safe2FixCJK\uE000");
             //iNode.style.color="Plum";
             child.parentNode.insertBefore(iNode,child.nextSibling);
