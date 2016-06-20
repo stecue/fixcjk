@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.54
+// @version           0.15.55
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -52,6 +52,7 @@
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
+    var debug_wrap = true;
     var useWrap=true;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
@@ -63,7 +64,7 @@
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var safeClassList='\uE911forCompatibilityOnly'; //Make them the same as "SafedByUser".
-    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
+    var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -193,14 +194,14 @@
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("SimSun2Fix");
                 if (!inTheClassOf(all[i],enoughSpacedList)) {
-                    all[i].classList.add("Space2Add");
+                    all[i].classList.add("PunctSpace2Fix");
                 }
             }
             else {
                 all[i].style.fontFamily=font_str;
                 all[i].classList.add("CJK2Fix");
                 if (!inTheClassOf(all[i],enoughSpacedList)) {
-                    all[i].classList.add("Space2Add");
+                    all[i].classList.add("PunctSpace2Fix");
                 }
             }
             continue;
@@ -211,12 +212,12 @@
             if (child.nodeType == 3 && (child.data.match(/[\u3400-\u9FBF]/))) {
                 all[i].classList.add("CJK2Fix");
                 if (!inTheClassOf(all[i],enoughSpacedList)) {
-                    all[i].classList.add("Space2Add");
+                    all[i].classList.add("PunctSpace2Fix");
                 }
                 if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
                     all[i].parentNode.classList.add("CJK2Fix");
                     if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList)) {
-                        all[i].parentNode.classList.add("Space2Add");
+                        all[i].parentNode.classList.add("PunctSpace2Fix");
                     }
                 }
                 break;
@@ -280,7 +281,7 @@
         if (((performance.now()-downtime) > 800) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) < 3) {
             e.target.classList.add("SafedByUser");
             e.target.classList.add("CJK2Fix");
-            e.target.classList.add("Space2Add");
+            e.target.classList.add("PunctSpace2Fix");
             e.target.classList.remove("MarksFixedE135");
             e.target.classList.remove("CJKTested");
             NumClicks=1;
@@ -343,7 +344,7 @@
         var checkSpaces=false; //seems no need to check first at all.
         if (checkSpaces===true) {
             checkSpacesHelper(document.getElementsByClassName("SafedByUser"));
-            checkSpacesHelper(document.getElementsByClassName("Space2Add"));
+            checkSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
         }
         function checkSpacesHelper(allE) {
             for (var ic=0;ic<allE.length;ic++) {
@@ -366,15 +367,15 @@
             var allNoES=document.getElementsByClassName("noAddedSpances");
             if (debug_spaces===true) {console.log(allNoES.length);}
             for (ic=0;ic<allNoES.length;ic++) {
-                allNoES[ic].classList.remove("Space2Add");
+                allNoES[ic].classList.remove("PunctSpace2Fix");
             }
         }
         addSpacesHelper(document.getElementsByClassName("SafedByUser"));
-        addSpacesHelper(document.getElementsByClassName("Space2Add"));
+        addSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
         function addSpacesHelper(allE) {
             //Now the tag protection is fixed, I'll alway use the "useSpan" method (different from 0.13.0)
             for (var is=0;is<allE.length;is++) {
-                if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000") && allE[is].parentNode.classList.contains("Space2Add")) ) {
+                if (!(allE[is].parentNode.classList.contains("Safe2FixCJK\uE000") && allE[is].parentNode.classList.contains("PunctSpace2Fix")) ) {
                     if (allE[is].classList.contains("Safe2FixCJK\uE000") || allE[is].classList.contains("SafedByUser")) {
                         if ( !(allE[is].classList.contains("preCode")) ) {
                             var tmp_str=allE[is].innerHTML;
@@ -523,7 +524,7 @@
                 }
                 else if (ReFixAll[i].className.match("SafedByUser")) {
                     ReFixAll[i].classList.add("CJK2Fix");
-                    ReFixAll[i].classList.add("Space2Add");
+                    ReFixAll[i].classList.add("PunctSpace2Fix");
                     NumReFix++;
                 }
                 else if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/))) {
@@ -540,7 +541,7 @@
                                 console.log(ReFixAll[i].outerHTML);
                             }
                             ReFixAll[i].classList.add("CJK2Fix");
-                            ReFixAll[i].classList.add("Space2Add");
+                            ReFixAll[i].classList.add("PunctSpace2Fix");
                             //ReFixAll[i].className=(ReFixAll[i].className).replace(/(?: CJK2Fix)+/g,' CJK2Fix');
                             NumReFix++;
                             break;
@@ -571,6 +572,7 @@
     }
     ///===various aux functions===///
     function wrapCJK() {
+        var wrap_start=performance.now();
         var allCJK=document.getElementsByClassName("CJK2Fix");
         for (var i=0;i<allCJK.length;i++) {
             if (allCJK[i].classList.contains("wrappedCJK2Fix")) {
@@ -585,13 +587,14 @@
                 child=realSibling;
             }
         }
+        if (debug_wrap===true) console.log("Wrapping took "+((performance.now()-wrap_start)/1000).toFixed(3)+" seconds.");
         function wrapCJKHelper(child) {
             var iNode=document.createElement("font");
             var iText=document.createTextNode(child.data);
             iNode.appendChild(iText);
             iNode.classList.add("wrappedCJK2Fix");
             iNode.classList.add("CJKTested");
-            iNode.classList.add("Space2Add");
+            iNode.classList.add("PunctSpace2Fix");
             iNode.classList.add("CJK2Fix");
             iNode.classList.add("FontsFixedE137");
             iNode.classList.add("Safe2FixCJK\uE000");
@@ -934,9 +937,8 @@
             if (debug_verbose===true) {console.log('Using Recursion');}
             labelPreCode();
             labelEnoughSpacedList();
-            var allrecur=document.getElementsByClassName("CJK2Fix");
+            var allrecur=document.getElementsByClassName("PunctSpace2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
-                if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
                     //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
                     recursion_start=performance.now();
                     FixPunctRecursion(allrecur[ir]);
@@ -945,7 +947,6 @@
                         console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
                         console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
                         break;
-                    }
                 }
             }
         }
@@ -975,7 +976,7 @@
         if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,enoughSpacedList)) {
             //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
             node.classList.remove("Safe2FixCJK\uE000");
-            node.classList.remove("Space2Add");
+            node.classList.remove("PunctSpace2Fix");
             node.classList.add("MarksFixedE135");
             return false;
         }
@@ -1046,7 +1047,7 @@
             console.log("SAFED BY USER: "+node.nodeName+"."+node.className);
             allSubSafe=true;
             node.classList.add("CJK2Fix");
-            node.classList.add("Space2Add");
+            node.classList.add("PunctSpace2Fix");
             node.classList.remove("MarksFixedE135");
             node2fix=true;
             //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
@@ -1065,7 +1066,7 @@
                 if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className);}
                 if (node.classList.contains("preCode")) {
                     node.classList.remove("Safe2FixCJK\uE000"); //Do not performan fixing on "fully banned" tags.
-                    node.classList.remove("Space2Add");
+                    node.classList.remove("PunctSpace2Fix");
                 }
                 else if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
                     node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
