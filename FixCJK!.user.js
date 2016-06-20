@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.53
+// @version           0.15.54
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -59,10 +59,10 @@
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     //var SafeTags=/^(B|STRONG|EM|FONT|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    var SafeTags=/^fakeTagNotAvailable$/g;
+    var SafeTags=/^\uE911forCompatibilityOnly$/g;
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
-    var safeClassList='fakeListNotAvailable'; //Make them the same as "SafedByUser".
+    var safeClassList='\uE911forCompatibilityOnly'; //Make them the same as "SafedByUser".
     var CJKclassList='CJK2Fix,MarksFixedE13,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,Space2Add,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
@@ -224,7 +224,6 @@
             child=realSibling;
         }
     }
-    if (useWrap===true) wrapCJK();
     //return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
@@ -255,10 +254,8 @@
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
     }
     else {
+        if (useWrap===true) window.setTimeout(wrapCJK,5);
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),10);
-        if (document.URL.match(/zhihu\.com/mg)) {
-            setTimeout(FixLazy,15);
-        }
     }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -291,7 +288,6 @@
             //ReFix after other things are done.
             setTimeout(ReFixCJK,5,e);
             if (document.URL.match(/zhihu\.com/mg)) {
-                FixLazy();
                 setTimeout(addSpaces,15);
             }
             else if (document.URL.match(re_autospace_url)) {
@@ -301,10 +297,6 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
             setTimeout(ReFixCJK,10,e);
-            if (document.URL.match(/zhihu\.com/mg)) {
-                setTimeout(FixLazy,15);
-            }
-
         }
     },false);
     document.body.addEventListener("dblclick",function() {setTimeout(addSpaces,10);},false);
@@ -492,6 +484,9 @@
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
         for (i=0;i<AllCJKFixed.length;i++) {
+            if (AllCJKFixed[i].classList.contains("wrappedCJK2Fix")) {
+                continue;
+            }
             if (debug_verbose===true) {console.log(AllCJKFixed[i].className);}
             if (AllCJKFixed[i].classList.contains("MarksFixedE135")) {
                 AllCJKFixed[i].classList.remove("CJK2Fix");
@@ -554,12 +549,12 @@
                     }
                 }
             }
-            if (useWrap===true) wrapCJK();
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
             labelPreCode();
-            labelEnoughSpacedList()
+            labelEnoughSpacedList();
+            if (useWrap===true) wrapCJK();
             FunFixPunct(useLoop,2,returnLater);
             console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
@@ -597,17 +592,13 @@
             iNode.classList.add("wrappedCJK2Fix");
             iNode.classList.add("CJKTested");
             iNode.classList.add("Space2Add");
+            iNode.classList.add("CJK2Fix");
+            iNode.classList.add("FontsFixedE137");
             iNode.classList.add("Safe2FixCJK\uE000");
             //iNode.style.color="Plum";
             child.parentNode.insertBefore(iNode,child.nextSibling);
+            //child.parentNode.classList.add("MarksFixedE135");
             child.data="";
-        }
-        var allWrapped=document.getElementsByClassName("wrappedCJK2Fix");
-        for (var i=0;i<allWrapped.length;i++) {
-            if (allWrapped[i].classList.contains("FontsFixedE137")) {
-                continue;
-            }
-            allWrapped[i].classList.add("CJK2Fix");
         }
     }
     function inTheClassOf(node,cList) {
@@ -732,6 +723,9 @@
                     else {
                         if (debug_verbose===true) {console.log('FixCJK!: Round 1 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
                     }
+                }
+                if (all[i].classList.contains("FontsFixedE137")) {
+                    continue;
                 }
                 child = all[i].firstChild;
                 if_replace = false;
@@ -891,6 +885,9 @@
                 if (all[i].nodeName.match(SkippedTags)) {
                     continue;
                 }
+                else if (all[i].classList.contains("FontsFixedE137")) {
+                    continue;
+                }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
@@ -936,7 +933,7 @@
         if (useRecursion===true) {
             if (debug_verbose===true) {console.log('Using Recursion');}
             labelPreCode();
-            labelEnoughSpacedList()
+            labelEnoughSpacedList();
             var allrecur=document.getElementsByClassName("CJK2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
                 if ( !(allrecur[ir].classList.contains("MarksFixedE135")) ) {
@@ -1427,13 +1424,5 @@
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
     //No need if using the recursive implementation. However, it is still needed if the "forced fixing" is triggered.
-    function FixLazy() {
-        var all=document.getElementsByTagName('img');
-        for (var i=0;i<all.length;i++) {
-            if (all[i].hasAttribute('data-actualsrc')) {
-                all[i].src=all[i].getAttribute('data-actualsrc');
-            }
-        }
-    }
 }
 ) ();
