@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.55
+// @version           0.15.56
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -255,8 +255,10 @@
         window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
     }
     else {
-        if (useWrap===true) window.setTimeout(wrapCJK,5);
-        window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),10);
+        window.setTimeout(function () {
+            if (useWrap===true) wrapCJK();
+            FunFixPunct(useLoop,MaxNumLoops,returnLater);
+        },10);
     }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -326,7 +328,7 @@
             var all2Ban=document.getElementsByClassName(bannedClassList[i]);
             for (var ie=0;ie<all2Ban.length;ie++)
                 banHelper(all2Ban[ie]);
-        }        
+        }
     }
     function banHelper(node) {
         var child=node.firstChild;
@@ -601,7 +603,7 @@
             //iNode.style.color="Plum";
             child.parentNode.insertBefore(iNode,child.nextSibling);
             //child.parentNode.classList.add("MarksFixedE135");
-            child.data="";
+            child.data="\u200B";
         }
     }
     function inTheClassOf(node,cList) {
@@ -691,6 +693,7 @@
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
     function FixAllFonts () {
+        var func_start=performance.now();
         if (debug_verbose===true) {
             console.log("Round 1: "+ifRound1.toString());
             console.log("Round 2: "+ifRound2.toString());
@@ -805,7 +808,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
-                    continue; 
+                    continue;
                 }
                 else {
                     if (debug_02===true) {all[i].style.color='Teal';} //Teal for true;
@@ -846,7 +849,7 @@
         t_stop=performance.now();
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
-        /// ===== The Third round: Add CJKdefault to all elements ===== ///
+        /// ===== The Third round (Round 3): Add CJKdefault to all elements ===== ///
         if (FixMore === false) {
             t_stop=performance.now();
             if (debug_verbose===true) {console.log('FixCJK!: FixMore/Round 3 is intentionally skipped.');}
@@ -919,11 +922,13 @@
         }
         if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
+        if (debug_wrap===true) console.log("Fixing Fonts took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
     }
     ///===The Actual Round 4===///
     function FunFixPunct(useLoop,MaxNumLoops,returnNow) {
         SkippedTags=SkippedTagsForMarks;
         var recursion_start=0;
+        var func_start=performance.now();
         //Use Recursion instead of loop, should be put in the MaxNumLoops in production code.
         if (returnNow===true) {
             return true;
@@ -939,14 +944,14 @@
             labelEnoughSpacedList();
             var allrecur=document.getElementsByClassName("PunctSpace2Fix");
             for (var ir=0; ir<allrecur.length; ir++) {
-                    //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
-                    recursion_start=performance.now();
-                    FixPunctRecursion(allrecur[ir]);
-                    if ( (performance.now()-t_start) > timeOut ) {
-                        processedAll=false;
-                        console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
-                        console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
-                        break;
+                //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
+                recursion_start=performance.now();
+                FixPunctRecursion(allrecur[ir]);
+                if ( (performance.now()-t_start) > timeOut ) {
+                    processedAll=false;
+                    console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                    console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
+                    break;
                 }
             }
         }
@@ -961,6 +966,7 @@
                 MaxNumLoops--;
             }
         }
+        console.log("Fixing Punct took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
     }
     /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
