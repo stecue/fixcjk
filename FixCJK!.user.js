@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.68
+// @version           0.15.69
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1123,10 +1123,12 @@
             currHTML=currHTML+'\uF002CJK\uF002'+getAfter(node);
             if (debug_tagSeeThrough===true) console.log("FULL FORM: "+currHTML+"@"+performance.now());
         }
+        if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
         function getBefore(child) {
+            var t_start=performance.now();
             var toReturn='';
             child=child.previousSibling;
-            while (child) {
+            while (child && (performance.now()-t_start<10)) {
                 if (child.nodeType===3) {
                     if (debug_tagSeeThrough===true) console.log("T3: "+child.data);
                     toReturn = child.data + toReturn;
@@ -1142,8 +1144,9 @@
         }
         function getAfter(child) {
             var toReturn='';
+            var t_start=performance.now();
             child=child.nextSibling;
-            while (child) {
+            while (child && (performance.now()-t_start<10)) {
                 if (child.nodeType===3) {
                     toReturn = toReturn + child.data;
                 }
@@ -1346,12 +1349,10 @@
             console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
-        while (currHTML.match(/\uF001CJK\uF001|\uF002CJK\uF002/)) {
-            if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
-            currHTML=currHTML.replace(/^.*\uF001CJK\uF001(.*)$/,'$1');
-            currHTML=currHTML.replace(/^(.*)\uF002CJK\uF002.*$/,'$1');
-            if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
-        }
+        if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
+        currHTML=currHTML.replace(/^.*\uF001CJK\uF001(.*)$/,'$1');
+        currHTML=currHTML.replace(/^(.*)\uF002CJK\uF002.*$/,'$1');
+        if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
         return currHTML;
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
