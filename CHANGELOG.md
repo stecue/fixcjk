@@ -3,6 +3,7 @@ Features:
   - Add a "banned classes" mechanism to better control elements.
   - Double click also triggers ReFixCJK.
   - Removes "forced safed".
+  - "See through" tags.
 
 ## 0.14.3 (2016-06-17)
 Features:

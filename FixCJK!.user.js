@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.65
+// @version           0.15.68
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -52,7 +52,8 @@
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
-    var debug_wrap = true;
+    var debug_wrap = false;
+    var debug_tagSeeThrough= false;
     var useWrap=true;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
@@ -211,7 +212,7 @@
         child = all[i].firstChild;
         while (child) {
             var realSibling=child.nextSibling;
-            if (child.nodeType == 3 && (child.data.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+            if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                 all[i].classList.add("CJK2Fix");
                 if (!inTheClassOf(all[i],enoughSpacedList)) {
                     all[i].classList.add("PunctSpace2Fix");
@@ -542,7 +543,7 @@
                     child = ReFixAll[i].firstChild;
                     while (child) {
                         var realSibling=child.nextSibling;
-                        if (child.nodeType == 3 && (child.data.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+                        if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                             if (debug_verbose===true) {
                                 console.log(ReFixAll[i].className+':: '+child.data);
                                 console.log(ReFixAll[i].outerHTML);
@@ -592,7 +593,7 @@
             var child=allCJK[i].firstChild;
             while(child) {
                 var realSibling=child.nextSibling;
-                if (child.nodeType===3  && (child.data.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
+                if (child.nodeType===3  && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
                     wrapCJKHelper(child);
                 }
                 child=realSibling;
@@ -749,7 +750,7 @@
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 while (child) {
                     var realSibling=child.nextSibling;
-                    if (child.nodeType == 3 && (child.data.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
+                    if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
                         //Test if contains SimSun
                         if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
                         if (font_str.match(re_simsun)) {
@@ -1106,28 +1107,54 @@
             all[currpunc].innerHTML=currHTML;
             return true;
         }
-        currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');//Remove the hanging puncts. Seems no use at all.
-		
-		if (currHTML.match(/[『「《〈【（\u201C\u2018]$/)) {
-			console.log("LAST CHAR: "+currHTML);
-			//Separate currHTML with following text.
-			currHTML=currHTML+'\uECFF'+getAfter(node);
-		}
-		function getAfter(child) {
-			var toReturn='';
-			child=child.nextSibling;
-			while (child) {
-				if (child.nodeType===3) {
-					toReturn += child.data;
-				}
-				else if (child.nodeType===1) {
-					toReturn += child.textContent;
-				}
-				child=child.nextSibling
-			}
-			console.log("AFTER: "+toReturn);
-			return toReturn;
-		}
+        //currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');//Remove the hanging puncts. Seems no use at all.
+        //if (currHTML.match(/^[、，。：；！？）】〉》」』\u201D\u2019]/))
+        if (currHTML.match(/^[\u201D\u2019]/)) {
+            if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
+            if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
+            currHTML=getBefore(node)+'\uF001CJK\uF001'+currHTML;
+            if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
+        }
+        //if (currHTML.match(/[『「《〈【（\u201C\u2018]$/)) {
+        if (currHTML.match(/[\u201C\u2018]$/)) {
+            if (debug_tagSeeThrough===true) console.log("TO CHECK AFTER: "+currHTML);
+            if (debug_tagSeeThrough===true) console.log("LAST CHAR: "+currHTML+"@"+performance.now());
+            //Separate currHTML with following text.
+            currHTML=currHTML+'\uF002CJK\uF002'+getAfter(node);
+            if (debug_tagSeeThrough===true) console.log("FULL FORM: "+currHTML+"@"+performance.now());
+        }
+        function getBefore(child) {
+            var toReturn='';
+            child=child.previousSibling;
+            while (child) {
+                if (child.nodeType===3) {
+                    if (debug_tagSeeThrough===true) console.log("T3: "+child.data);
+                    toReturn = child.data + toReturn;
+                }
+                else if (child.nodeType===1) {
+                    if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
+                    toReturn = child.textContent + toReturn;
+                }
+                child=child.previousSibling;
+            }
+            if (debug_tagSeeThrough===true) console.log("BEFORE: "+toReturn+"@"+performance.now());
+            return toReturn;
+        }
+        function getAfter(child) {
+            var toReturn='';
+            child=child.nextSibling;
+            while (child) {
+                if (child.nodeType===3) {
+                    toReturn = toReturn + child.data;
+                }
+                else if (child.nodeType===1) {
+                    toReturn = toReturn + child.textContent;
+                }
+                child=child.nextSibling;
+            }
+            if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
+            return toReturn;
+        }
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> ‘,’
         // \uE972,\uE973 <==> “,”
@@ -1319,8 +1346,12 @@
             console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
-		currHTML=currHTML.replace(/(^[^\uECFF]*)\uECFF/,'$1');
-		console.log("FIXED: "+currHTML);
+        while (currHTML.match(/\uF001CJK\uF001|\uF002CJK\uF002/)) {
+            if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
+            currHTML=currHTML.replace(/^.*\uF001CJK\uF001(.*)$/,'$1');
+            currHTML=currHTML.replace(/^(.*)\uF002CJK\uF002.*$/,'$1');
+            if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
+        }
         return currHTML;
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
