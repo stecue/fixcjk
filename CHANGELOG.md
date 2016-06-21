@@ -1,9 +1,13 @@
+## 1.0.0
+Features:
+  - "Long-click to force correction" is no longer needed and dropped.
+  - "See through" tags to accurately determine what corrections should be applied.
+  - Double click also triggers ReFixCJK.
+
 ## 0.15.0
 Features:
   - Add a "banned classes" mechanism to better control elements.
-  - Double click also triggers ReFixCJK.
-  - Removes "forced safed".
-  - "See through" tags.
+  - More site-specific rules.
 
 ## 0.14.3 (2016-06-17)
 Features:
