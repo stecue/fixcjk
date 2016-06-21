@@ -1,5 +1,5 @@
 ## FixCJK!
-*全功能、跨平台的中英文网页字体设定/调整以及中文排版修正/美化脚本，“搞定”CJK！*
+*全功能、跨平台的中英文网页字体设定/调整以及中文网页排版修正/美化脚本，“搞定”CJK！*
 
 ### 简介
 **[FixCJK!](https://github.com/stecue/fixcjk/)** 是为 Gecko&#8203;/&#8203;Webkit&#8203;/&#8203;Blink 内核浏览器编写的用户脚本，适用平台包括但不限于：Firefox&#8203;/&#8203;Icecat&#8203;/&#8203;Chrome&#8203;/&#8203;Chromium&#8203;/&#8203;Opera，以及各种采用 Webkit&#8203;/&#8203;Blink 内核的“国产”浏览器。主要功能为：
@@ -11,30 +11,22 @@
 5. 设定中文全角标点字体。对于[弯引号](https://www.zhihu.com/question/19616011)，根据上下文自动识别并设定为全角字体。
 6. 中文**全角标点压缩**。弥补中文字体标点不自带 kerning 信息的普遍设计缺陷，使中文网页排版更符合印刷惯例并贴近国家标准。
 7. 自动空格：中英文之间自动加空格，类似于[这个扩展](https://chrome.google.com/webstore/detail/%E7%82%BA%E4%BB%80%E9%BA%BC%E4%BD%A0%E5%80%91%E5%B0%B1%E6%98%AF%E4%B8%8D%E8%83%BD%E5%8A%A0%E5%80%8B%E7%A9%BA%E6%A0%BC%E5%91%A2%EF%BC%9F/paphcfdffjnbcgkokihcdjliihicmbpd/reviews?hl=zh-CN)。
-8. 维基百科、果壳、知乎等网站特别定制：长单击同时触发强制标点修正与自动空格。
 
-其中功能 **1-4** 及 **7** 对所有浏览器的所有版本均有效；功能 **5-6** 只保证在最新 Gecko 和 Webkit/Blink 内核上可用。
+其中功能 **1-4** 及 **7** 对所有浏览器的所有版本均有效；功能 **5-6** 只保证在最新 Gecko 和 Webkit/Blink 内核上正常工作。
 
 ### 用法
-**脚本安装：**较新的浏览器都需要附加组件来安装和使用脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。
+####脚本安装####
+较新的浏览器都需要附加组件来安装和使用脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。
 
-**字体设置：**推荐下载安装 [Noto Sans CJK SC](https://www.google.com/get/noto/help/cjk/) 字体和 [Ubuntu Mono](https://www.google.com/fonts/specimen/Ubuntu+Mono) 字体。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
+####字体设置####
+推荐下载安装 [Noto Sans CJK SC](https://www.google.com/get/noto/help/cjk/) 字体和 [Ubuntu Mono](https://www.google.com/fonts/specimen/Ubuntu+Mono) 字体。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
 
-**0.10 分支**新增“**点击重检查**”功能。遇到在页面初次载入时尚未出现的动态内容，可在**需要修正的页面元素处**单击。点击后脚本将重新检查所有需要修正的网页元素。点击重检查的允许最小间隔时间默认为 1 到 2 秒。间隔时间过短的连续点击将被忽略。
+####鼠标操作####
+**单击重检查：**遇到在页面初次载入时尚未出现的动态内容，可在网页内任意一点单击。点击后脚本将重新检查所有需要修正的网页元素。点击重检查的允许最小间隔时间默认为 1 到 2 秒。间隔时间过短的连续点击将被忽略。
 
-~~**0.11 分支**默认启用重写的递归式检测算法并新增“**长单击强制标点修正**”功能。新引擎仅在已知安全的情况下进行标点替换作业，对包含大量 JavaScript 脚本和“事件监听器”的网页（比如[新浪图片](http://photo.sina.com.cn/#dir)）的兼容性大大提高。但是这也可能造成在某些页面元素中标点修正功能失效，即使触发“单击重检查”也无法修正。此时可以在**该页面元素上**（*不是*其他页面空白处）长按鼠标左键（> 0.8 秒）再松开，期间不要移动鼠标位置。脚本被这种“长单击”触发后，将试图强制修正**该页面元素内**的中文标点。**注意：**强制标点修正可能导致该页面元素所包含的各个子元素的事件监听器失效，动态效果消失；但是对于静态页面应当可以放心使用。无论如何，请尽量避免在页面最外层的空白处长单击。因为页面最外层的元素往往包含最多的子元素，长单击最外层可能使得整个页面的动态效果消失。~~
-
-**0.12 分支**使用了新的标点修正算法。代码更简洁、系统化并覆盖了绝大多数需要进行空白压缩的情形；从根本上避免了大量问题。从这个版本开始，理论上任意长度的连续标点都可以被正确处理。
-
-**0.13 分支**添加了“中英文之间自动加空格”的功能。目前仍处于试验阶段，仅在“**双击**”之后触发。
-
-~~**0.14 分支和 0.15 分支**添加了更多的网站定制规则。~~
+**双击加空格：**中英文之间自动加空格，已有空格的不再添加额外空格。考虑到大多数人的习惯，自动加空格仅在“**双击**”之后触发。
 
 ### 已知问题
 
 1. 由于任何页面元素都可能存在需要修正的文本，脚本需要遍历所有元素。这导致执行时间可能过长。为了尽量少影响网页加载时间，脚本内置了定时机制；超时自动退出运行。所以字体和标点修正效果可能和机器配置以及浏览器有关。按`F12`并选择`控制台`（或 `console`）可查看脚本执行日志信息。
-2. 由于脚本注入位置的差异，一些看起来并非动态生成的网页元素（比如本项目在 GitHub 上的[中文 Readme 文件](https://github.com/stecue/fixcjk/blob/master/README.md)）在页面载入完成时也可能尚未被修正。此时一般只需单击**该网页元素内**的任意一点，触发脚本的“点击重检查”功能即可修正该网页。更强力的修正请参考“长单击强制标点修正”功能。
-
-### 版本预告
-
-新特性添加目前已暂时冻结。当前开发分支的目标是彻底解决中文重排版导致的事件监听器失效问题。此问题解决后将发布 1.0 正式版，届时**长单击强制标点修正**将不再需要而被取消。
+2. 由于脚本注入位置的差异，一些看起来并非动态生成的网页元素（比如本项目在 GitHub 上的[中文 Readme 文件](https://github.com/stecue/fixcjk/blob/master/README.md)）在页面载入完成时也可能尚未被修正。此时一般只需单击网页内的任意一点，触发脚本的“点击重检查”功能即可修正该网页。
