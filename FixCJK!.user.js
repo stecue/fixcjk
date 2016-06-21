@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.93
+// @version           0.15.94
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1124,14 +1124,14 @@
         }
         //currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');//Remove the hanging puncts. Seems no use at all.
         //if (currHTML.match(/^[、，。：；！？）】〉》」』\u201D\u2019]/))
-        if (currHTML.match(/^[\u201D\u2019]/)) {
+        if (currHTML.match(/^[、，。：；！？）】〉》」』\u201D\u2019『「《〈【（\u201C\u2018]/)) {
             if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
             currHTML=getBefore(node)+'\uF001CJK\uF001'+currHTML;
             if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
         }
         //if (currHTML.match(/[『「《〈【（\u201C\u2018]$/)) {
-        if (currHTML.match(/[\u201C\u2018]$/)) {
+        if (currHTML.match(/[、，。：；！？）】〉》」』\u201D\u2019『「《〈【（\u201C\u2018]$/)) {
             if (debug_tagSeeThrough===true) console.log("TO CHECK AFTER: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("LAST CHAR: "+currHTML+"@"+performance.now());
             //Separate currHTML with following text.
@@ -1150,16 +1150,16 @@
                 if (child.nodeType===3) {
                     if (debug_tagSeeThrough===true) console.log("T3: "+child.data);
                     toReturn = child.data + toReturn;
-                    if (child.data.match(/“/)) {
-                        //Stop after the first matched quotation marks.
+                    if (toReturn.length>1024) {
+                        //Stop if to Return is already too long;
                         break;
                     }
                 }
                 else if (child.nodeType===1) {
                     if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
                     toReturn = child.textContent + toReturn;
-                    if (child.textContent.match(/“/)) {
-                        //Stop after the first matched quotation marks.
+                    if (toReturn.length>1024) {
+                        //Stop if to Return is already too long;
                         break;
                     }
                 }
@@ -1178,15 +1178,24 @@
             while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
                     toReturn = toReturn + child.data;
+                    if (toReturn.length>1024) {
+                        //Stop if to Return is already too long;
+                        break;
+                    }
                 }
                 else if (child.nodeType===1) {
                     toReturn = toReturn + child.textContent;
+                    if (toReturn.length>1024) {
+                        //Stop if to Return is already too long;
+                        break;
+                    }
                 }
                 child=child.nextSibling;
             }
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
+        if (currHTML.match(/昆察亚将军最后强调/) ) console.log("文本："+node.innerHTML+"-->"+currHTML);
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> ‘,’
         // \uE972,\uE973 <==> “,”
@@ -1292,30 +1301,30 @@
         ///--Group Right:[『「《〈【（\uEB1C\uEB18] //Occupies the right half width.
         ///=====Use \uE211 as the calss name for TWO-PUNCT RULES====//
         ///===Do not use the "g" modefier because we are using loops===//
-        var reLL=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
-        var reLR=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
-        var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([『「《〈【（\uEB1C\uEB18])/m;
-        var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
+        var reLL=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
+        var reLR=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/m;
+        var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/m;
+        var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
         var sqz_start=performance.now();
         while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
-                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2';
+                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2$3';
                 currHTML=currHTML.replace(reLL,tmp_str);
             }
             else if (currHTML.match(reLR)) {
                 //--TWO PUNCTS: {Left}{Right}--//
-                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>$2';
+                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>$2$3';
                 currHTML=currHTML.replace(reLR,tmp_str);
             }
             else if (currHTML.match(reRR)) {
                 //--TWO PUNCTS: {Right}{Right}--//
-                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_rr+';">$1</span>$2';
+                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_rr+';">$1</span>$2$3';
                 currHTML=currHTML.replace(reRR,tmp_str);
             }
             else if (currHTML.match(reRL)) {
                 //--TWO PUNCTS: no letter-spacing adjustment for {Right}-{Left}--//
-                currHTML=currHTML.replace(reRL,'$1<wbr>$2');
+                currHTML=currHTML.replace(reRL,'$1<wbr>$2$3');
             }
             else {
                 console.log("FIXME: current combination of punctuations has not been considered!");
@@ -1381,6 +1390,7 @@
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
         if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
+        if (currHTML.match(/昆察亚将军最后强调/) ) console.log("强调："+node.innerHTML+"-->"+currHTML);
         currHTML=currHTML.replace(/^[^\u0000]*\uF001CJK\uF001([^\u0000]*)$/,'$1');
         currHTML=currHTML.replace(/^([^\u0000]*)\uF002CJK\uF002[^\u0000]*$/,'$1');
         if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
