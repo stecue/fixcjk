@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.92
+// @version           0.15.93
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -342,11 +342,12 @@
         addSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
         function getAfter(child) {
             var toReturn='';
-            //while (child.textContent === child.parentNode.textContent) {
-            //    child=child.parentNode;
-            //}
+            var t_start=performance.now();
+            while (child.textContent === child.parentNode.textContent) {
+                child=child.parentNode;
+            }
             child=child.nextSibling;
-            while (child) {
+            while (child && (performance.now()-t_start)<2 ) {
                 if (child.nodeType==3) {
                     toReturn = toReturn + child.data;
                 }
@@ -362,11 +363,12 @@
         }
         function getBefore(child) {
             var toReturn='';
-            //while (child.textContent === child.parentNode.textContent) {
-            //    child=child.parentNode;
-            //}
+            var t_start=performance.now();
+            while (child.textContent === child.parentNode.textContent) {
+                child=child.parentNode;
+            }
             child=child.previousSibling;
-            while (child) {
+            while (child && (performance.now()-t_start)<2 ) {
                 if (child.nodeType==3) {
                     toReturn = child.data + toReturn;
                 }
@@ -1144,7 +1146,7 @@
                 child=child.parentNode;
             }
             child=child.previousSibling;
-            while (child && (performance.now()-t_start<10)) {
+            while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
                     if (debug_tagSeeThrough===true) console.log("T3: "+child.data);
                     toReturn = child.data + toReturn;
@@ -1173,7 +1175,7 @@
                 child=child.parentNode;
             }
             child=child.nextSibling;
-            while (child && (performance.now()-t_start<10)) {
+            while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
                     toReturn = toReturn + child.data;
                 }
