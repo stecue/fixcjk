@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.91
+// @version           0.15.92
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -358,7 +358,7 @@
                 }
                 child=child.nextSibling;
             }
-            return toReturn;
+            return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         function getBefore(child) {
             var toReturn='';
@@ -378,7 +378,7 @@
                 }
                 child=child.previousSibling;
             }
-            return toReturn;
+            return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         function addSpacesHelper(allE) {
             //Now the tag protection is fixed, I'll alway use the "useSpan" method (different from 0.13.0)
@@ -1164,7 +1164,7 @@
                 child=child.previousSibling;
             }
             if (debug_tagSeeThrough===true) console.log("BEFORE: "+toReturn+"@"+performance.now());
-            return toReturn;
+            return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         function getAfter(child) {
             var toReturn='';
@@ -1183,7 +1183,7 @@
                 child=child.nextSibling;
             }
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
-            return toReturn;
+            return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> ‘,’
@@ -1276,8 +1276,10 @@
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\s]|&nbsp;){0,2}/g,'$1');
-            currHTML=currHTML.replace(/([^\s])(?:[\s]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
+            currHTML=currHTML.replace(/&nbsp;/g,'\u00A0');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\s\u00A0]|&nbsp;){0,2}/g,'$1');
+            //'>' means there is a non-CJK tag(?)
+            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\s\u00A0]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
         }
         else {
             //Delete at most 1 spaces before and after because of the wider CJK marks.
@@ -1377,8 +1379,8 @@
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
         if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
-        currHTML=currHTML.replace(/^.*\uF001CJK\uF001(.*)$/,'$1');
-        currHTML=currHTML.replace(/^(.*)\uF002CJK\uF002.*$/,'$1');
+        currHTML=currHTML.replace(/^[^\u0000]*\uF001CJK\uF001([^\u0000]*)$/,'$1');
+        currHTML=currHTML.replace(/^([^\u0000]*)\uF002CJK\uF002[^\u0000]*$/,'$1');
         if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
         return currHTML;
     }
