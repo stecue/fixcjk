@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.90
+// @version           0.15.91
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -979,6 +979,9 @@
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
+        else if ( !(node.tagName.match(/FONT/)) ) {
+            return false;
+        }
         if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
         var tabooedTags=SkippedTagsForMarks;
         var child=node.firstChild;
@@ -994,7 +997,7 @@
         }
         //Add lang attibute. Firefox cannot detect lang=zh automatically and it will treat CJK characters as letters if no lang=zh. For example,
         //the blank spaces will be streched but not the "character-spacing" if using align=justify.
-        if (window.getComputedStyle(node,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
+        if (window.getComputedStyle(node.parentNode,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
             node.parentNode.style.textAlign="justify";
         }
         //node.lang="zh";
