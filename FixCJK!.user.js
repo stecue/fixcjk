@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.64
+// @version           0.15.65
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1074,11 +1074,11 @@
                     node.classList.remove("PunctSpace2Fix");
                 }
                 else if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
-                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,false,false);
+                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,node,false,false);
                 }
                 else {
                     if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
-                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,true,false);
+                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,node,true,false);
                 }
             }
             node.classList.add("MarksFixedE135");
@@ -1090,7 +1090,7 @@
         }
     }
     ///==Fix punct in a currHTML===///
-    function FixMarksInCurrHTML(currHTML,delete_all_extra_spaces,AlsoChangeFullStop) {
+    function FixMarksInCurrHTML(currHTML,node,delete_all_extra_spaces,AlsoChangeFullStop) {
         //“<-->\u201C, ”<-->\u201D
         //‘<-->\u2018, ’<-->\u2019
         var changhai_style=false;
@@ -1106,7 +1106,28 @@
             all[currpunc].innerHTML=currHTML;
             return true;
         }
-        currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');
+        currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');//Remove the hanging puncts. Seems no use at all.
+		
+		if (currHTML.match(/[『「《〈【（\u201C\u2018]$/)) {
+			console.log("LAST CHAR: "+currHTML);
+			//Separate currHTML with following text.
+			currHTML=currHTML+'\uECFF'+getAfter(node);
+		}
+		function getAfter(child) {
+			var toReturn='';
+			child=child.nextSibling;
+			while (child) {
+				if (child.nodeType===3) {
+					toReturn += child.data;
+				}
+				else if (child.nodeType===1) {
+					toReturn += child.textContent;
+				}
+				child=child.nextSibling
+			}
+			console.log("AFTER: "+toReturn);
+			return toReturn;
+		}
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> ‘,’
         // \uE972,\uE973 <==> “,”
@@ -1298,6 +1319,8 @@
             console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
+		currHTML=currHTML.replace(/(^[^\uECFF]*)\uECFF/,'$1');
+		console.log("FIXED: "+currHTML);
         return currHTML;
     }
     ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
