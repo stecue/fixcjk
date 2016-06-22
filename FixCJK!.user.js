@@ -58,6 +58,7 @@
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var refixing=false;
+    var rspLength=3; //If the font-list reaches the length here, the author is probably responsible enough to cover most Latin/English environment.
     var waitForDoubleClick=200;
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
@@ -175,6 +176,23 @@
     if (debug_00===true) {console.log('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
+    function addTested (node) {
+        var child=node.firstChild;
+        while (child) {
+            if (child.nodeType===1) {
+                addTested(child);
+            }
+            child=child.nextSibling;
+        }
+        if (node.classList.contains("CJKTested")) {
+            return true;
+        }
+        else {
+            if (node.textContent.length>5) //make sure it is not empty.
+                node.classList.add("CJKTested");
+            return true;
+        }
+    }
     for (i=0;i < all.length;i++) {
         if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
         if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTested")){
@@ -202,6 +220,11 @@
                     all[i].classList.add("PunctSpace2Fix");
                 }
             }
+            continue;
+        }
+        if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (font_str.split(',').length >= rspLength) ){
+            all[i].classList.add("CJKTested");
+            addTested(all[i]);//it might cause some childs to be "unfixable", e.g., some elements on newsmth.org.
             continue;
         }
         child = all[i].firstChild;
@@ -528,15 +551,6 @@
                 if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
                     continue;
                 }
-                else if (inTheClassOf(ReFixAll[i],safeClassList)) {
-                    //I need to add "SafedByUser" before checking "CJKTested", otherwise "CJK2Fix" label will be add to the element.
-                    ReFixAll[i].classList.add("SafedByUser");
-                }
-            }
-            for (i=0;i<ReFixAll.length;i++) {
-                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
-                    continue;
-                }
                 else if (ReFixAll[i].className.match("SafedByUser")) {
                     ReFixAll[i].classList.add("CJK2Fix");
                     ReFixAll[i].classList.add("PunctSpace2Fix");
@@ -615,11 +629,8 @@
             iNode.classList.add("CJKTested");
             iNode.classList.add("PunctSpace2Fix");
             iNode.classList.add("CJK2Fix");
-            iNode.classList.add("FontsFixedE137"); //I've used the \u200B so that the original child shouldn't disappear.
             iNode.classList.add("Safe2FixCJK\uE000");
-            //iNode.style.color="Plum";
             child.parentNode.insertBefore(iNode,child.nextSibling);
-            //child.parentNode.classList.add("MarksFixedE135");
             child.data=""; //or "\u200B?"
         }
     }
@@ -895,20 +906,26 @@
                         ifRound3=false;
                         FixPunct=false;
                         processedAll=false;
-                        console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. Too slow to continue. Exiting now...');
+                        console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. '+i.toFixed(0)+' elements have been fixed, but too slow to continue. Stopped at:');
+                        console.log(all[i]);
                         break;
                     }
                     else {
-                        if (debug_verbose===true) {console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+                        if (debug_verbose===true) {console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. ');}
                     }
                 }
-                if (all[i].nodeName.match(SkippedTags)) {
+                if (all[i].nodeName.match(SkippedTags) || (all[i] instanceof SVGElement) ) {
                     continue;
                 }
                 else if (all[i].classList.contains("FontsFixedE137")) {
                     continue;
                 }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+                if (font_str.split(',').length >= rspLength) {
+                    //continue if all[i] contains a list of fonts.
+                    all[i].classList.add("FontsFixedE137");
+                    continue;
+                }
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
