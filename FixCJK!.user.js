@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.97
+// @version           0.15.98
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -65,6 +65,8 @@
     var SkippedTags=SkippedTagsForFonts;
     //var SafeTags=/^(B|STRONG|EM|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
     var SafeTags=/^\uE911forCompatibilityOnly$/g;
+    var upEnoughTags=/^(P|LI|TD|BODY)$/g;
+    var useFeedback=false;
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var safeClassList='\uE911forCompatibilityOnly'; //Make them the same as "SafedByUser".
@@ -126,12 +128,11 @@
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
     //letter-spacing options
-    var kern_consec_ll='-0.3em'; //。” or ））
-    var kern_consec_rr='-0.3em'; //（（
+    var kern_consec_ll='-0.35em'; //。” or ））
+    var kern_consec_rr='-0.35em'; //（（
     var kern_consec_lr='-0.8em'; //）（
-    var kern_ind_left_dq='-0.25em';
-    var kern_ind_right_dq='-0.25em';
-    var kern_ind_right_dq_tail='-0.3em'; //different from above one b/c the possible extra \n (which will show as a space in most cases).
+    var kern_ind_open='-0.3em';
+    var kern_ind_close='-0.3em';
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
@@ -361,7 +362,7 @@
         function getAfter(child) {
             var toReturn='';
             var t_start=performance.now();
-            while (child.textContent === child.parentNode.textContent) {
+            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
             }
             child=child.nextSibling;
@@ -382,7 +383,7 @@
         function getBefore(child) {
             var toReturn='';
             var t_start=performance.now();
-            while (child.textContent === child.parentNode.textContent) {
+            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
             }
             child=child.previousSibling;
@@ -410,14 +411,14 @@
                     if ( !(allE[is].classList.contains("preCode")) ) {
                         var tmp_str=allE[is].innerHTML;
                         if (tmp_str.match(/^[\s\u0020\u00A0\u200B-\u200E]{0,5}[\u3400-\u9FBF]/)) {
-                            tmp_str=getBefore(allE[is])+'\uF003CJK\uF003'+tmp_str;
+                            tmp_str=getBefore(allE[is])+'\uF203CJK\uF203'+tmp_str;
                         }
                         if (tmp_str.match(/[\u3400-\u9FBF][\s\u200B-\u200E\2060]{0,2}$/)) {
-                            tmp_str=tmp_str+'\uF004CJK\uF004'+getAfter(allE[is]);
+                            tmp_str=tmp_str+'\uF204CJK\uF204'+getAfter(allE[is]);
                         }
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh;
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF003CJK\uF003)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
                         var space2BeAdded='<span class="MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>';
                         var enzh_withSpace='$1$2'+space2BeAdded+'$3';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
@@ -429,14 +430,14 @@
                         re_enzh=/([^>][\u201D\u2019])(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}((?:<[\u002F]?(?:span|sup|b|i|strong|em|u|var|a)[^\uE985\uE211><]*>){0,5})(?:[\u0020\u00A0\u200B-\u200E]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
-                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF004CJK\uF004)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])/img;
+                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF204CJK\uF204)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
                         //now en["']zh (TODO in 0.15?)
                         //now zh['"]en (TODO in 0.15?)
                         tmp_str=tmp_str.replace(/\uED20/mg,'');
-                        tmp_str=tmp_str.replace(/^[^\u0000]*\uF003CJK\uF003([^\u0000]*)$/,'$1'); // '.' does not match \n in whatever mode.
-                        tmp_str=tmp_str.replace(/^([^\u0000]*)\uF004CJK\uF004[^\u0000]*$/,'$1');
+                        tmp_str=tmp_str.replace(/^[^\u0000]*\uF203CJK\uF203([^\u0000]*)$/,'$1'); // '.' does not match \n in whatever mode.
+                        tmp_str=tmp_str.replace(/^([^\u0000]*)\uF204CJK\uF204[^\u0000]*$/,'$1');
                         allE[is].innerHTML=tmp_str;
                     }
                     else {
@@ -1118,6 +1119,7 @@
     function FixMarksInCurrHTML(currHTML,node,delete_all_extra_spaces) {
         //“<-->\u201C, ”<-->\u201D
         //‘<-->\u2018, ’<-->\u2019
+        var performSingleRightSqueeze=true;
         var changhai_style=false;
         var Squeezing=true;
         var SqueezeInd=true;
@@ -1136,7 +1138,7 @@
         if (currHTML.match(/^[、，。：；！？）】〉》」』\u201D\u2019『「《〈【（\u201C\u2018]/)) {
             if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
-            currHTML=getBefore(node)+'\uF001CJK\uF001'+currHTML;
+            currHTML=getBefore(node)+'\uF201CJK\uF201'+currHTML;
             if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
         }
         //if (currHTML.match(/[『「《〈【（\u201C\u2018]$/)) {
@@ -1144,14 +1146,19 @@
             if (debug_tagSeeThrough===true) console.log("TO CHECK AFTER: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("LAST CHAR: "+currHTML+"@"+performance.now());
             //Separate currHTML with following text.
-            currHTML=currHTML+'\uF002CJK\uF002'+getAfter(node);
+            currHTML=currHTML+'\uF202CJK\uF202'+getAfter(node);
             if (debug_tagSeeThrough===true) console.log("FULL FORM: "+currHTML+"@"+performance.now());
         }
         if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
+        if (useFeedback===true && currHTML.match(/[\uF201-\uF204]/)) {
+            if (!currHTML.match(/[\uF201-\uF204]CJK[\uF201-\uF204]/) || (currHTML.match(/[\uF201-\uF204]/g)).length !== ((currHTML.match(/[\uF201-\uF204]CJK[\uF201-\uF204]/g)).length*2)) {
+                alert("This page may conflict with FixCJK!. If you would like to help solve the problem, please email the URL to stecue@gmail.com. Thanks!\n本页面可能与FixCJK!冲突，如果您想帮忙解决此问题，请将本页面的URL电邮至stecue@gmail.com。多谢您的使用与反馈！");
+            }
+        }
         function getBefore(child) {
             var t_start=performance.now();
             var toReturn='';
-            while (child.textContent === child.parentNode.textContent) {
+            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
             }
             child=child.previousSibling;
@@ -1180,7 +1187,7 @@
         function getAfter(child) {
             var toReturn='';
             var t_start=performance.now();
-            while (child.textContent === child.parentNode.textContent) {
+            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
             }
             child=child.nextSibling;
@@ -1309,12 +1316,12 @@
         ///--Group Right:[『「《〈【（\uEB1C\uEB18] //Occupies the right half width.
         ///=====Use \uE211 as the calss name for TWO-PUNCT RULES====//
         ///===Do not use the "g" modefier because we are using loops===//
-        var reLL=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
-        var reLR=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/m;
-        var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/m;
-        var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
+        var reLL=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([\uF201-\uF204]CJK[\uF201-\uF204])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
+        var reLR=/([\n]?[、，。：；！？）】〉》」』\uEB1D\uEB19][\n]?)([\uF201-\uF204]CJK[\uF201-\uF204])?([『「《〈【（\uEB1C\uEB18])/m;
+        var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF201-\uF204]CJK[\uF201-\uF204])?([『「《〈【（\uEB1C\uEB18])/m;
+        var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF201-\uF204]CJK[\uF201-\uF204])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
         var sqz_start=performance.now();
-        while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF001-\uF004]CJK[\uF001-\uF004])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
+        while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF201-\uF204]CJK[\uF201-\uF204])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
                 tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2$3';
@@ -1342,14 +1349,15 @@
         ///---Done with conseqtive puncts--///
         if (debug_04===true) {all[currpunc].style.color="Pink";}
         if (SqueezeInd===true) {
-            //First, within the same tag.
-            currHTML=currHTML.replace(/([^、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18](?:<[^><]*>)+|[^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF001-\uF004])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
-            //Second, span over multiple tags.
-            currHTML=currHTML.replace(/([^、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18](?:<[^><]*>)+|[^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])([\uF001-\uF004]CJK[\uF001-\uF004])([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$3</span>');
-            //But the first punctuation marks in a paragraph seems OK.
-            currHTML=currHTML.replace(/^([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.3em;">$2</span>');
+            //The punctuation marks is also the first char in a paragraph seems:
+            //In current model (1.0.x), all tags are added within this function (FixMarksInCurrHTML), and it should be safe to skip them.
+            currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])?(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>');
+            //Then, not the first char: 
+            if (performSingleRightSqueeze===true) {
+                currHTML=currHTML.replace(/([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204]|$)/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>$4$5');
+            }
             //Do not squeeze the last punctuation marks in a paragraph. Too risky.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
         var time2squeeze=performance.now()-FixMarks_start-time2shift-time2protect;
@@ -1398,8 +1406,8 @@
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
         if (debug_tagSeeThrough===true) {console.log("FIXED: "+currHTML+"@"+performance.now());}
-        currHTML=currHTML.replace(/^[^\u0000]*\uF001CJK\uF001([^\u0000]*)$/,'$1');
-        currHTML=currHTML.replace(/^([^\u0000]*)\uF002CJK\uF002[^\u0000]*$/,'$1');
+        currHTML=currHTML.replace(/^[^\u0000]*\uF201CJK\uF201([^\u0000]*)$/,'$1');
+        currHTML=currHTML.replace(/^([^\u0000]*)\uF202CJK\uF202[^\u0000]*$/,'$1');
         if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
         return currHTML;
     }
