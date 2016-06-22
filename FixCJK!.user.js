@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.95
+// @version           0.15.96
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1090,11 +1090,11 @@
                     node.classList.remove("PunctSpace2Fix");
                 }
                 else if (window.getComputedStyle(node, null).getPropertyValue("white-space").match(/pre/)){
-                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,node,false,false);
+                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,node,false);
                 }
                 else {
                     if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Now fixing --> "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216));}
-                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,node,true,false);
+                    node.innerHTML=FixMarksInCurrHTML(node.innerHTML,node,true);
                 }
             }
             node.classList.add("MarksFixedE135");
@@ -1106,7 +1106,7 @@
         }
     }
     ///==Fix punct in a currHTML===///
-    function FixMarksInCurrHTML(currHTML,node,delete_all_extra_spaces,AlsoChangeFullStop) {
+    function FixMarksInCurrHTML(currHTML,node,delete_all_extra_spaces) {
         //“<-->\u201C, ”<-->\u201D
         //‘<-->\u2018, ’<-->\u2019
         var changhai_style=false;
@@ -1195,7 +1195,6 @@
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
-        if (currHTML.match(/『我们就应该找到一种与它们相处的恰当方式​⁠。/) ) console.log("文本："+node.innerHTML+"-->"+currHTML);
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> ‘,’
         // \uE972,\uE973 <==> “,”
@@ -1331,17 +1330,16 @@
                 break;
             }
         }
-        if (currHTML.match(/『我们就应该找到一种与它们相处的恰当方式​⁠。/) ) console.log("连续："+node.innerHTML+"-->"+currHTML);
         ///---Done with conseqtive puncts--///
         if (debug_04===true) {all[currpunc].style.color="Pink";}
-        if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
-            currHTML=currHTML.replace(/([？！：；、，。])/mg,'<span class="MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">$1</span>');
-        }
         if (SqueezeInd===true) {
-            //Do not squeeze the last punctuation marks in a paragraph. Too risky.
-            currHTML=currHTML.replace(/([<[^\uE211]*>]|[^><])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
+            //First, within the same tag.
+            currHTML=currHTML.replace(/([^、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18](?:<[^><]*>)+|[^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF001-\uF004])([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$2</span>');
+            //Second, span over multiple tags.
+            currHTML=currHTML.replace(/([^、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18](?:<[^><]*>)+|[^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])([\uF001-\uF004]CJK[\uF001-\uF004])([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$3</span>');
             //But the first punctuation marks in a paragraph seems OK.
             currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.3em;">$1</span>');
+            //Do not squeeze the last punctuation marks in a paragraph. Too risky.
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
@@ -1390,8 +1388,7 @@
             console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
-        if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
-        if (currHTML.match(/『我们就应该找到一种与它们相处的恰当方式​⁠。/) ) console.log("强调："+node.innerHTML+"-->"+currHTML);
+        if (debug_tagSeeThrough===true) {console.log("FIXED: "+currHTML+"@"+performance.now());}
         currHTML=currHTML.replace(/^[^\u0000]*\uF001CJK\uF001([^\u0000]*)$/,'$1');
         currHTML=currHTML.replace(/^([^\u0000]*)\uF002CJK\uF002[^\u0000]*$/,'$1');
         if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
