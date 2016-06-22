@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.96
+// @version           0.15.97
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -125,17 +125,12 @@
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
     //letter-spacing options
-    var kern_consec_ll='-0.45em'; //。” or ））
-    var kern_consec_rr='-0.4em'; //（（
+    var kern_consec_ll='-0.3em'; //。” or ））
+    var kern_consec_rr='-0.3em'; //（（
     var kern_consec_lr='-0.8em'; //）（
-    var kern_consec_pq='-0.5em'; //kern for ,. before right ” Just in case, do not use.
-    var kern_consec_qp='-0.5em'; //quote followed by period. Just in case, do not use.
-    var kern_sq='-0.5em'; //Just in case, do not use.
-    var kern_ind_left_dq='-0.2em';
-    var kern_ind_right_dq='-0.2em';
+    var kern_ind_left_dq='-0.25em';
+    var kern_ind_right_dq='-0.25em';
     var kern_ind_right_dq_tail='-0.3em'; //different from above one b/c the possible extra \n (which will show as a space in most cases).
-    var kern_dq_right_end='-0.3em'; //Just in case, do not use.
-    var kern_dq_right_left='-0.8em'; //Just in case, do not use.
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
@@ -851,12 +846,9 @@
                     else {
                         if (debug_02===true) {all[i].style.color='Fuchsia';}
                         if (font_str.match(re_simsun)) {
-                            //all[i].style.color='Fuchsia';
-                            //This is needed because some elements cannot be captured in "child elements" processing. (Such as the menues on JD.com) No idea why.
-                            //all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qSimSun) + ',' + 'serif';
+                            //Do nothing.
                         }
                         else {
-                            //all[i].style.color='Fuchsia';
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                         }
                     }
@@ -1338,7 +1330,7 @@
             //Second, span over multiple tags.
             currHTML=currHTML.replace(/([^、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18](?:<[^><]*>)+|[^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])([\uF001-\uF004]CJK[\uF001-\uF004])([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.2em;">$3</span>');
             //But the first punctuation marks in a paragraph seems OK.
-            currHTML=currHTML.replace(/^([『「《〈【（\uEB1C\uEB18])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.3em;">$1</span>');
+            currHTML=currHTML.replace(/^([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/mg,'$1<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:-0.3em;">$2</span>');
             //Do not squeeze the last punctuation marks in a paragraph. Too risky.
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:-0.2em;">$1</span>$2');
         }
@@ -1394,7 +1386,5 @@
         if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
         return currHTML;
     }
-    ///===The following loop is to solve the lazy loading picture problem on zhihu.com===///
-    //No need if using the recursive implementation. However, it is still needed if the "forced fixing" is triggered.
 }
 ) ();
