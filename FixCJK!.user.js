@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.94
+// @version           0.15.95
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1195,7 +1195,7 @@
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
-        if (currHTML.match(/昆察亚将军最后强调/) ) console.log("文本："+node.innerHTML+"-->"+currHTML);
+        if (currHTML.match(/『我们就应该找到一种与它们相处的恰当方式​⁠。/) ) console.log("文本："+node.innerHTML+"-->"+currHTML);
         //==We need to protect the quotation marks within tags first===//
         // \uE862,\uE863 <==> ‘,’
         // \uE972,\uE973 <==> “,”
@@ -1306,7 +1306,7 @@
         var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([『「《〈【（\uEB1C\uEB18])/m;
         var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF001-\uF004]CJK[\uF001-\uF004])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
         var sqz_start=performance.now();
-        while (currHTML.match(/[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]{2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
+        while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF001-\uF004]CJK[\uF001-\uF004])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
                 tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2$3';
@@ -1331,6 +1331,7 @@
                 break;
             }
         }
+        if (currHTML.match(/『我们就应该找到一种与它们相处的恰当方式​⁠。/) ) console.log("连续："+node.innerHTML+"-->"+currHTML);
         ///---Done with conseqtive puncts--///
         if (debug_04===true) {all[currpunc].style.color="Pink";}
         if ((AlsoChangeFullStop===true) && (currHTML.match(/[？！：；、，。]/mg))) {
@@ -1390,7 +1391,7 @@
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
         }
         if (debug_tagSeeThrough===true) console.log("FIXED: "+currHTML+"@"+performance.now());
-        if (currHTML.match(/昆察亚将军最后强调/) ) console.log("强调："+node.innerHTML+"-->"+currHTML);
+        if (currHTML.match(/『我们就应该找到一种与它们相处的恰当方式​⁠。/) ) console.log("强调："+node.innerHTML+"-->"+currHTML);
         currHTML=currHTML.replace(/^[^\u0000]*\uF001CJK\uF001([^\u0000]*)$/,'$1');
         currHTML=currHTML.replace(/^([^\u0000]*)\uF002CJK\uF002[^\u0000]*$/,'$1');
         if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
