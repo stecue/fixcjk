@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.98
+// @version           0.15.99
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -69,8 +69,7 @@
     var useFeedback=false;
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
-    var safeClassList='\uE911forCompatibilityOnly'; //Make them the same as "SafedByUser".
-    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTested,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
+    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,PunctSpace2Fix,CJKVisited,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -185,70 +184,72 @@
             }
             child=child.nextSibling;
         }
-        if (node.classList.contains("CJKTested")) {
+        if (node.classList.contains("CJKVisited")) {
             return true;
         }
         else {
             if (node.textContent.length>5) //make sure it is not empty.
-                node.classList.add("CJKTested");
+                node.classList.add("CJKVisited");
             return true;
         }
     }
-    for (i=0;i < all.length;i++) {
-        if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
-        if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTested")){
-            continue;
-        }
-        if (inTheClassOf(all[i],safeClassList)) {
-            all[i].classList.add("SafedByUser");
-        }
-        all[i].classList.add("CJKTested");
-        font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
-        if (debug_01===true) console.log(font_str);
-        if (font_str.match(re_simsun)) {
-            var font_size=(window.getComputedStyle(all[i], null).getPropertyValue('font-size')).slice(0,-2);
-            if (font_size < 18) {
-                all[i].classList.add("CJK2Fix");
-                all[i].classList.add("SimSun2Fix");
-                if (!inTheClassOf(all[i],enoughSpacedList)) {
-                    all[i].classList.add("PunctSpace2Fix");
-                }
+    function labelCJK() {
+        var t_stop=performance.now();
+        var all=document.getElementsByTagName("*");
+        for (var i=0;i < all.length;i++) {
+            if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
+            if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKVisited")){
+                continue;
             }
-            else {
-                all[i].style.fontFamily=font_str;
-                all[i].classList.add("CJK2Fix");
-                if (!inTheClassOf(all[i],enoughSpacedList)) {
-                    all[i].classList.add("PunctSpace2Fix");
-                }
-            }
-            continue;
-        }
-        if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (font_str.split(',').length >= rspLength) ){
-            all[i].classList.add("CJKTested");
-            addTested(all[i]);//it might cause some childs to be "unfixable", e.g., some elements on newsmth.org.
-            continue;
-        }
-        child = all[i].firstChild;
-        while (child) {
-            var realSibling=child.nextSibling;
-            if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
-                all[i].classList.add("CJK2Fix");
-                if (!inTheClassOf(all[i],enoughSpacedList)) {
-                    all[i].classList.add("PunctSpace2Fix");
-                }
-                if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
-                    all[i].parentNode.classList.add("CJK2Fix");
-                    if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList)) {
-                        all[i].parentNode.classList.add("PunctSpace2Fix");
+            all[i].classList.add("CJKVisited");
+            font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
+            if (debug_01===true) console.log(font_str);
+            if (font_str.match(re_simsun)) {
+                var font_size=(window.getComputedStyle(all[i], null).getPropertyValue('font-size')).slice(0,-2);
+                if (font_size < 18) {
+                    all[i].classList.add("CJK2Fix");
+                    all[i].classList.add("SimSun2Fix");
+                    if (!inTheClassOf(all[i],enoughSpacedList)) {
+                        all[i].classList.add("PunctSpace2Fix");
                     }
                 }
-                break;
+                else {
+                    all[i].style.fontFamily=font_str;
+                    all[i].classList.add("CJK2Fix");
+                    if (!inTheClassOf(all[i],enoughSpacedList)) {
+                        all[i].classList.add("PunctSpace2Fix");
+                    }
+                }
+                continue;
             }
-            child=realSibling;
+            if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (font_str.split(',').length >= rspLength) ){
+                all[i].classList.add("CJKVisited");
+                addTested(all[i]);//it might cause some childs to be "unfixable", e.g., some elements on newsmth.org.
+                continue;
+            }
+            child = all[i].firstChild;
+            while (child) {
+                var realSibling=child.nextSibling;
+                if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+                    all[i].classList.add("CJK2Fix");
+                    if (!inTheClassOf(all[i],enoughSpacedList)) {
+                        all[i].classList.add("PunctSpace2Fix");
+                    }
+                    if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
+                        all[i].parentNode.classList.add("CJK2Fix");
+                        if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList)) {
+                            all[i].parentNode.classList.add("PunctSpace2Fix");
+                        }
+                    }
+                    break;
+                }
+                child=realSibling;
+            }
         }
     }
     //return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
+    labelCJK();
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
     }
@@ -289,12 +290,12 @@
     ///===Add onClick listener before exiting===///
     var NumClicks=0;
     var t_last=performance.now();
-    var t_interval=1000; //The interval between two checks.
+    var t_interval=800; //The interval between two checks.
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     var NumPureEng=0;
     var LastURL=document.URL;
     var LastMod=document.lastModified;
-    var ItvScl=3.0;
+    var ItvScl=1.0;
     if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
         NumPureEng++;
     }
@@ -312,6 +313,11 @@
             //ReFix after other things are done.
             setTimeout(ReFixCJK,5,e);
         }
+    },false);
+    window.addEventListener("scroll",function (e){
+        refixing=true; //Prevent from firing ReFixCJK() while scrolling.
+        setTimeout(function() {refixing=false;},5000); //Permit ReFixCJK after 200ms of last scrolling.
+        setTimeout(ReFixCJK,100,e);
     },false);
     document.body.addEventListener("dblclick",function() {
         addSpaces();
@@ -357,7 +363,7 @@
     function addSpaces() {
         var t_spaces=performance.now();
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
-        addSpacesHelper(document.getElementsByClassName("SafedByUser"));
+        //addSpacesHelper(document.getElementsByClassName("SafedByUser"));
         addSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
         function getAfter(child) {
             var toReturn='';
@@ -402,7 +408,7 @@
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         function addSpacesHelper(allE) {
-            //Now the tag protection is fixed, I'll alway use the "useSpan" method (different from 0.13.0)
+            var useSFTags=true; //FIXME: use tags may cause problems on jd.com.
             for (var is=0;is<allE.length;is++) {
                 if (!(allE[is].nodeName.match(/FONT/)) ) {
                     continue;
@@ -419,7 +425,8 @@
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh;
                         var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
-                        var space2BeAdded='<span class="MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>';
+                        var space2BeAdded='<span class="CJKVisited MarksFixedE135 \uE699 FontsFixedE137 CJKVisited" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>';
+                        if (useSFTags===false) {space2BeAdded='\u2006';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2'+space2BeAdded+'$3';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //Special treatment of ’” because of lacking signature in the closing tag (</span>)
@@ -484,7 +491,7 @@
     function ReFixCJK (e) {
         if (refixing===true) {
             if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
-            refixing=false;
+            window.setTimeout(function () {refixing=false;},200);
             return false;
         }
         refixing=true;
@@ -507,9 +514,7 @@
             clickedNode=clickedNode.parentNode;
         }
         if ((document.lastModified===LastMod) && (NumClicks >2)) {
-            console.log('FixCJK!: Document modified at '+document.lastModified+', no change.');
-            refixing=false;
-            return true;
+            if (debug_verbose===true) {console.log('FixCJK!: Document modified at '+document.lastModified+', no change?');}
         }
         else {
             if (debug_verbose===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
@@ -534,7 +539,7 @@
         }
         if ((NumClicks < 1) || (t_start-t_last)*ItvScl > t_interval ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-            FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
             maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
             maxNumElements = 8000; // maximum number of elements to process.
@@ -548,8 +553,10 @@
             var ReFixAll=document.getElementsByTagName('*');
             var NumFixed=0;
             var NumReFix=0;
-            for (i=0;i<ReFixAll.length;i++) {
-                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKTested")){
+            labelCJK();
+            for (i=1;i<0;i++) {
+                //for (i=0;i<ReFixAll.length;i++) {
+                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKVisited")){
                     continue;
                 }
                 else if (ReFixAll[i].className.match("SafedByUser")) {
@@ -594,7 +601,7 @@
             }
         }
         else {
-            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again. (But I did try to fix the spaces. )');
+            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
         }
         NumClicks++;
         LastMod=document.lastModified;
@@ -627,7 +634,7 @@
             var iText=document.createTextNode(child.data);
             iNode.appendChild(iText);
             iNode.classList.add("wrappedCJK2Fix");
-            iNode.classList.add("CJKTested");
+            iNode.classList.add("CJKVisited");
             iNode.classList.add("PunctSpace2Fix");
             iNode.classList.add("CJK2Fix");
             iNode.classList.add("Safe2FixCJK\uE000");
@@ -1324,17 +1331,17 @@
         while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF201-\uF204]CJK[\uF201-\uF204])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
-                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2$3';
+                tmp_str='<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';">$1</span>$2$3';
                 currHTML=currHTML.replace(reLL,tmp_str);
             }
             else if (currHTML.match(reLR)) {
                 //--TWO PUNCTS: {Left}{Right}--//
-                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>$2$3';
+                tmp_str='<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';">$1</span>$2$3';
                 currHTML=currHTML.replace(reLR,tmp_str);
             }
             else if (currHTML.match(reRR)) {
                 //--TWO PUNCTS: {Right}{Right}--//
-                tmp_str='<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_rr+';">$1</span>$2$3';
+                tmp_str='<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_rr+';">$1</span>$2$3';
                 currHTML=currHTML.replace(reRR,tmp_str);
             }
             else if (currHTML.match(reRL)) {
@@ -1351,13 +1358,13 @@
         if (SqueezeInd===true) {
             //The punctuation marks is also the first char in a paragraph seems:
             //In current model (1.0.x), all tags are added within this function (FixMarksInCurrHTML), and it should be safe to skip them.
-            currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])?(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>');
+            currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])?(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>');
             //Then, not the first char: 
             if (performSingleRightSqueeze===true) {
-                currHTML=currHTML.replace(/([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204]|$)/mg,'$1$2<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>$4$5');
+                currHTML=currHTML.replace(/([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204]|$)/mg,'$1$2<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>$4$5');
             }
             //Do not squeeze the last punctuation marks in a paragraph. Too risky.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';">$1</span>$2');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([<[^\uE211]*>]|[^><])/mg,'<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';">$1</span>$2');
         }
         ///=== Squeezing Ends ===///
         var time2squeeze=performance.now()-FixMarks_start-time2shift-time2protect;
@@ -1388,10 +1395,10 @@
         ///////==== Change quotation marks back =====/////
         currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
         currHTML=currHTML.replace(/\uEC1D/mg,'\u201D');
-        currHTML=currHTML.replace(/\uEB1C/mg,'<span class="MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201C</span>');
-        currHTML=currHTML.replace(/\uEB1D/mg,'<span class="MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
-        currHTML=currHTML.replace(/\uEB18/mg,'<span class="MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
-        currHTML=currHTML.replace(/\uEB19/mg,'<span class="MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
+        currHTML=currHTML.replace(/\uEB1C/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201C</span>');
+        currHTML=currHTML.replace(/\uEB1D/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
+        currHTML=currHTML.replace(/\uEB18/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
+        currHTML=currHTML.replace(/\uEB19/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2019</span>');
         ///=== Replacing and Restoring Ends ===///
         var time2replace=performance.now()-FixMarks_start-time2squeeze-time2shift-time2protect;
         if ( (performance.now()-FixMarks_start)>200 ) {
