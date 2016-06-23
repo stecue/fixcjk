@@ -1419,6 +1419,7 @@
         ///////==== Change quotation marks back =====/////
         currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
         currHTML=currHTML.replace(/\uEC1D/mg,'\u201D');
+        //Use '\uE985' as the class of CJK quotation marks.
         currHTML=currHTML.replace(/\uEB1C/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201C</span>');
         currHTML=currHTML.replace(/\uEB1D/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u201D</span>');
         currHTML=currHTML.replace(/\uEB18/mg,'<span class="CJKVisited MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+';">\u2018</span>');
