@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.99
+// @version           0.15.100
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -69,7 +69,7 @@
     var useFeedback=false;
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
-    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,PunctSpace2Fix,CJKVisited,SimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
+    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE985,\uE211,Safe2FixCJK\uE000,PunctSpace2Fix,CJKVisited,SimSun2Fix,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
@@ -113,6 +113,7 @@
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     var qSimSun = qsig_sim+','+LatinInSimSun + ',' + CJKSimSun;
+    var qLargeSimSun = qsig_sim+','+ LatinSerif + ',' + 'SimSun';
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
     var qserif = LatinSerif + ',' + CJKserif +','+qsig_song+ ',' + 'serif'; //To replace "serif"
@@ -168,6 +169,7 @@
     qpreCJK = dequote(qpreCJK);
     qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
     qSimSun = dequote(qSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
+    qLargeSimSun = dequote(qLargeSimSun);//LatinInSimSun + ',' + CJKserif + ',' + qsig_sun;
     qBold = dequote(qBold);//LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     qsans = dequote(qsans);//LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
     qserif = dequote(qserif);//LatinSerif + ',' + CJKserif + ',' + qsig_sun + ',' + 'serif'; //To replace "serif"
@@ -216,6 +218,7 @@
                 else {
                     all[i].style.fontFamily=font_str;
                     all[i].classList.add("CJK2Fix");
+                    all[i].classList.add("LargeSimSun2Fix");
                     if (!inTheClassOf(all[i],enoughSpacedList)) {
                         all[i].classList.add("PunctSpace2Fix");
                     }
@@ -430,7 +433,7 @@
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh;
                         var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\u3400-\u9FBF])/img;
-                        var space2BeAdded='<span class="CJKVisited MarksFixedE135 \uE699 FontsFixedE137 CJKVisited" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>';
+                        var space2BeAdded='<span class="CJKVisited MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:60%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2006';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2'+space2BeAdded+'$3';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
@@ -755,6 +758,16 @@
             font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
             if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
                 allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qSimSun);
+            }
+        }
+        allSuns=document.getElementsByClassName("LargeSimSun2Fix");
+        for (var isun=0;isun< allSuns.length;isun++) {
+            if (allSuns[isun].classList.contains("FontsFixedE137")) {
+                continue;
+            }
+            font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
+            if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
+                allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qLargeSimSun);
             }
         }
         all = document.getElementsByClassName('CJK2Fix');
