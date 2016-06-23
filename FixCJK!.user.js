@@ -130,8 +130,8 @@
     var kern_consec_ll='-0.35em'; //。” or ））
     var kern_consec_rr='-0.35em'; //（（
     var kern_consec_lr='-0.8em'; //）（
-    var kern_ind_open='-0.3em';
-    var kern_ind_close='-0.3em';
+    var kern_ind_open='-0.25em';
+    var kern_ind_close='-0.25em';
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
