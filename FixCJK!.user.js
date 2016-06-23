@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.100
+// @version           0.15.102
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -371,7 +371,6 @@
     function addSpaces() {
         var t_spaces=performance.now();
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
-        //addSpacesHelper(document.getElementsByClassName("SafedByUser"));
         addSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
         function getAfter(child) {
             var toReturn='';
@@ -547,7 +546,6 @@
             LastURL=document.URL;
         }
         var clickedNode=e.target;
-        document.body.classList.remove("SafedByUser"); //Remove the SafedByUser of the "BODY" element if it is clicked by user.
         while (clickedNode && clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
                 console.log("FixCJK!: Not a valid click on DOM element \u201C"+clickedNode.nodeName+"."+clickedNode.className+"\u201D");
@@ -761,7 +759,7 @@
             }
         }
         allSuns=document.getElementsByClassName("LargeSimSun2Fix");
-        for (var isun=0;isun< allSuns.length;isun++) {
+        for (isun=0;isun< allSuns.length;isun++) {
             if (allSuns[isun].classList.contains("FontsFixedE137")) {
                 continue;
             }
@@ -1111,24 +1109,9 @@
                 node.className=orig_class;
             }
         }
-        //Force to fix if Safed by User
-        if (!(node instanceof SVGElement) && node.classList.contains("SafedByUser") ) {
-            console.log("SAFED BY USER: "+node.nodeName+"."+node.className);
-            allSubSafe=true;
-            node.classList.add("CJK2Fix");
-            node.classList.add("PunctSpace2Fix");
-            node.classList.remove("MarksFixedE135");
-            node2fix=true;
-            //Do not add it to "Safe2FixCJK\uE000" class, otherwise re-check may destroy the listeners attached to the "outerHTML".
-        }
         //Config and Filtering Done. Fix puncts if necessary.
         if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
-            if (node.classList.contains("SafedByUser")) {
-                if (debug_verbose===true) {console.log("SAFEDDD BY USER: "+node.nodeName+"."+node.className);}
-                //If we need to fix the spaces then we need to keep the "SafedByUser" class.
-                //node.classList.remove("SafedByUser");
-            }
             if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
             if (node.innerHTML.match(/[“”‘’、，。：；！？）】〉》」』『「《〈【（]/m)) {
@@ -1185,6 +1168,7 @@
             if (debug_tagSeeThrough===true) console.log("LAST CHAR: "+currHTML+"@"+performance.now());
             //Separate currHTML with following text.
             currHTML=currHTML+'\uF202CJK\uF202'+getAfter(node);
+            if (node.parentNode.id.match(/overtag/)) console.log(node.parentNode.id+'#'+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL FORM: "+currHTML+"@"+performance.now());
         }
         if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
@@ -1309,11 +1293,11 @@
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
         var unpaired_timeout = noBonusTimeout; //not so important, therefore cannot spend too much time here.
         var unpaired_start=performance.now();
-        var unpaired=/\u201C([^\u201D\u3400-\u9FBF]{0,3}[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u201C\u201D]*$)/m;
+        var unpaired=/\u201C((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u201C\u201D]*$)/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
-        unpaired=/(^[^\u201C\u201D]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u201D\u3400-\u9FBF]{0,3})\u201D/m;
+        unpaired=/(^[^\u201C\u201D]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u201D/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
@@ -1326,12 +1310,12 @@
         var paired_single_stop=performance.now()-paired_single_start;
         //"unpaired ‘ (\u2018)", not just use at the beginning of a paragraph.
         unpaired_start=performance.now();
-        unpaired=/\u2018([^\u201D\u3400-\u9FBF]{0,3}[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2018\u2019]*$)/m;
+        unpaired=/\u2018((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2018\u2019]*$)/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB18$1'); //We need the greedy method to get the longest match.
         }
         //CJK’, otherwise words like it's might be affected.
-        unpaired=/(^[^\u2018\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF])\u2019/m;
+        unpaired=/(^[^\u2018\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u2019/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }
