@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.110
+// @version           0.15.111
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1383,11 +1383,10 @@
             if (performSingleRightSqueeze===true) {
                 currHTML=currHTML.replace(/([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204]|$)/mg,'$1$2<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</span>$4$5');
             }
-            //Do not squeeze the last punctuation marks in a paragraph. Too risky. $3 might not be necessary?
-            if (currHTML.match(/就像我讲了一个段子/)) console.log(currHTML);
+            //Do not squeeze the last punctuation marks in a paragraph. Too risky. $3 seems necessary?
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?$/mg,'<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:0px">$1</span>$2');
-            //'.' matches anything but \n.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?((?:<[^><\uE211\uE985]*>)+[^、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]|[^><\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/mg,'<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';">$1</span>$2$3');
+            //Note that [\uF201-\uF204]CJK[\uF201-\uF204] might be added to the end and it must be excluded.
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?((?:<[^><]*>)+[^\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]|[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/mg,'<span class="CJKVisited MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';">$1</span>$2$3');
         }
         ///=== Squeezing Ends ===///
         var time2squeeze=performance.now()-FixMarks_start-time2shift-time2protect;
