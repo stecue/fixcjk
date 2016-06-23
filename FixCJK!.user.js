@@ -320,9 +320,9 @@
         setTimeout(function() {fireReFix=true;},t_interval/2); //Permit ReFixCJK after 200ms of last scrolling.
         setTimeout(function() {
             if (fireReFix===true) {
-                ReFixCJK(e);
+                ReFixCJKFontsOnly();
             }
-        },t_interval*5);
+        },t_interval);
     },false);
     document.body.addEventListener("dblclick",function() {
         addSpaces();
@@ -493,6 +493,42 @@
             }
         }
     }
+    function ReFixCJKFontsOnly () {
+        if (refixing===true) {
+            if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
+            window.setTimeout(function () {refixing=false;},t_interval);
+            return false;
+        }
+        refixing=true;
+        var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
+        if (debug_verbose===true) {console.log(e.target.nodeName);}
+        t_start=performance.now();
+        if ( (t_start-t_last)*ItvScl > t_interval ) {
+            FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
+            FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixPunct = false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
+            maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
+            maxNumElements = 8000; // maximum number of elements to process.
+            CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
+            invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
+            processedAll=true;
+            ifRound1=true;
+            ifRound2=true;
+            ifRound3=false;
+            //FixCJK();
+            var ReFixAll=document.getElementsByTagName('*');
+            var NumFixed=0;
+            var NumReFix=0;
+            labelCJK();
+            FixAllFonts();
+            console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+        }
+        else {
+            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
+        }
+        t_last=performance.now();
+        refixing=false;
+    }
     function ReFixCJK (e) {
         if (refixing===true) {
             if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
@@ -559,39 +595,6 @@
             var NumFixed=0;
             var NumReFix=0;
             labelCJK();
-            for (i=1;i<0;i++) {
-                //for (i=0;i<ReFixAll.length;i++) {
-                if ((ReFixAll[i].nodeName.match(SkippedTags)) || ReFixAll[i] instanceof SVGElement || ReFixAll[i].classList.contains("CJKVisited")){
-                    continue;
-                }
-                else if (ReFixAll[i].className.match("SafedByUser")) {
-                    ReFixAll[i].classList.add("CJK2Fix");
-                    ReFixAll[i].classList.add("PunctSpace2Fix");
-                    NumReFix++;
-                }
-                else if ((ReFixAll[i].hasAttribute('class') ===true) && (ReFixAll[i].className.match(/FixedE1/))) {
-                    NumFixed++;
-                    continue;
-                }
-                else {
-                    child = ReFixAll[i].firstChild;
-                    while (child) {
-                        var realSibling=child.nextSibling;
-                        if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
-                            if (debug_verbose===true) {
-                                console.log(ReFixAll[i].className+':: '+child.data);
-                                console.log(ReFixAll[i].outerHTML);
-                            }
-                            ReFixAll[i].classList.add("CJK2Fix");
-                            ReFixAll[i].classList.add("PunctSpace2Fix");
-                            //ReFixAll[i].className=(ReFixAll[i].className).replace(/(?: CJK2Fix)+/g,' CJK2Fix');
-                            NumReFix++;
-                            break;
-                        }
-                        child=realSibling;
-                    }
-                }
-            }
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
@@ -789,23 +792,28 @@
                             all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
                             if (!(has_genfam(all[i].style.fontFamily))) {
                                 all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
+                                all[i].classList.add("FontsFixedE137");
                             }
                         }        //Test if contains Sans
                         else if (list_has(font_str, re_sans0) !== false) {
                             //all[i].style.color="Salmon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
+                            all[i].classList.add("FontsFixedE137");
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
                             //all[i].style.color="SeaGreen";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
+                            all[i].classList.add("FontsFixedE137");
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
                             //all[i].style.color="Maroon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
+                            all[i].classList.add("FontsFixedE137");
                         }        //Just append the fonts to the font preference list.
                         else {
                             //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
+                            all[i].classList.add("FontsFixedE137");
                             //console.log(all[i].style.fontFamily);
                         }
                     }
@@ -849,6 +857,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
+                    all[i].classList.add("FontsFixedE137");
                     continue;
                 }
                 else {
@@ -858,14 +867,17 @@
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                        all[i].classList.add("FontsFixedE137");
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                        all[i].classList.add("FontsFixedE137");
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
                         //all[i].style.color="Maroon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
+                        all[i].classList.add("FontsFixedE137");
                     }
                     else {
                         if (debug_02===true) {all[i].style.color='Fuchsia';}
@@ -874,12 +886,13 @@
                         }
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                            all[i].classList.add("FontsFixedE137");
                         }
                     }
                 }
                 if (FixMore === false) {
                     //Add FontsFixed if Round 3 is skipped intentially.
-                    all[i].classList.add("FontsFixedE137");
+                    //all[i].classList.add("FontsFixedE137");
                 }
             }
         }
