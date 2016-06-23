@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.106
+// @version           0.15.107
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -63,6 +63,7 @@
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var refixing=false;
+    var refixingFonts=false;
     var rspLength=3; //If the font-list reaches the length here, the author is probably responsible enough to cover most Latin/English environment.
     var waitForDoubleClick=200;
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -321,7 +322,7 @@
     var fireReFix=false;
     window.addEventListener("scroll",function (e){
         fireReFix=false; //Prevent from firing ReFixCJK() while scrolling.
-        setTimeout(function() {fireReFix=true;},t_interval/2); //Permit ReFixCJK after 200ms of last scrolling.
+        setTimeout(function() {fireReFix=true;},t_interval/2); //Permit ReFixCJK after sometime of last scrolling.
         setTimeout(function() {
             if (fireReFix===true) {
                 ReFixCJKFontsOnly();
@@ -497,12 +498,12 @@
         }
     }
     function ReFixCJKFontsOnly () {
-        if (refixing===true) {
+        if (refixingFonts===true) {
             if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
-            window.setTimeout(function () {refixing=false;},t_interval);
+            window.setTimeout(function () {refixingFonts=false;},t_interval*3);
             return false;
         }
-        refixing=true;
+        refixingFonts=true;
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
         if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
@@ -524,7 +525,7 @@
             console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
         }
         t_last=performance.now();
-        refixing=false;
+        refixingFonts=false;
     }
     function ReFixCJK (e) {
         if (refixing===true) {
