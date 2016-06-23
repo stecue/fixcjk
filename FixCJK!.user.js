@@ -290,7 +290,7 @@
     ///===Add onClick listener before exiting===///
     var NumClicks=0;
     var t_last=performance.now();
-    var t_interval=800; //The interval between two checks.
+    var t_interval=1000; //The interval between two checks.
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     var NumPureEng=0;
     var LastURL=document.URL;
@@ -314,10 +314,15 @@
             setTimeout(ReFixCJK,5,e);
         }
     },false);
+    var fireReFix=false;
     window.addEventListener("scroll",function (e){
-        refixing=true; //Prevent from firing ReFixCJK() while scrolling.
-        setTimeout(function() {refixing=false;},5000); //Permit ReFixCJK after 200ms of last scrolling.
-        setTimeout(ReFixCJK,100,e);
+        fireReFix=false; //Prevent from firing ReFixCJK() while scrolling.
+        setTimeout(function() {fireReFix=true;},t_interval/2); //Permit ReFixCJK after 200ms of last scrolling.
+        setTimeout(function() {
+            if (fireReFix===true) {
+                ReFixCJK(e);
+            }
+        },t_interval*5);
     },false);
     document.body.addEventListener("dblclick",function() {
         addSpaces();
@@ -491,7 +496,7 @@
     function ReFixCJK (e) {
         if (refixing===true) {
             if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
-            window.setTimeout(function () {refixing=false;},200);
+            window.setTimeout(function () {refixing=false;},t_interval);
             return false;
         }
         refixing=true;
