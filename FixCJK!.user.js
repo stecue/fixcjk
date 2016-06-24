@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.113
+// @version           0.15.114
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -19,9 +19,9 @@
     var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
     var CJKSimSun= '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
     var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
-    var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
+    var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
-    var CJKPunct = 'Noto Sans CJK SC Regular,"WenQuanYi Micro Hei",SimHei,SimSun'; //The font to use for CJK quotation marks.
+    var CJKPunct = 'Noto Sans CJK SC,Noto Sans CJK SC Regular,SimHei,SimSun'; //The font to use for CJK quotation marks.
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSans = 'Lato,"Open Sans",Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif = 'Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
