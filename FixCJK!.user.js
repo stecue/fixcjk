@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.114
+// @version           0.15.115
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -75,12 +75,12 @@
     var upEnoughTags=/^(P|LI|TD|BODY)$/g;
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
-    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKVisited,SimSun2Fix,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
+    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKVisited,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var t_start = performance.now();
     var t_stop = t_start;
-    var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */gi;
+    var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */i;
     var all = document.getElementsByTagName('*');
     var NumAllDOMs=all.length;
     var bodyhtml=document.getElementsByTagName("HTML");
@@ -757,22 +757,24 @@
         //First fix all SimSun parts in Round 1&2.
         var allSuns=document.getElementsByClassName("SimSun2Fix");
         for (var isun=0;isun< allSuns.length;isun++) {
-            if (allSuns[isun].classList.contains("FontsFixedE137")) {
+            if (allSuns[isun].classList.contains("FontsFixedE137") || allSuns[isun].classList.contains("SimSunFixedE137")) {
                 continue;
             }
             font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
             if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
                 allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qSimSun);
+                allSuns[isun].classList.add("SimSunFixedE137");
             }
         }
         allSuns=document.getElementsByClassName("LargeSimSun2Fix");
         for (isun=0;isun< allSuns.length;isun++) {
-            if (allSuns[isun].classList.contains("FontsFixedE137")) {
+            if (allSuns[isun].classList.contains("FontsFixedE137") || allSuns[isun].classList.contains("SimSunFixedE137")) {
                 continue;
             }
             font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
             if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
                 allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qLargeSimSun);
+                allSuns[isun].classList.add("SimSunFixedE137");
             }
         }
         all = document.getElementsByClassName('CJK2Fix');
