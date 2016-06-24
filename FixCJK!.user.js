@@ -220,10 +220,7 @@
         }
         var child=node.firstChild;
         while (child) {
-            if (child.nodeType===1) {
-                labelCJKByNode(child);
-            }
-            else if (child.nodeType===3) {
+            if (child.nodeType===3) {
                 if (node.classList.contains("CJKTestedAndLabeled") || node.nodeName.match(SkippedTags)) {
                     //Do nothing if already labeled.
                 }
@@ -265,6 +262,9 @@
                         }
                     }
                 }
+            }
+            else if (child.nodeType===1) {
+                labelCJKByNode(child);
             }
             child=child.nextSibling;
         }
