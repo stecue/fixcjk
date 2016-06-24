@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.112
+// @version           0.15.113
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -19,9 +19,9 @@
     var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
     var CJKSimSun= '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
     var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
-    var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC"'; //Sans-serif fonts for CJK. Regular weight.
+    var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
-    var CJKPunct = 'Noto Sans CJK SC,"WenQuanYi Micro Hei",SimHei,SimSun'; //The font to use for CJK quotation marks.
+    var CJKPunct = 'Noto Sans CJK SC Regular,"WenQuanYi Micro Hei",SimHei,SimSun'; //The font to use for CJK quotation marks.
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSans = 'Lato,"Open Sans",Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif = 'Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
@@ -137,8 +137,8 @@
     var kern_consec_ll='-0.35em'; //。” or ））
     var kern_consec_rr='-0.35em'; //（（
     var kern_consec_lr='-0.8em'; //）（
-    var kern_ind_open='-0.25em';
-    var kern_ind_close='-0.25em';
+    var kern_ind_open='-0.22em';
+    var kern_ind_close='-0.22em';
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
@@ -908,10 +908,6 @@
                         }
                     }
                 }
-                if (FixMore === false) {
-                    //Add FontsFixed if Round 3 is skipped intentially.
-                    //all[i].classList.add("FontsFixedE137");
-                }
             }
         }
         if (debug_verbose===true) {console.log('FixCJK!: Round 2 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -967,8 +963,10 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 if (font_str.split(',').length >= rspLength) {
                     //continue if all[i] contains a list of fonts.
-                    all[i].classList.add("FontsFixedE137");
-                    continue;
+                    if (!all[i].classList.contains("CJK2Fix")) {
+                        all[i].classList.add("FontsFixedE137");
+                        continue;
+                    }
                 }
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
