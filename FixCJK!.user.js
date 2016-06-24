@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.118
+// @version           0.15.119
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -71,8 +71,8 @@
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     //var SafeTags=/^(B|STRONG|EM|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    var SafeTags=/^\uE911forCompatibilityOnly$/g;
-    var upEnoughTags=/^(P|LI|TD|TH|BODY)$/g;
+    var transparentTags=/^(SPAN|B|U|VAR)$/i; //The tags that are always "transparent" while "seeing through"
+    var upEnoughTags=/^(P|LI|TD|TH|BODY)$/g; //"See-Through" stops here.
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
@@ -1104,12 +1104,7 @@
             for (var icl=0;icl<CJKclasses.length;icl++) {
                 node.classList.remove(CJKclasses[icl]);
             }
-            if (node.tagName.match(SafeTags)) {
-                //note that Safe2FixCJK\uE000 means it is safe as a subelement. Safe2FixCJK\uE000 also means node.innerHTML is safe. However itself may have event listeners attached to it.
-                node.className=orig_class;
-                node.classList.add("Safe2FixCJK\uE000");
-            }
-            else if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList))) {
+            if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -1187,8 +1182,10 @@
         function getBefore(child) {
             var t_start=performance.now();
             var toReturn='';
-            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
+            if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
+            while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
+                if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
             }
             child=child.previousSibling;
             while (child && (performance.now()-t_start<2) ) {
@@ -1216,7 +1213,7 @@
         function getAfter(child) {
             var toReturn='';
             var t_start=performance.now();
-            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
+            while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
             }
             child=child.nextSibling;
@@ -1290,6 +1287,12 @@
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
+        }
+        //Paired single quotations are diffcult because of the double-indentiy of '‘'.
+        paired=/(\u2018)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]{0,2})(\u2019)/mg;
+        while (currHTML.match(paired)) {
+            if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
+            currHTML=currHTML.replace(paired,'\uEC18$2\uEC19');
         }
         //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
         paired=/(\u201C)([^\u201D]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u201D]*)(\u201D)/mg;
@@ -1419,6 +1422,8 @@
         currHTML=currHTML.replace(/\uEA18/mg,'【');
         currHTML=currHTML.replace(/\uEA19/mg,'（');
         ///////==== Change quotation marks back =====/////
+        currHTML=currHTML.replace(/\uEC18/mg,'\u2018');
+        currHTML=currHTML.replace(/\uEC19/mg,'\u2019');
         currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
         currHTML=currHTML.replace(/\uEC1D/mg,'\u201D');
         //Use '\uE985' as the class of CJK quotation marks.
