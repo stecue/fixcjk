@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.120
+// @version           0.15.121
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -53,7 +53,7 @@
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
     var debug_wrap = false;
-    var debug_tagSeeThrough= false;
+    var debug_tagSeeThrough= true;
     var useWrap=true;
     var useRemoveSpacesForSimSun=false;
     var useFeedback=false;
@@ -271,10 +271,14 @@
         node.classList.add("CJKTestedAndLabeled");
         return true;
     }
-    function labelCJK() {
+    function labelCJK(newElementsOnly) {
         var t_stop=performance.now();
         var useBFS=true;
         var child=document.body.firstChild;
+        var all='';
+        if (newElementsOnly===true) {
+            useBFS=false;
+        }
         if (useBFS===true) {
             while (child) {
                 if (child.nodeType===1) {
@@ -284,7 +288,12 @@
             }
             return true;
         }
-        var all=document.getElementsByTagName("*");
+        if (newElementsOnly===false) {
+            all=document.getElementsByTagName("*");
+        }
+        else {
+            all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
+        }
         for (var i=0;i < all.length;i++) {
             if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
@@ -344,7 +353,7 @@
     }
     //return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
-    labelCJK();
+    labelCJK(false);
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
     }
@@ -615,7 +624,7 @@
             maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
             maxNumElements = 8000; // maximum number of elements to process.
             CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
-            labelCJK();
+            labelCJK(true);
             FixAllFonts();
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
@@ -689,7 +698,7 @@
             var ReFixAll=document.getElementsByTagName('*');
             var NumFixed=0;
             var NumReFix=0;
-            labelCJK();
+            labelCJK(true);
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
@@ -714,9 +723,10 @@
     ///===various aux functions===///
     function wrapCJK() {
         var wrap_start=performance.now();
-        var allCJK=document.getElementsByClassName("CJK2Fix");
+        var allCJK=document.querySelectorAll(".CJK2Fix:not(.wrappedCJK2Fix)");
         for (var i=0;i<allCJK.length;i++) {
-            if (allCJK[i].classList.contains("wrappedCJK2Fix")|| allCJK[i].classList.contains("\uE211") || allCJK[i].classList.contains("\uE985") ||allCJK[i].classList.contains("preCode")) {
+            if ( allCJK[i].classList.contains("\uE211") || allCJK[i].classList.contains("\uE985") ||allCJK[i].classList.contains("preCode")) {
+                if (allCJK[i].classList.contains("wrappedCJK2Fix")) console.log("FIXME: "+allCJK[i].nodeName+" has already been wrapped.");
                 continue;
             }
             else if (allCJK[i].nodeName.match(SkippedTagsForMarks)) {
@@ -841,8 +851,8 @@
         SkippedTags=SkippedTagsForFonts;
         /// ===== First round: Replace all bold fonts to CJKBold ===== ///
         t_stop=performance.now();
-        //First fix all SimSun parts in Round 1&2.
-        var allSuns=document.getElementsByClassName("SimSun2Fix");
+        //First fix all SimSun parts in Round 1&2. Original: var allSuns=document.getElementsByClassName("SimSun2Fix");
+        var allSuns=document.querySelectorAll(".SimSun2Fix:not(.SimSunFixedE137)");
         for (var isun=0;isun< allSuns.length;isun++) {
             if (allSuns[isun].classList.contains("FontsFixedE137") || allSuns[isun].classList.contains("SimSunFixedE137")) {
                 continue;
@@ -853,7 +863,8 @@
                 allSuns[isun].classList.add("SimSunFixedE137");
             }
         }
-        allSuns=document.getElementsByClassName("LargeSimSun2Fix");
+        //Large fonts: allSuns=document.getElementsByClassName("LargeSimSun2Fix");
+        allSuns=document.querySelectorAll(".LargeSimSun2Fix:not(.SimSunFixedE137)");
         for (isun=0;isun< allSuns.length;isun++) {
             if (allSuns[isun].classList.contains("FontsFixedE137") || allSuns[isun].classList.contains("SimSunFixedE137")) {
                 continue;
@@ -864,7 +875,8 @@
                 allSuns[isun].classList.add("SimSunFixedE137");
             }
         }
-        all = document.getElementsByClassName('CJK2Fix');
+        //All elements to fix fonts: all = document.getElementsByClassName('CJK2Fix');
+        all=document.querySelectorAll(".CJK2Fix:not(.FontsFixedE137)");
         if (ifRound1===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
@@ -1002,7 +1014,7 @@
             if (debug_verbose===true) {console.log('FixCJK!: FixMore/Round 3 is intentionally skipped.');}
             return false;
         }
-        all = document.getElementsByTagName('*');
+        all=document.querySelectorAll(":not(.FontsFixedE137)");
         max = all.length;
         if (max > maxNumElements) {
             ifRound3=false;
@@ -1014,7 +1026,8 @@
             ifRound3=true;
             FixPunct=true;
             processedAll=true;
-            all = document.getElementsByTagName('CJK2Fix');
+            //Now get all elements to be fixed: all = document.getElementsByTagName('CJK2Fix');
+            all=document.querySelectorAll(".CJK2Fix:not(.FontsFixedE137)");
             console.log('FixCJK!: '+max.toString()+' elements, too many. Only CJK elements will be processed in Round 3.');
         }
         else {
@@ -1091,7 +1104,7 @@
         var useRecursion=true;
         if (useLoop===true) {console.log('Must use "useRecursion=true"');}
         if (useRecursion===true) {
-            var allrecur=document.getElementsByClassName("PunctSpace2Fix");
+            var allrecur=document.querySelectorAll(".PunctSpace2Fix:not(.MarksFixedE135)");
             for (var ir=0; ir<allrecur.length; ir++) {
                 //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
                 recursion_start=performance.now();
@@ -1260,7 +1273,8 @@
             var t_start=performance.now();
             var toReturn='';
             if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
-            while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
+            //FixME: while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
+            while ((child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
                 if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
             }
@@ -1290,7 +1304,8 @@
         function getAfter(child) {
             var toReturn='';
             var t_start=performance.now();
-            while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
+            //FixME: while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
+            while ((child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
                 child=child.parentNode;
             }
             child=child.nextSibling;
