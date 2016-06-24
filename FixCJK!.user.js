@@ -228,20 +228,27 @@
                     //Do nothing if already labeled.
                 }
                 else if (font_str.match(re_simsun)) {
-                    var font_size=(window.getComputedStyle(node, null).getPropertyValue('font-size')).slice(0,-2);
-                    if (font_size < 18) {
+                    if (inTheClassOf(node,preSimSunList) || node.nodeName.match(preSimSunTags)) {
+                        node.style.fontFamily=font_str.replace(re_simsun,'SimVecA,SimVecS,SimVecC');
                         node.classList.add("CJK2Fix");
-                        node.classList.add("SimSun2Fix");
-                        if (!inTheClassOf(node,enoughSpacedList)) {
-                            node.classList.add("PunctSpace2Fix");
-                        }
+                        node.classList.add("CJKTestedAndLabeled");
                     }
                     else {
-                        node.style.fontFamily=font_str; //Is this to improve the speed?
-                        node.classList.add("CJK2Fix");
-                        node.classList.add("LargeSimSun2Fix");
-                        if (!inTheClassOf(node,enoughSpacedList)) {
-                            node.classList.add("PunctSpace2Fix");
+                        var font_size=(window.getComputedStyle(node, null).getPropertyValue('font-size')).slice(0,-2);
+                        if (font_size < 18) {
+                            node.classList.add("CJK2Fix");
+                            node.classList.add("SimSun2Fix");
+                            if (!inTheClassOf(node,enoughSpacedList)) {
+                                node.classList.add("PunctSpace2Fix");
+                            }
+                        }
+                        else {
+                            node.style.fontFamily=font_str; //Is this to improve the speed?
+                            node.classList.add("CJK2Fix");
+                            node.classList.add("LargeSimSun2Fix");
+                            if (!inTheClassOf(node,enoughSpacedList)) {
+                                node.classList.add("PunctSpace2Fix");
+                            }
                         }
                     }
                 }
