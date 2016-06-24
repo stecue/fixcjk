@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.115
+// @version           0.15.116
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -161,7 +161,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-2FF,U+2000-2017,U+201E-2FFF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-B6,U+B8-2FF,U+2000-2017,U+201E-2FFF;}';
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -444,13 +444,13 @@
                         }
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u00FF\u0391-\u03FF\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
                         var space2BeAdded='<span class="CJKVisited MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
-                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005A\u005E-\u007E\u0391-\u03FF\u2600-\u26FF])/img;
+                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005A\u005E-\u00FF\u0391-\u03FF\u2600-\u26FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3$4';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
                         //now en["']zh (TODO in 0.15?)
@@ -807,15 +807,8 @@
                     if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
                         //Test if contains SimSun
                         if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
-                        if (font_str.match(re_simsun)) {
-                            //all[i].style.color="Sienna"; //SimSun --> Sienna
-                            all[i].style.fontFamily = genPunct+','+font_str.replace(re_simsun, qBold);
-                            if (!(has_genfam(all[i].style.fontFamily))) {
-                                all[i].style.fontFamily = genPunct+','+all[i].style.fontFamily + ',' + 'sans-serif';
-                                all[i].classList.add("FontsFixedE137");
-                            }
-                        }        //Test if contains Sans
-                        else if (list_has(font_str, re_sans0) !== false) {
+                        //Test if contains Sans
+                        if (list_has(font_str, re_sans0) !== false) {
                             //all[i].style.color="Salmon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
                             all[i].classList.add("FontsFixedE137");
