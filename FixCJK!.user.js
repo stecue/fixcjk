@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.122
+// @version           0.15.123
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -72,7 +72,7 @@
     var SkippedTags=SkippedTagsForFonts;
     //var SafeTags=/^(B|STRONG|EM|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
     var transparentTags=/^(SPAN|B|U|VAR)$/i; //The tags that are always "transparent" while "seeing through"
-    var upEnoughTags=/^(P|LI|TD|TH|BODY)$/g; //"See-Through" stops here.
+    var upEnoughTags=/^(DIV|P|LI|TD|TH|H[1-6]|BODY)$/g; //"See-Through" stops here.
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
@@ -483,7 +483,7 @@
             allCJKQMs[i].innerHTML=tmp_str;
         }
         addSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
-        function getAfterHTML(child) {
+        function getAfterHTML(child) { //FIXME: A recursion block might be needed as getAfter(child)
             var toReturn='';
             var t_start=performance.now();
             while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
@@ -1240,6 +1240,7 @@
         var SqueezeInd=true;
         var tmp_str='';
         var FixMarks_start=performance.now();
+        var inputHTML=currHTML;
         if (changhai_style===true) {
             //Simply inserting blanck space, like changhai.org.
             currHTML=currHTML.replace(/([\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
@@ -1249,22 +1250,14 @@
             return true;
         }
         //currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');//Remove the hanging puncts. Seems no use at all.
-        //if (currHTML.match(/^[、，。：；！？）】〉》」』\u201D\u2019]/))
-        if (currHTML.match(/^[、，。：；！？）】〉》」』\u201D\u2019『「《〈【（\u201C\u2018]/)) {
+        //It seems that I always needs to consider the context.
+        if ( currHTML.match(/[“”‘’]/) || currHTML.match(/^[、，。：；！？）】〉》」』『「《〈【（]/) || currHTML.match(/[、，。：；！？）】〉》」』『「《〈【（]$/) ) {
             if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
-            currHTML=getBefore(node)+'\uF201CJK\uF201'+currHTML;
+            currHTML=getBefore(node)+'\uF201CJK\uF201'+currHTML+'\uF202CJK\uF202'+getAfter(node);
             if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
+            if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
         }
-        //if (currHTML.match(/[『「《〈【（\u201C\u2018]$/)) {
-        if (currHTML.match(/[、，。：；！？）】〉》」』\u201D\u2019『「《〈【（\u201C\u2018]$/)) {
-            if (debug_tagSeeThrough===true) console.log("TO CHECK AFTER: "+currHTML);
-            if (debug_tagSeeThrough===true) console.log("LAST CHAR: "+currHTML+"@"+performance.now());
-            //Separate currHTML with following text.
-            currHTML=currHTML+'\uF202CJK\uF202'+getAfter(node);
-            if (debug_tagSeeThrough===true) console.log("FULL FORM: "+currHTML+"@"+performance.now());
-        }
-        if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
         if (useFeedback===true && currHTML.match(/[\uF201-\uF204]/)) {
             if (!currHTML.match(/[\uF201-\uF204]CJK[\uF201-\uF204]/) || (currHTML.match(/[\uF201-\uF204]/g)).length !== ((currHTML.match(/[\uF201-\uF204]CJK[\uF201-\uF204]/g)).length*2)) {
                 alert("This page may conflict with FixCJK!. If you would like to help solve the problem, please email the URL to stecue@gmail.com. Thanks!\n本页面可能与FixCJK!冲突，如果您想帮忙解决此问题，请将本页面的URL电邮至stecue@gmail.com。多谢您的使用与反馈！");
@@ -1274,13 +1267,13 @@
             var t_start=performance.now();
             var toReturn='';
             var inputNode=child;
-            if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
+            if (debug_tagSeeThrough===true) console.log('CHILD<'+child.nodeName+'>: '+child.textContent+'<--'+'PARENT<'+child.parentNode.nodeName+">: "+child.parentNode.textContent);
             child=child.previousSibling;
             while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
                     if (debug_tagSeeThrough===true) console.log("T3: "+child.data);
                     toReturn = child.data + toReturn;
-                    if (toReturn.length>1024) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         break;
                     }
@@ -1288,7 +1281,7 @@
                 else if (child.nodeType===1) {
                     if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
                     toReturn = child.textContent + toReturn;
-                    if (toReturn.length>1024) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         break;
                     }
@@ -1296,8 +1289,9 @@
                 child=child.previousSibling;
             }
             if (debug_tagSeeThrough===true) console.log("BEFORE: "+toReturn+"@"+performance.now());
-            if (toReturn.length < 1 && (!inputNode.nodeName.match(upEnoughTags)) ) {
-                return getBefore(inputNode.parentNode);
+            if (debug_tagSeeThrough===true) console.log("CJK? "+toReturn.match(/[\u3400-\u9FBF]/)+'@'+toReturn);
+            if ((toReturn.length < 1 || !toReturn.match(/[\u3400-\u9FBF]/)) && (!inputNode.parentNode.nodeName.match(upEnoughTags)) ) {
+                return getBefore(inputNode.parentNode)+toReturn;
             }
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
@@ -1309,14 +1303,14 @@
             while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
                     toReturn = toReturn + child.data;
-                    if (toReturn.length>1024) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         break;
                     }
                 }
                 else if (child.nodeType===1) {
                     toReturn = toReturn + child.textContent;
-                    if (toReturn.length>1024) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         break;
                     }
@@ -1324,8 +1318,8 @@
                 child=child.nextSibling;
             }
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
-            if (toReturn.length < 1 && (!inputNode.nodeName.match(upEnoughTags)) ) {
-                return getAfter(inputNode.parentNode);
+            if ((toReturn.length < 1 || !toReturn.match(/[\u3400-\u9FBF]/)) && (!inputNode.parentNode.nodeName.match(upEnoughTags)) ) {
+                return toReturn+getAfter(inputNode.parentNode);
             }
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
@@ -1535,11 +1529,13 @@
             console.log("Squeeze: "+time2squeeze.toFixed(0)+" ms.");
             console.log("Replace: "+time2replace.toFixed(0)+" ms.");
             console.log("String(Length): "+currHTML.slice(0,216)+"...("+currHTML.length+")");
+            console.log('Input As:\n'+inputHTML+'\n@<'+node.nodeName+'>');
         }
         if (debug_tagSeeThrough===true) {console.log("FIXED: "+currHTML+"@"+performance.now());}
         currHTML=currHTML.replace(/^[^\u0000]*\uF201CJK\uF201([^\u0000]*)$/,'$1');
         currHTML=currHTML.replace(/^([^\u0000]*)\uF202CJK\uF202[^\u0000]*$/,'$1');
-        if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+currHTML+"@"+performance.now());
+        if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+node.nodeName+"#"+node.id+"::"+currHTML+"@"+performance.now());
+        if ( (performance.now()-FixMarks_start)>10 ) console.log("Slow at <"+node.nodeName+">: "+inputHTML);
         return currHTML;
     }
 }
