@@ -1255,7 +1255,6 @@
             if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
             currHTML=getBefore(node)+'\uF201CJK\uF201'+currHTML+'\uF202CJK\uF202'+getAfter(node);
-            if (currHTML.match(/我们确实被震惊到了/)) console.log(currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
         }
