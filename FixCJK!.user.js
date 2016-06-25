@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.123
+// @version           0.15.124
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1255,6 +1255,7 @@
             if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
             currHTML=getBefore(node)+'\uF201CJK\uF201'+currHTML+'\uF202CJK\uF202'+getAfter(node);
+            if (currHTML.match(/我们确实被震惊到了/)) console.log(currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
         }
@@ -1421,9 +1422,9 @@
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
             currHTML=currHTML.replace(/&nbsp;/g,'\u00A0');
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\s\u00A0]|&nbsp;){0,2}/g,'$1');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\r\n\u0020\u00A0]|&nbsp;){0,2}/g,'$1');
             //'>' means there is a non-CJK tag(?)
-            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\s\u00A0]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
+            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
         }
         else {
             //Delete at most 1 spaces before and after because of the wider CJK marks.
