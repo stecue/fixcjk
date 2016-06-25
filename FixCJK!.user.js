@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.121
+// @version           0.15.122
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -53,7 +53,7 @@
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
     var debug_wrap = false;
-    var debug_tagSeeThrough= true;
+    var debug_tagSeeThrough= false;
     var useWrap=true;
     var useRemoveSpacesForSimSun=false;
     var useFeedback=false;
@@ -205,19 +205,19 @@
             return true;
         }
     }
-    function labelCJKByNode(node) {
+    function labelCJKByNode(node,levelIndex) {
         var t_stop=performance.now();
         if (node instanceof SVGElement) {
             return false;
         }
-        var font_str=dequote(window.getComputedStyle(node, null).getPropertyValue('font-family'));
         //One do need to recheck the textContent everytime "ReFix" is triggered.
-        if ( (!node.textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (font_str.split(',').length >= rspLength)) {
+        if ( (levelIndex < 2) && (!node.textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
             if (!node.classList.contains("CJKTestedAndLabeled")) {
                 window.setTimeout(addTested,5,node);
             }
             return true;
         }
+        var font_str=dequote(window.getComputedStyle(node, null).getPropertyValue('font-family'));
         var child=node.firstChild;
         while (child) {
             if (child.nodeType===3) {
@@ -264,7 +264,7 @@
                 }
             }
             else if (child.nodeType===1) {
-                labelCJKByNode(child);
+                labelCJKByNode(child,levelIndex+1);
             }
             child=child.nextSibling;
         }
@@ -282,7 +282,8 @@
         if (useBFS===true) {
             while (child) {
                 if (child.nodeType===1) {
-                    labelCJKByNode(child);
+                    //The levelIndex of document.body is 0.
+                    labelCJKByNode(child,1);
                 }
                 child=child.nextSibling;
             }
@@ -1272,12 +1273,8 @@
         function getBefore(child) {
             var t_start=performance.now();
             var toReturn='';
+            var inputNode=child;
             if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
-            //FixME: while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
-            while ((child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
-                child=child.parentNode;
-                if (debug_tagSeeThrough===true) console.log('CHILD: '+child.textContent+'<--'+'PARENT:'+child.parentNode.textContent);
-            }
             child=child.previousSibling;
             while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
@@ -1299,15 +1296,15 @@
                 child=child.previousSibling;
             }
             if (debug_tagSeeThrough===true) console.log("BEFORE: "+toReturn+"@"+performance.now());
+            if (toReturn.length < 1 && (!inputNode.nodeName.match(upEnoughTags)) ) {
+                return getBefore(inputNode.parentNode);
+            }
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         function getAfter(child) {
             var toReturn='';
             var t_start=performance.now();
-            //FixME: while ((child.parentNode.nodeName.match(transparentTags) || child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
-            while ((child.textContent === child.parentNode.textContent) && !child.parentNode.nodeName.match(upEnoughTags)) {
-                child=child.parentNode;
-            }
+            var inputNode=child;
             child=child.nextSibling;
             while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
@@ -1327,6 +1324,9 @@
                 child=child.nextSibling;
             }
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
+            if (toReturn.length < 1 && (!inputNode.nodeName.match(upEnoughTags)) ) {
+                return getAfter(inputNode.parentNode);
+            }
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
         }
         //==We need to protect the quotation marks within tags first===//
