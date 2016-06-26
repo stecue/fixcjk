@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.124
+// @version           0.15.125
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -486,9 +486,7 @@
         function getAfterHTML(child) { //FIXME: A recursion block might be needed as getAfter(child)
             var toReturn='';
             var t_start=performance.now();
-            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
-                child=child.parentNode;
-            }
+            var inputNode=child;
             child=child.nextSibling;
             while (child && (performance.now()-t_start)<2 ) {
                 if (child.nodeType===3) {
@@ -502,14 +500,17 @@
                 }
                 child=child.nextSibling;
             }
-            return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
+            if (toReturn.length < 1 && !inputNode.parentNode.nodeName.match(upEnoughTags)) {
+                return getAfterHTML(inputNode.parentNode);
+            }
+            else {
+                return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
+            }
         }
         function getBeforeHTML(child) {
             var toReturn='';
             var t_start=performance.now();
-            while (child.textContent === child.parentNode.textContent && !child.parentNode.nodeName.match(upEnoughTags)) {
-                child=child.parentNode;
-            }
+            var inputNode=child;
             child=child.previousSibling;
             while (child && (performance.now()-t_start)<2 ) {
                 if (child.nodeType === 3) {
@@ -523,7 +524,12 @@
                 }
                 child=child.previousSibling;
             }
-            return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
+            if (toReturn.length < 1 && !inputNode.parentNode.nodeName.match(upEnoughTags)) {
+                return getBeforeHTML(inputNode.parentNode);
+            }
+            else {
+                return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
+            }
         }
         function addSpacesHelper(allE) {
             for (var is=0;is<allE.length;is++) {
