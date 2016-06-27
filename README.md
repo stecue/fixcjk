@@ -10,7 +10,7 @@
 4. 对于矢量粗体，将使用字体文件提供的真粗体而不是合成伪粗体（最初目的是绕过 Linux 版 Chrome&#8203;/&#8203;Chromium 的[这个 bug](https://bugs.chromium.org/p/chromium/issues/detail?id=448478)）。
 5. 设定中文全角标点字体。对于[弯引号](https://www.zhihu.com/question/19616011)，根据上下文自动识别并设定为全角字体。
 6. 中文**全角标点压缩**。弥补中文字体标点不自带 kerning 信息的普遍设计缺陷，使中文网页排版更符合印刷惯例并贴近国家标准。
-7. 自动空格：中英文之间自动加空格，类似于[这个扩展](https://chrome.google.com/webstore/detail/%E7%82%BA%E4%BB%80%E9%BA%BC%E4%BD%A0%E5%80%91%E5%B0%B1%E6%98%AF%E4%B8%8D%E8%83%BD%E5%8A%A0%E5%80%8B%E7%A9%BA%E6%A0%BC%E5%91%A2%EF%BC%9F/paphcfdffjnbcgkokihcdjliihicmbpd/reviews?hl=zh-CN)。
+7. 自动空格：中英文之间自动加空格，类似于[这个扩展](https://chrome.google.com/webstore/detail/%E7%82%BA%E4%BB%80%E9%BA%BC%E4%BD%A0%E5%80%91%E5%B0%B1%E6%98%AF%E4%B8%8D%E8%83%BD%E5%8A%A0%E5%80%8B%E7%A9%BA%E6%A0%BC%E5%91%A2%EF%BC%9F/paphcfdffjnbcgkokihcdjliihicmbpd/reviews?hl=zh-CN)。考虑到大多数人的习惯，自动加空格仅在“**双击**”之后触发。
 
 其中功能 **1-4** 及 **7** 对所有浏览器的所有版本均有效；功能 **5-6** 只保证在最新 Gecko 和 Webkit/Blink 内核上正常工作。
 
@@ -28,7 +28,7 @@
 
 **单击修标点：**在网页内任意一点单击，脚本将重新检查所有需要修正的网页元素。重新检查允许最小间隔时间默认为 1 到 2 秒。间隔时间过短的连续点击将被忽略。
 
-**双击加空格：**中英文之间自动加空格，已有空格的不再添加额外空格。考虑到大多数人的习惯，自动加空格仅在“**双击**”之后触发。
+**双击加空格：**中英文之间自动加空格，已有空格的不再添加额外空格。
 
 ### 已知问题
 
