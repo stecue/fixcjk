@@ -11,3 +11,4 @@
 * Add variable length space to the end of each paragraph? (seems no harm to add a `br` before `p`?)
 * Also encapsulate Latin QM if context is in SimSun?
 * Use BFS to traverse the DOM tree?
+* Fix the hidden elements problem.
