@@ -1,8 +1,13 @@
 ## 1.0.0
 Features:
-  - "Long-click to force correction" is no longer needed and dropped.
+  - A new "event-listener-friendly" algorithm is implemented. Dynamic contents should not be broken by the script any more.
+  - Scroll to apply font settings.
+  - The "Long-click to force correction" method is no longer needed and dropped.
   - "See through" tags to accurately determine what corrections should be applied.
-  - Double click also triggers ReFixCJK.
+  - Much faster rechecking and refixing.
+
+Bugfixes:
+  - Numerial bugfixes thanks to the new structure and algorithm.
 
 ## 0.15.0
 Features:

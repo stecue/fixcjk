@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.125
+// @version           0.15.126
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -53,7 +53,9 @@
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces = false;
     var debug_wrap = false;
-    var debug_tagSeeThrough= false;
+    var debug_tagSeeThrough = false;
+    var debug_getBeforeTags = false;
+    var debug_asyncTimers = true;
     var useWrap=true;
     var useRemoveSpacesForSimSun=false;
     var useFeedback=false;
@@ -70,9 +72,8 @@
     var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
-    //var SafeTags=/^(B|STRONG|EM|H[123456]|U|VAR|WBR)$/i; //Safe tags as subelements. They do not need to meet the "no class && no tag" criterion.
-    var transparentTags=/^(SPAN|B|U|VAR)$/i; //The tags that are always "transparent" while "seeing through"
-    var upEnoughTags=/^(DIV|P|LI|TD|TH|H[1-6]|BODY)$/g; //"See-Through" stops here.
+    var stopTags=/^(SUB|SUP)$/i; //The elements are "skipped" while "seeing through".
+    var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
@@ -434,10 +435,10 @@
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
-        console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. No skipped step(s).');
+        console.log('FixCJK!: NORMAL TERMINATION: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds (Fixing PMs not included) is the overall execution time. No skipped step(s).');
     }
     else {
-        console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds is the overall execution time. Some step(s) were skipped due to performance issues.');
+        console.log('FixCJK!: EXECUTION ABORTED: '+((t_fullstop-t_start)/1000).toFixed(3)+' seconds (Fixing PMs not included) is the overall execution time. Some step(s) were skipped due to performance issues.');
     }
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening functions===//
@@ -493,6 +494,9 @@
                     toReturn = toReturn + child.data;
                 }
                 else if (child.nodeType===1) {
+                    if (child.nodeName.match(stopTags)) {
+                        return toReturn+"上下标";
+                    }
                     toReturn = toReturn + child.textContent;
                 }
                 if (toReturn.match(/[\w\u3400-\u9FBF]/)) {
@@ -516,7 +520,10 @@
                 if (child.nodeType === 3) {
                     toReturn = child.data + toReturn;
                 }
-                if (child.nodeType === 1) {
+                else if (child.nodeType === 1) {
+                    if (child.nodeName.match(stopTags)) {
+                        return "上下标"+toReturn;
+                    }
                     toReturn = child.textContent + toReturn;
                 }
                 if (toReturn.match(/[\w\u3400-\u9FBF]/)) {
@@ -547,13 +554,13 @@
                         }
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005E-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
                         var space2BeAdded='<span class="CJKTestedAndLabeled MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
-                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005A\u005E-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
+                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3$4';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
                         //now en["']zh (TODO in 0.15?)
@@ -635,9 +642,6 @@
             FixAllFonts();
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
-        else {
-            console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
-        }
         t_last=performance.now();
         refixingFonts=false;
     }
@@ -713,7 +717,7 @@
             labelEnoughSpacedList();
             if (useWrap===true) wrapCJK();
             FunFixPunct(useLoop,2,returnLater);
-            console.log('FixCJK!: ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
+            console.log('FixCJK!: ReFixing (Fixing PMs not included) took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
             if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
                 NumPureEng++;
@@ -1126,7 +1130,7 @@
                 }
             }
         }
-        if (debug_wrap===true) console.log("Fixing Punct took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
+        if (debug_wrap===true || debug_asyncTimers===true) console.log("FixCJK!: Fixing PMs took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
     }
     /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
@@ -1247,6 +1251,7 @@
         var tmp_str='';
         var FixMarks_start=performance.now();
         var inputHTML=currHTML;
+        var continuedHTML='';
         if (changhai_style===true) {
             //Simply inserting blanck space, like changhai.org.
             currHTML=currHTML.replace(/([\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
@@ -1261,6 +1266,7 @@
             if (debug_tagSeeThrough===true) console.log("TO CHECK BEFORE: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("FULL PARENT: "+node.parentNode.textContent);
             currHTML=getBefore(node)+'\uF201CJK\uF201'+currHTML+'\uF202CJK\uF202'+getAfter(node);
+            continuedHTML=currHTML;
             if (debug_tagSeeThrough===true) console.log("FULL CLOSED FORM: "+currHTML);
             if (debug_tagSeeThrough===true) console.log("Continuation took "+(performance.now()-FixMarks_start).toFixed(1)+" ms.");
         }
@@ -1273,6 +1279,10 @@
             var t_start=performance.now();
             var toReturn='';
             var inputNode=child;
+            if (debug_getBeforeTags===true) {
+                console.log("CURRENT: "+child.nodeName+"@<"+child.parentNode.nodeName+">");
+                console.log(child.parentNode.nodeName.match(upEnoughTags));
+            }
             if (debug_tagSeeThrough===true) console.log('CHILD<'+child.nodeName+'>: '+child.textContent+'<--'+'PARENT<'+child.parentNode.nodeName+">: "+child.parentNode.textContent);
             child=child.previousSibling;
             while (child && (performance.now()-t_start<2) ) {
@@ -1281,15 +1291,18 @@
                     toReturn = child.data + toReturn;
                     if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
-                        break;
+                        return toReturn;
                     }
                 }
                 else if (child.nodeType===1) {
+                    if (child.nodeName.match(stopTags)) {
+                        return '上下标'+toReturn;
+                    }
                     if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
                     toReturn = child.textContent + toReturn;
                     if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
-                        break;
+                        return toReturn;
                     }
                 }
                 child=child.previousSibling;
@@ -1311,14 +1324,17 @@
                     toReturn = toReturn + child.data;
                     if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
-                        break;
+                        return toReturn;
                     }
                 }
                 else if (child.nodeType===1) {
+                    if (child.nodeName.match(stopTags)) {
+                        return toReturn+'上下标'; //I just need to add some CJK text. They will be "chopped" anyway.
+                    }
                     toReturn = toReturn + child.textContent;
                     if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
-                        break;
+                        return toReturn;
                     }
                 }
                 child=child.nextSibling;
@@ -1540,8 +1556,11 @@
         if (debug_tagSeeThrough===true) {console.log("FIXED: "+currHTML+"@"+performance.now());}
         currHTML=currHTML.replace(/^[^\u0000]*\uF201CJK\uF201([^\u0000]*)$/,'$1');
         currHTML=currHTML.replace(/^([^\u0000]*)\uF202CJK\uF202[^\u0000]*$/,'$1');
-        if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED: "+node.nodeName+"#"+node.id+"::"+currHTML+"@"+performance.now());
-        if ( (performance.now()-FixMarks_start)>10 ) console.log("Slow at <"+node.nodeName+">: "+inputHTML);
+        if (debug_tagSeeThrough===true) console.log("AFTER TRIMMED:(@"+(performance.now()-FixMarks_start).toFixed(1)+" ms): "+node.nodeName+"#"+node.id+"::"+currHTML);
+        if ( (performance.now()-FixMarks_start)>10 ) {
+            console.log("Warning: Slow ("+(performance.now()-FixMarks_start).toFixed(1)+" ms) at <"+node.nodeName+">@<"+node.parentNode.nodeName+">: "+node.parentNode.innerHTML);
+            console.log("The Continued HTML is:\n"+continuedHTML);
+        }
         return currHTML;
     }
 }
