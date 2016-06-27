@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           0.15.126
+// @version           0.15.127
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -51,7 +51,7 @@
     var debug_03 = false;
     var debug_04 = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
-    var debug_spaces = false;
+    var debug_spaces =false;
     var debug_wrap = false;
     var debug_tagSeeThrough = false;
     var debug_getBeforeTags = false;
@@ -78,9 +78,10 @@
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
-    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix';
+    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
+    var preMathTags='math'; //Do not change puncts as well as fonts. Just like "math".
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */i;
@@ -355,6 +356,7 @@
     }
     //return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
+    labelPreMath();
     labelCJK(false);
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
@@ -442,6 +444,15 @@
     }
     ////////////////////======== Main Function Ends Here ==============/////////////////////////////
     //===The actual listening functions===//
+    function labelPreMath() {
+        var bannedTagList=preMathTags.split(',');
+        for (var itag=0;itag<bannedTagList.length;itag++) {
+            var all2Ban=document.querySelectorAll(bannedTagList[itag]+":not(.preMath)");
+            for (var iele=0;iele<all2Ban.length;iele++) {
+                banMathHelper(all2Ban[iele]);
+            }
+        }
+    }
     function labelPreCode() {
         var bannedTagList=preCodeTags.split(',');
         for (var itag=0;itag<bannedTagList.length;itag++) {
@@ -468,6 +479,19 @@
             child=child.nextSibling;
         }
         node.classList.add("preCode");
+    }
+    function banMathHelper(node) {
+        var child=node.firstChild;
+        while (child) {
+            if ( child.nodeType===1 && !(child instanceof SVGElement) ) {
+                banMathHelper(child);
+            }
+            child=child.nextSibling;
+        }
+        node.classList.add("CJKTestedAndLabeled");
+        node.classList.add("FontsFixedE137");
+        node.classList.add("MarksFixedE135");
+        node.classList.add("preMath");
     }
     function addSpaces() {
         var t_spaces=performance.now();
@@ -554,13 +578,13 @@
                         }
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
                         var space2BeAdded='<span class="CJKTestedAndLabeled MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
-                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
+                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005C\u005E-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3$4';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
                         //now en["']zh (TODO in 0.15?)
@@ -626,7 +650,6 @@
         }
         refixingFonts=true;
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
-        if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
         if ( (t_start-t_last)*ItvScl > t_interval ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
@@ -638,6 +661,7 @@
             maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
             maxNumElements = 8000; // maximum number of elements to process.
             CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
+            labelPreMath();
             labelCJK(true);
             FixAllFonts();
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
@@ -681,7 +705,7 @@
             refixing=false;
             return true;
         }
-        if (debug_verbose===true) {alert('FixCJK!: '+NumClicks.toString());}
+        if (debug_verbose===true) {console.log('FixCJK!: NumClicks='+NumClicks.toString());}
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.getElementsByClassName("FontsFixedE137");
         for (i=0;i<AllCJKFixed.length;i++) {
@@ -709,6 +733,7 @@
             var ReFixAll=document.getElementsByTagName('*');
             var NumFixed=0;
             var NumReFix=0;
+            labelPreMath();
             labelCJK(true);
             FixAllFonts();
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
@@ -1046,7 +1071,6 @@
         }
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
-                //all[i].style.color="SeaGreen";
                 if (i % 500===0) { //Check every 500 elements.
                     if ((performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound3=false;
@@ -1061,9 +1085,11 @@
                     }
                 }
                 if (all[i].nodeName.match(SkippedTags) || (all[i] instanceof SVGElement) ) {
+                    if (debug_03===true) {console.log("Skipped:");console.log(all[i]);}
                     continue;
                 }
                 else if (all[i].classList.contains("FontsFixedE137")) {
+                    if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
                     continue;
                 }
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
@@ -1071,20 +1097,21 @@
                     //continue if all[i] contains a list of fonts.
                     if (!all[i].classList.contains("CJK2Fix")) {
                         all[i].classList.add("FontsFixedE137");
+                        if (debug_03===true) {console.log(all[i]);all[i].style.color="FireBrick";} //FireBrick <-- Fixed.
                         continue;
                     }
                 }
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
-                        //all[i].style.color="Salmon";
+                        if (debug_03 === true) all[i].style.color="Salmon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
-                        //all[i].style.color="SeaGreen";
+                        if (debug_03 === true) all[i].style.color="SeaGreen";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
-                        //all[i].style.color="Maroon";
+                        if (debug_03 === true) all[i].style.color="Maroon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                     }
                     else {
@@ -1097,6 +1124,7 @@
                     //all[i].style.color="Silver"; //Signed-->Silver
                 }
                 all[i].classList.add("FontsFixedE137");
+                if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
         if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
@@ -1245,6 +1273,7 @@
     function FixMarksInCurrHTML(currHTML,node,delete_all_extra_spaces) {
         //“<-->\u201C, ”<-->\u201D
         //‘<-->\u2018, ’<-->\u2019
+        if (debug_04===true) console.log("Round 4: Fixing node <"+node.nodeName+">");
         var changhai_style=false;
         var Squeezing=true;
         var SqueezeInd=true;
@@ -1257,7 +1286,7 @@
             currHTML=currHTML.replace(/([\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
             currHTML=currHTML.replace(/([\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF])([”’])([^，, ])/g,'$1$2 $3');
             if (debug_04===true) {console.log(currHTML);}
-            all[currpunc].innerHTML=currHTML;
+            node.innerHTML=currHTML;
             return true;
         }
         //currHTML=currHTML.replace(/^([、，。：；！？）】〉》」』\u201D\u2019])/mg,'\u2060$1');//Remove the hanging puncts. Seems no use at all.
@@ -1487,7 +1516,7 @@
             }
         }
         ///---Done with conseqtive puncts--///
-        if (debug_04===true) {all[currpunc].style.color="Pink";}
+        if (debug_04===true) {node.style.color="Pink";}
         var SqueezeFirst=false;
         if (SqueezeInd===true) {
             //The punctuation marks is also the first char in a paragraph seems:
