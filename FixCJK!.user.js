@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.0
+// @version           1.0.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -517,11 +517,11 @@
                 if (child.nodeType===3) {
                     toReturn = toReturn + child.data;
                 }
-                else if (child.nodeType===1) {
+                else if (child.nodeType===1 && (window.getComputedStyle(child,null).getPropertyValue("display")!=='none') ) {
                     if (child.nodeName.match(stopTags)) {
                         return toReturn+"上下标";
                     }
-                    toReturn = toReturn + child.textContent;
+                    toReturn = toReturn + displayedText(child);
                 }
                 if (toReturn.match(/[\w\u3400-\u9FBF]/)) {
                     break;
@@ -544,11 +544,11 @@
                 if (child.nodeType === 3) {
                     toReturn = child.data + toReturn;
                 }
-                else if (child.nodeType === 1) {
-                    if (child.nodeName.match(stopTags)) {
+                else if (child.nodeType === 1 && (window.getComputedStyle(child,null).getPropertyValue("display")!=='none') ) {
+                    if (child.nodeName.match(stopTags) ) {
                         return "上下标"+toReturn;
                     }
-                    toReturn = child.textContent + toReturn;
+                    toReturn = displayedText(child) + toReturn;
                 }
                 if (toReturn.match(/[\w\u3400-\u9FBF]/)) {
                     break;
@@ -1591,6 +1591,20 @@
             console.log("The Continued HTML is:\n"+continuedHTML);
         }
         return currHTML;
+    }
+    function displayedText(node) {
+        var child=node.firstChild;
+        var toReturn='';
+        while (child) {
+            if (child.nodeType===3) {
+                toReturn=toReturn+child.data;
+            }
+            else if (child.nodeType===1 && (window.getComputedStyle(child,null).getPropertyValue("display")!=='none') ) {
+                toReturn=toReturn+displayedText(child);
+            }
+            child=child.nextSibling;
+        }
+        return toReturn;
     }
 }
 ) ();

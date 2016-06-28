@@ -1,3 +1,7 @@
+## 1.0.1
+Bugfixes:
+  - Hidden elements can be deteced now, even if they are hidden inside an inline element.
+
 ## 1.0.0
 Features:
   - A new "event-listener-friendly" algorithm is implemented. Dynamic contents should not be broken by the script any more.
