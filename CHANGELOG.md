@@ -3,6 +3,8 @@ Bugfixes:
   - Hidden elements can be deteced now, even if they are hidden inside an inline element.
   - Disable punct/space fixing for "contentEditable" elements.
   - No longer adding extra spaces in some cases.
+  - Restrict the use of recursive CJK labeling to prevent overshoot.
+  - Add more timer to mitigate the slow checking on some websites.
 
 ## 1.0.0
 Features:

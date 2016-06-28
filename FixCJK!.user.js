@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.1
+// @version           1.0.5
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -300,7 +300,7 @@
             all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         }
         for (var i=0;i < all.length;i++) {
-            if (i%50===0 && performance.now()-t_stop>200) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString()+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");break;}
+            if (i%5===0 && performance.now()-t_stop>200) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString()+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");break;}
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 continue;
             }
@@ -588,7 +588,7 @@
                         }
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img; //FIXME: the &nbsp; seems not working. Current workaround is to replace all &nbsp; in the "wrappedCJK" function.
                         var space2BeAdded='<span class="CJKTestedAndLabeled MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
