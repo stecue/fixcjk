@@ -1323,12 +1323,12 @@
                         return toReturn;
                     }
                 }
-                else if (child.nodeType===1) {
+                else if (child.nodeType===1 && window.getComputedStyle(child,null).getPropertyValue("display")!=="none" ) {
                     if (child.nodeName.match(stopTags)) {
                         return '上下标'+toReturn;
                     }
                     if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
-                    toReturn = child.textContent + toReturn;
+                    toReturn = displayedText(child) + toReturn;
                     if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         return toReturn;
@@ -1356,11 +1356,11 @@
                         return toReturn;
                     }
                 }
-                else if (child.nodeType===1) {
+                else if (child.nodeType===1 && window.getComputedStyle(child,null).getPropertyValue("display")!=="none" ) {
                     if (child.nodeName.match(stopTags)) {
                         return toReturn+'上下标'; //I just need to add some CJK text. They will be "chopped" anyway.
                     }
-                    toReturn = toReturn + child.textContent;
+                    toReturn = toReturn + displayedText(child);
                     if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         return toReturn;
