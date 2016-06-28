@@ -1,7 +1,7 @@
-## FixCJK!
+# FixCJK!
 *全功能、跨平台的中英文网页字体设定/调整以及中文网页排版修正/美化脚本，“搞定”CJK！*
 
-### 简介
+## 简介
 **[FixCJK!](https://github.com/stecue/fixcjk/)** 是为 Gecko&#8203;/&#8203;Webkit&#8203;/&#8203;Blink 内核浏览器编写的用户脚本，适用平台包括但不限于：Firefox&#8203;/&#8203;Icecat&#8203;/&#8203;Chrome&#8203;/&#8203;Chromium&#8203;/&#8203;Opera，以及各种采用 Webkit&#8203;/&#8203;Blink 内核的“国产”浏览器。主要功能为：
 
 1. 强力字体设置。忽略浏览器和系统设置，直接强力设定映射为“无衬线（sans-serif）”和“有衬线（serif）”的实际字体列表。
@@ -14,14 +14,14 @@
 
 其中功能 **1-4** 及 **7** 对所有浏览器的所有版本均有效；功能 **5-6** 只保证在最新 Gecko 和 Webkit/Blink 内核上正常工作。
 
-### 用法
-####脚本安装####
-较新的浏览器都需要附加组件来安装和管理用户脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。其他浏览器用户请参考相应的文档安装适当的附加组件或者插件。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。您也可以到[GitHub 上的项目主页](https://github.com/stecue/fixcjk/)获取最新[开发分支版本](https://github.com/stecue/fixcjk/tree/1.0.x)。
+## 用法
+### 脚本安装
+较新的浏览器都需要附加组件来安装和管理用户脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。其他浏览器用户请参考相应的文档安装适当的附加组件或者插件。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。如果您喜欢超前体验胜过稳定，或者有意帮忙测试，也可以到[GitHub 上的项目主页](https://github.com/stecue/fixcjk/)获取最新[开发分支版本](https://github.com/stecue/fixcjk/tree/1.0.x)。
 
-####字体设置####
+### 字体设置
 推荐下载安装 [Noto Sans CJK SC](https://www.google.com/get/noto/help/cjk/) 字体和 [Ubuntu Mono](https://www.google.com/fonts/specimen/Ubuntu+Mono) 字体。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
 
-####用户控制####
+### 用户控制
 在页面初次加载完成时，本脚本自动进行字体与标点的调整。对于初始加载时没有载入的动态内容以及“自动空格”，可以通过以下三种层次的键盘/鼠标操作控制脚本的页面修正行为。这三种操作的效果是逐层递进的。后面一个层次的鼠标操作也将触发之前一个层次的全部页面修正动作。
 
 **滚动换字体：**用键盘或鼠标滚动页面时，将快速检查新出现的元素并设定、替换相应的字体。
@@ -30,7 +30,9 @@
 
 **双击加空格：**中英文之间自动加空格，已有空格的不再添加额外空格。
 
-### 已知问题
-
+## 已知问题
 1. 由于任何页面元素都可能存在需要修正的文本，脚本需要遍历所有元素。尽管作者一直在优化脚本算法，执行时间仍可能过长。为了尽量少影响网页加载时间，脚本内置了定时机制；超时自动退出运行。所以字体和标点修正效果可能和机器配置以及浏览器有关。按`F12`并选择`控制台`（或 `console`）可查看脚本执行日志信息。
 2. 由于脚本注入位置的差异，一些看起来并非动态生成的网页元素（比如本项目在 GitHub 上的[中文 Readme 文件](https://github.com/stecue/fixcjk/blob/master/README.md)）在页面载入完成时也可能尚未被修正。此时一般只需单击网页内的任意一点（包含动态效果或者链接的元素除外）即可修正该网页。
+
+## 意见反馈
+任何意见或建议，请 Email、提 issue 或者在知乎私信[@猫立刻](https://www.zhihu.com/people/mol-le-kel)。
