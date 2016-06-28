@@ -1,6 +1,7 @@
-## 1.0.1
+## 1.0.2
 Bugfixes:
   - Hidden elements can be deteced now, even if they are hidden inside an inline element.
+  - Disable punct/space fixing for "contentEditable" elements.
 
 ## 1.0.0
 Features:

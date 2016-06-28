@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.1
+// @version           1.0.2
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -237,7 +237,7 @@
                         if (font_size < 18) {
                             node.classList.add("CJK2Fix");
                             node.classList.add("SimSun2Fix");
-                            if (!inTheClassOf(node,enoughSpacedList)) {
+                            if (!inTheClassOf(node,enoughSpacedList) && node.contentEditable==="true") {
                                 node.classList.add("PunctSpace2Fix");
                             }
                         }
@@ -245,7 +245,7 @@
                             node.style.fontFamily=font_str; //Is this to improve the speed?
                             node.classList.add("CJK2Fix");
                             node.classList.add("LargeSimSun2Fix");
-                            if (!inTheClassOf(node,enoughSpacedList)) {
+                            if (!inTheClassOf(node,enoughSpacedList) && node.contentEditable==="true") {
                                 node.classList.add("PunctSpace2Fix");
                             }
                         }
@@ -253,13 +253,13 @@
                 }
                 else if (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) {
                     node.classList.add("CJK2Fix");
-                    if (!inTheClassOf(node,enoughSpacedList)) {
+                    if (!inTheClassOf(node,enoughSpacedList) && node.contentEditable==="true") {
                         node.classList.add("PunctSpace2Fix");
                     }
                     //FIXME: Can I fully remove the "parent labeling"?
                     if ((0>1) && !(node.parentNode.nodeName.match(SkippedTags))) {
                         node.parentNode.classList.add("CJK2Fix");
-                        if (!inTheClassOf(node.parentNode,enoughSpacedList) && !inTheClassOf(node,enoughSpacedList)) {
+                        if (!inTheClassOf(node.parentNode,enoughSpacedList) && !inTheClassOf(node,enoughSpacedList) && node.parentNode.contentEditable==="true") {
                             node.parentNode.classList.add("PunctSpace2Fix");
                         }
                     }
@@ -315,7 +315,7 @@
                 if (font_size < 18) {
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("SimSun2Fix");
-                    if (!inTheClassOf(all[i],enoughSpacedList)) {
+                    if (!inTheClassOf(all[i],enoughSpacedList) && all[i].contentEditable==="true") {
                         all[i].classList.add("PunctSpace2Fix");
                     }
                 }
@@ -323,7 +323,7 @@
                     all[i].style.fontFamily=font_str;
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("LargeSimSun2Fix");
-                    if (!inTheClassOf(all[i],enoughSpacedList)) {
+                    if (!inTheClassOf(all[i],enoughSpacedList) && all[i].contentEditable==="true") {
                         all[i].classList.add("PunctSpace2Fix");
                     }
                 }
@@ -339,12 +339,12 @@
                 var realSibling=child.nextSibling;
                 if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                     all[i].classList.add("CJK2Fix");
-                    if (!inTheClassOf(all[i],enoughSpacedList)) {
+                    if (!inTheClassOf(all[i],enoughSpacedList) && all[i].contentEditable==="true") {
                         all[i].classList.add("PunctSpace2Fix");
                     }
                     if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
                         all[i].parentNode.classList.add("CJK2Fix");
-                        if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList)) {
+                        if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList) && all[i].parentNode.contentEditable==="true") {
                             all[i].parentNode.classList.add("PunctSpace2Fix");
                         }
                     }
