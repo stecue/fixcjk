@@ -35,7 +35,6 @@
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
     var CJKOnlyThreshold = 11024; // Only CJK if the number of elements reaches this threshold.
-    var loopThreshold = 8192;
     var noBonusLength = 11024; //no bonus functions such as fixing "reversed" pairs.
     var noBonusTimeout = 20; //Longest time (in ms) to run bonus functions for each element.
     var sqz_timeout=50; // 50ms per element seems long enough.
@@ -301,7 +300,6 @@
             all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         }
         for (var i=0;i < all.length;i++) {
-            if (all[i].classList.contains("CJKTestedAndLabeled")) console.log("FIXME: "+all[i].nodeName+"#"+all[i].id+" should not be in class CJKTestedAndLabeled.");
             if (i%50===0 && performance.now()-t_stop>200) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString()+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");break;}
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 continue;
@@ -337,7 +335,7 @@
             if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
                 if ( all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) {
                     all[i].classList.add("CJKTestedAndLabeled"); //20 is just to make sure they are actuall Latin elements,not just some place holder.
-                    //addTested(all[i],performance.now());//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                    window.setTimeout(addTested,10,all[i],performance.now());//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
                     continue;
                 }
                 else {
