@@ -1,8 +1,8 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.2
+// @version           1.0.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -190,11 +190,14 @@
     if (debug_00===true) {console.log('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
-    function addTested (node) {
+    function addTested (node,initTime) {
+        if (performance.now()-initTime > 5) {
+            return false;
+        }
         var child=node.firstChild;
         while (child) {
             if (child.nodeType===1) {
-                addTested(child);
+                addTested(child,initTime);
             }
             child=child.nextSibling;
         }
@@ -257,12 +260,12 @@
                         node.classList.add("PunctSpace2Fix");
                     }
                     //FIXME: Can I fully remove the "parent labeling"?
-                    if ((0>1) && !(node.parentNode.nodeName.match(SkippedTags))) {
-                        node.parentNode.classList.add("CJK2Fix");
-                        if (!inTheClassOf(node.parentNode,enoughSpacedList) && !inTheClassOf(node,enoughSpacedList) && node.parentNode.contentEditable==="true") {
-                            node.parentNode.classList.add("PunctSpace2Fix");
-                        }
-                    }
+                    //if ((0>1) && !(node.parentNode.nodeName.match(SkippedTags))) {
+                    //    node.parentNode.classList.add("CJK2Fix");
+                    //    if (!inTheClassOf(node.parentNode,enoughSpacedList) && !inTheClassOf(node,enoughSpacedList) && node.parentNode.contentEditable==="true") {
+                    //        node.parentNode.classList.add("PunctSpace2Fix");
+                    //    }
+                    //}
                 }
             }
             else if (child.nodeType===1) {
@@ -298,15 +301,16 @@
             all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         }
         for (var i=0;i < all.length;i++) {
-            if (performance.now()-t_stop>1000) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString());break;}
+            if (all[i].classList.contains("CJKTestedAndLabeled")) console.log("FIXME: "+all[i].nodeName+"#"+all[i].id+" should not be in class CJKTestedAndLabeled.");
+            if (i%50===0 && performance.now()-t_stop>200) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString()+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");break;}
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 continue;
             }
-            all[i].classList.add("CJKTestedAndLabeled");
             font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
             if (inTheClassOf(all[i],preSimSunList) || all[i].nodeName.match(preSimSunTags)) {
                 all[i].style.fontFamily=font_str.replace(re_simsun,'SimVecA,SimVecS,SimVecC');
                 all[i].classList.add("CJK2Fix");
+                all[i].classList.add("CJKTestedAndLabeled");
                 continue;
             }
             if (debug_01===true) console.log(font_str);
@@ -327,12 +331,19 @@
                         all[i].classList.add("PunctSpace2Fix");
                     }
                 }
+                all[i].classList.add("CJKTestedAndLabeled");
                 continue;
             }
-            if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (font_str.split(',').length >= rspLength) ){
-                all[i].classList.add("CJKTestedAndLabeled");
-                addTested(all[i]);//it might cause some childs to be "unfixable", e.g., some elements on newsmth.org.
-                continue;
+            if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
+                if ( all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) {
+                    all[i].classList.add("CJKTestedAndLabeled"); //20 is just to make sure they are actuall Latin elements,not just some place holder.
+                    //addTested(all[i],performance.now());//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                    continue;
+                }
+                else {
+                    //Just skip here. Might be important in the future.
+                    continue;
+                }
             }
             child = all[i].firstChild;
             while (child) {
@@ -352,12 +363,13 @@
                 }
                 child=realSibling;
             }
+            all[i].classList.add("CJKTestedAndLabeled");
         }
     }
     //return true;
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     labelPreMath();
-    labelCJK(false);
+    labelCJK(true);
     if ((document.getElementsByClassName('CJK2Fix')).length < 1) {
         FixPunct=false;
     }
