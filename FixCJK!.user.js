@@ -401,7 +401,7 @@
     var NumPureEng=0;
     var LastURL=document.URL;
     var LastMod=document.lastModified;
-    var ItvScl=1.0;
+    var ItvScl=2.0; //Real "cooling down time" is t_interval/ItvScl
     if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
         NumPureEng++;
     }
@@ -423,7 +423,7 @@
     var fireReFix=false;
     window.addEventListener("scroll",function (e){
         fireReFix=false; //Prevent from firing ReFixCJK() while scrolling.
-        setTimeout(function() {fireReFix=true;},t_interval/2); //Permit ReFixCJK after sometime of last scrolling.
+        setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
         setTimeout(function() {
             if (fireReFix===true) {
                 ReFixCJKFontsOnly();
@@ -644,8 +644,8 @@
     }
     function ReFixCJKFontsOnly () {
         if (refixingFonts===true) {
-            if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
-            window.setTimeout(function () {refixingFonts=false;},t_interval*3);
+            console.log("Refixing, skipping this refix...");
+            window.setTimeout(function () {refixingFonts=false;},t_interval/ItvScl/2);
             return false;
         }
         refixingFonts=true;
@@ -672,7 +672,7 @@
     function ReFixCJK (e) {
         if (refixing===true) {
             if (debug_wrap===true) {console.log("Refixing, skipping this refix...");}
-            window.setTimeout(function () {refixing=false;},t_interval);
+            window.setTimeout(function () {refixing=false;},t_interval/ItvScl);
             return false;
         }
         refixing=true;
