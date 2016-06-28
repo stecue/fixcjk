@@ -1,6 +1,18 @@
+## 1.0.0
+Features:
+  - A new "event-listener-friendly" algorithm is implemented. Dynamic contents should not be broken by the script any more.
+  - Scroll to apply font settings.
+  - The "Long-click to force correction" method is no longer needed and dropped.
+  - "See through" tags to accurately determine what corrections should be applied.
+  - Much faster rechecking and refixing.
+
+Bugfixes:
+  - Numerial bugfixes thanks to the new structure and algorithm.
+
 ## 0.15.0
 Features:
   - Add a "banned classes" mechanism to better control elements.
+  - More site-specific rules.
 
 ## 0.14.3 (2016-06-17)
 Features:
