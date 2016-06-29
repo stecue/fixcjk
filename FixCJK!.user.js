@@ -55,6 +55,7 @@
     var debug_wrap = false;
     var debug_tagSeeThrough = false;
     var debug_getBeforeTags = false;
+    var debug_noWrapping = false;
     var debug_asyncTimers = true;
     var useWrap=true;
     var useRemoveSpacesForSimSun=false;
@@ -77,7 +78,7 @@
     var stopClasses='mw-editsection';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
-    var enoughSpacedList='pl-c,toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
+    var preOrigPunctSpaceList='pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath';
@@ -192,9 +193,10 @@
     if (debug_00===true) {console.log('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
+    var debug_addTested=false;
     function addTested (node,currLevel) {
         if (currLevel > 5) {
-            if (debug_labelCJK===true) console.log("TOO MANY LEVELS, exiting addTested()...");
+            if (debug_addTested===true) console.log("TOO MANY LEVELS, exiting addTested()...");
             return false;
         }
         var child=node.firstChild;
@@ -205,12 +207,12 @@
             child=child.nextSibling;
         }
         if (node.classList.contains("CJKTestedAndLabeled")) {
-            if (debug_labelCJK===true) console.log("Labeled: "+node.nodeName);
+            if (debug_addTested===true) console.log("Labeled: "+node.nodeName);
             return true;
         }
         else {
             node.classList.add("CJKTestedAndLabeled");
-            if (debug_labelCJK===true) console.log("Labeled: "+node.nodeName);
+            if (debug_addTested===true) console.log("Labeled: "+node.nodeName);
             return true;
         }
     }
@@ -244,7 +246,7 @@
                         if (font_size < 18) {
                             node.classList.add("CJK2Fix");
                             node.classList.add("SimSun2Fix");
-                            if (!inTheClassOf(node,enoughSpacedList) && node.contentEditable==="true") {
+                            if (!inTheClassOf(node,preOrigPunctSpaceList)) {
                                 node.classList.add("PunctSpace2Fix");
                             }
                         }
@@ -252,7 +254,7 @@
                             node.style.fontFamily=font_str; //Is this to improve the speed?
                             node.classList.add("CJK2Fix");
                             node.classList.add("LargeSimSun2Fix");
-                            if (!inTheClassOf(node,enoughSpacedList) && node.contentEditable==="true") {
+                            if (!inTheClassOf(node,preOrigPunctSpaceList)) {
                                 node.classList.add("PunctSpace2Fix");
                             }
                         }
@@ -260,16 +262,9 @@
                 }
                 else if (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) {
                     node.classList.add("CJK2Fix");
-                    if (!inTheClassOf(node,enoughSpacedList) && node.contentEditable==="true") {
+                    if (!inTheClassOf(node,preOrigPunctSpaceList)) {
                         node.classList.add("PunctSpace2Fix");
                     }
-                    //FIXME: Can I fully remove the "parent labeling"?
-                    //if ((0>1) && !(node.parentNode.nodeName.match(SkippedTags))) {
-                    //    node.parentNode.classList.add("CJK2Fix");
-                    //    if (!inTheClassOf(node.parentNode,enoughSpacedList) && !inTheClassOf(node,enoughSpacedList) && node.parentNode.contentEditable==="true") {
-                    //        node.parentNode.classList.add("PunctSpace2Fix");
-                    //    }
-                    //}
                 }
             }
             else if (child.nodeType===1) {
@@ -308,17 +303,28 @@
         var t_init=t_stop;
         var t_overall=0;
         for (var i=0;i < all.length;i++) {
+            //Just to test the editor: if (all[i].id.match(/mock:b/)) { console.log(all[i].contentEditable); console.log(all[i].textContent);}
+            if (all[i].contentEditable==="true") {
+                all[i].classList.add("preCode");
+            }
             t_last=performance.now()-t_stop;
             t_stop=performance.now();
-            if (i>0 && t_last>20) {
-                console.log("FIXME: Curr: ");
-                console.log(all[i]);
-                console.log("FIXME: Prev: ");
-                console.log(all[i-1]);
-                console.log("Labeling Last elemnent: <"+all[i-1].nodeName+">.("+all[i-1].className+") took "+t_last.toFixed(1)+" ms.");
-            }
             t_overall=performance.now()-t_init;
-            if (i%1===0 && t_overall>100) {
+            if (i>0 && t_last>20) {
+                if ( debug_labelCJK===true) {
+                    console.log("FIXME: Curr: ");
+                    console.log(all[i]);
+                    console.log("FIXME: Prev: ");
+                    console.log(all[i-1]);
+                    console.log("Labeling Last elemnent: <"+all[i-1].nodeName+">.("+all[i-1].className+") took "+t_last.toFixed(1)+" ms.");
+                }
+                if (t_last>100) {
+                    console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
+                    console.log("FIXME: Only "+document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total.");
+                    break;
+                }
+            }
+            if (i%1===0 && t_overall>200) {
                 console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
                 console.log("FIXME: Only "+document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total.");
                 break;
@@ -344,7 +350,7 @@
                 if (font_size < 18) {
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("SimSun2Fix");
-                    if (!inTheClassOf(all[i],enoughSpacedList) && all[i].contentEditable==="true") {
+                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable==="true") {
                         all[i].classList.add("PunctSpace2Fix");
                     }
                 }
@@ -352,7 +358,7 @@
                     all[i].style.fontFamily=font_str;
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("LargeSimSun2Fix");
-                    if (!inTheClassOf(all[i],enoughSpacedList) && all[i].contentEditable==="true") {
+                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable==="true") {
                         all[i].classList.add("PunctSpace2Fix");
                     }
                 }
@@ -375,12 +381,12 @@
                 var realSibling=child.nextSibling;
                 if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                     all[i].classList.add("CJK2Fix");
-                    if (!inTheClassOf(all[i],enoughSpacedList) && all[i].contentEditable==="true") {
+                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable==="true") {
                         all[i].classList.add("PunctSpace2Fix");
                     }
                     if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
                         all[i].parentNode.classList.add("CJK2Fix");
-                        if (!inTheClassOf(all[i].parentNode,enoughSpacedList) && !inTheClassOf(all[i],enoughSpacedList) && all[i].parentNode.contentEditable==="true") {
+                        if (!inTheClassOf(all[i].parentNode,preOrigPunctSpaceList) && !inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].parentNode.contentEditable==="true") {
                             all[i].parentNode.classList.add("PunctSpace2Fix");
                         }
                     }
@@ -423,7 +429,7 @@
     else {
         window.setTimeout(function () {
             labelPreCode();
-            labelEnoughSpacedList();
+            labelNoWrappingList();
             if (useWrap===true) wrapCJK();
             FunFixPunct(useLoop,MaxNumLoops,returnLater);
         },10);
@@ -499,12 +505,18 @@
             }
         }
     }
-    function labelEnoughSpacedList() {
-        var bannedClassList=enoughSpacedList.split(',');
+    function labelNoWrappingList() {
+        var ie=0;
+        var bannedClassList=preOrigPunctSpaceList.split(',');
         for (var i=0;i<bannedClassList.length;i++) {
             var all2Ban=document.getElementsByClassName(bannedClassList[i]);
-            for (var ie=0;ie<all2Ban.length;ie++)
+            for (ie=0;ie<all2Ban.length;ie++)
                 banHelper(all2Ban[ie]);
+        }
+        var bannedElementList=document.querySelectorAll('[contenteditable="true"]');
+        for (ie=0;ie<bannedElementList.length;ie++) {
+            if (debug_noWrapping===true) console.log(bannedElementList[ie]);
+            banHelper(bannedElementList[ie]);
         }
     }
     function banHelper(node) {
@@ -515,7 +527,9 @@
             }
             child=child.nextSibling;
         }
-        node.classList.add("preCode");
+        if (!node.classList.contains("preCode")) {
+            node.classList.add("preCode");
+        }
     }
     function banMathHelper(node) {
         var child=node.firstChild;
@@ -626,8 +640,8 @@
                         var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005C\u005E-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3$4';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
-                        //now en["']zh (TODO in 0.15?)
-                        //now zh['"]en (TODO in 0.15?)
+                        //now en["']zh (TODO in 1.x?)
+                        //now zh['"]en (TODO in 1.x?)
                         tmp_str=tmp_str.replace(/\uED20/mg,'');
                         tmp_str=tmp_str.replace(/^[^\u0000]*\uF203CJK\uF203([^\u0000]*)$/,'$1'); // '.' does not match \n in whatever mode.
                         tmp_str=tmp_str.replace(/^([^\u0000]*)\uF204CJK\uF204[^\u0000]*$/,'$1');
@@ -768,7 +782,6 @@
             ifRound1=true;
             ifRound2=true;
             ifRound3=false;
-            //FixCJK();
             var ReFixAll=document.getElementsByTagName('*');
             var NumFixed=0;
             var NumReFix=0;
@@ -778,7 +791,7 @@
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
             labelPreCode();
-            labelEnoughSpacedList();
+            labelNoWrappingList();
             if (useWrap===true) wrapCJK();
             FunFixPunct(useLoop,2,returnLater);
             console.log('FixCJK!: ReFixing (Fixing PMs not included) took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
@@ -1213,7 +1226,7 @@
         var currHTML="";
         var allSubSafe=true;
         var node2fix=true;
-        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,enoughSpacedList)) {
+        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,preOrigPunctSpaceList)) {
             //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
             node.classList.remove("Safe2FixCJK\uE000");
             node.classList.remove("PunctSpace2Fix");
@@ -1240,7 +1253,7 @@
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,enoughSpacedList) ) {
+                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,preOrigPunctSpaceList) ) {
                     //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
@@ -1272,7 +1285,7 @@
             for (var icl=0;icl<CJKclasses.length;icl++) {
                 node.classList.remove(CJKclasses[icl]);
             }
-            if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList))) {
+            if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,preOrigPunctSpaceList))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -1282,7 +1295,7 @@
             }
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,enoughSpacedList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,preOrigPunctSpaceList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
