@@ -301,7 +301,11 @@
             all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         }
         for (var i=0;i < all.length;i++) {
-            if (i%5===0 && performance.now()-t_stop>200) {console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+"#"+i.toString()+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");break;}
+            if (i%5===0 && performance.now()-t_stop>200) {
+                console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+": "+all[i].textContent+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");
+                console.log(document.getElementsByClassName("CJKTestedAndLabeled").length+" labeled in Total");
+                break;
+            }
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 continue;
             }
@@ -591,7 +595,6 @@
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
                         tmp_str=tmp_str.replace(/&nbsp;/,'\u00A0'); //Or, tmp_str=tmp_str.replace(/\u0026nbsp\u003B/,'\u00A0');
                         tmp_str=tmp_str.replace(/&thinsp;/,'\u2009'); //Or, tmp_str=tmp_str.replace(/\u0026thinsp\u003B/,'\u2009');
-                        if (tmp_str.match(/\u0026nbsp\u003B/)) console.log(tmp_str); //To be deleted.
                         var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
                         var space2BeAdded='<span class="CJKTestedAndLabeled MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
