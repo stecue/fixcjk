@@ -49,6 +49,7 @@
     var debug_02 = false;
     var debug_03 = false;
     var debug_04 = false;
+    var debug_labelCJK = false;
     var debug_re_to_check = false; //"true" might slow down a lot!
     var debug_spaces =false;
     var debug_wrap = false;
@@ -68,14 +69,15 @@
     var refixingFonts=false;
     var rspLength=3; //If the font-list reaches the length here, the author is probably responsible enough to cover most Latin/English environment.
     var waitForDoubleClick=200;
-    var SkippedTagsForFonts=/^(TITLE|HEAD|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
-    var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
+    var SkippedTagsForFonts=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
+    var SkippedTagsForMarks=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
+    var pureLatinTags=/^(TITLE|HEAD|LINK|SCRIPT|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|svg)$/i; //No CJK labeling for the elements and their desedents.
     var stopTags=/^(SUB|SUP|BR|VR)$/i; //The "see-through" stops at these tags.
     var stopClasses='mw-editsection';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
-    var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
+    var enoughSpacedList='pl-c,toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath';
@@ -190,23 +192,25 @@
     if (debug_00===true) {console.log('Entering Loops...');}
     /// ===== Labeling CJK elements === ///
     t_stop=performance.now();
-    function addTested (node,initTime) {
-        if (performance.now()-initTime > 5) {
+    function addTested (node,currLevel) {
+        if (currLevel > 5) {
+            if (debug_labelCJK===true) console.log("TOO MANY LEVELS, exiting addTested()...");
             return false;
         }
         var child=node.firstChild;
         while (child) {
             if (child.nodeType===1) {
-                addTested(child,initTime);
+                addTested(child,currLevel+1);
             }
             child=child.nextSibling;
         }
         if (node.classList.contains("CJKTestedAndLabeled")) {
+            if (debug_labelCJK===true) console.log("Labeled: "+node.nodeName);
             return true;
         }
         else {
-            if (node.textContent.length>5) //make sure it is not empty.
-                node.classList.add("CJKTestedAndLabeled");
+            node.classList.add("CJKTestedAndLabeled");
+            if (debug_labelCJK===true) console.log("Labeled: "+node.nodeName);
             return true;
         }
     }
@@ -218,7 +222,7 @@
         //One do need to recheck the textContent everytime "ReFix" is triggered.
         if ( (levelIndex < 2) && (!node.textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
             if (!node.classList.contains("CJKTestedAndLabeled")) {
-                window.setTimeout(addTested,5,node);
+                window.setTimeout(addTested,5,node,0);
             }
             return true;
         }
@@ -277,7 +281,6 @@
         return true;
     }
     function labelCJK(newElementsOnly) {
-        var t_stop=performance.now();
         var useBFS=true;
         var child=document.body.firstChild;
         var all='';
@@ -300,13 +303,21 @@
         else {
             all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         }
+        var t_stop=performance.now(); //if debug_labelCJK===true, t_stop resets before each "continue".
         for (var i=0;i < all.length;i++) {
-            if (i%5===0 && performance.now()-t_stop>200) {
-                console.log("FIXME: Too slow. Stopped @"+all[i].nodeName+": "+all[i].textContent+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");
-                console.log(document.getElementsByClassName("CJKTestedAndLabeled").length+" labeled in Total");
+            if (debug_labelCJK===true) console.log(all[i].nodeName);
+            if (i%1===0 && performance.now()-t_stop>100) {
+                console.log("FIXME: Too slow. Stopped after “"+all[i-1].nodeName+": "+all[i-1].innerHTML.slice(0,72)+"...”#"+(i-1).toFixed(0)+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");
+                if (debug_labelCJK===true) console.log(document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total");
                 break;
             }
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
+                if (debug_labelCJK===true) console.log("SKIPPED: "+all[i].nodeName);
+                all[i].classList.add("CJKTestedAndLabeled");
+                if (all[i].nodeName.match(pureLatinTags)) {
+                    window.setTimeout(addTested,5,all[i],0);
+                }
+                if (debug_labelCJK===true) t_stop=performance.now();
                 continue;
             }
             font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
@@ -314,6 +325,7 @@
                 all[i].style.fontFamily=font_str.replace(re_simsun,'SimVecA,SimVecS,SimVecC');
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("CJKTestedAndLabeled");
+                if (debug_labelCJK===true) t_stop=performance.now();
                 continue;
             }
             if (debug_01===true) console.log(font_str);
@@ -335,16 +347,19 @@
                     }
                 }
                 all[i].classList.add("CJKTestedAndLabeled");
+                if (debug_labelCJK===true) t_stop=performance.now();
                 continue;
             }
             if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
                 if ( all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) {
                     all[i].classList.add("CJKTestedAndLabeled"); //20 is just to make sure they are actuall Latin elements,not just some place holder.
-                    window.setTimeout(addTested,10,all[i],performance.now());//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                    window.setTimeout(addTested,10,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                    if (debug_labelCJK===true) t_stop=performance.now();
                     continue;
                 }
                 else {
                     //Just skip here. Might be important in the future.
+                    if (debug_labelCJK===true) t_stop=performance.now();
                     continue;
                 }
             }
@@ -367,6 +382,7 @@
                 child=realSibling;
             }
             all[i].classList.add("CJKTestedAndLabeled");
+            if (debug_labelCJK===true) t_stop=performance.now();
         }
     }
     //return true;
