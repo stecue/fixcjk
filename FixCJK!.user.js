@@ -72,6 +72,7 @@
     var SkippedTagsForMarks=/^(TITLE|HEAD|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|input|code|pre|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     var stopTags=/^(SUB|SUP|BR|VR)$/i; //The "see-through" stops at these tags.
+    var stopClasses='mw-editsection';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
     var enoughSpacedList='toggle-comment,answer-date-link'; //Currently they're all on zhihu.com.
@@ -528,7 +529,7 @@
                     toReturn = toReturn + child.data;
                 }
                 else if (child.nodeType===1 && (window.getComputedStyle(child,null).getPropertyValue("display")!=='none') ) {
-                    if (child.nodeName.match(stopTags)) {
+                    if (child.nodeName.match(stopTags) || inTheClassOf(child,stopClasses) ) {
                         return toReturn+"上下标";
                     }
                     toReturn = toReturn + displayedText(child);
@@ -555,7 +556,7 @@
                     toReturn = child.data + toReturn;
                 }
                 else if (child.nodeType === 1 && (window.getComputedStyle(child,null).getPropertyValue("display")!=='none') ) {
-                    if (child.nodeName.match(stopTags) ) {
+                    if (child.nodeName.match(stopTags) || inTheClassOf(child,stopClasses) ) {
                         return "上下标"+toReturn;
                     }
                     toReturn = displayedText(child) + toReturn;
@@ -586,20 +587,19 @@
                         if (tmp_str.match(/[\u3400-\u9FBF][\s\u200B-\u200E\2060]{0,2}$/)) {
                             tmp_str=tmp_str+'\uF204CJK\uF204'+getAfterHTML(allE[is]);
                         }
-						//tmp_str=tmp_str.replace(/\u0026nbsp\u003B/i,'\u00A0').replace(/\u0026thinsp\u003B/i,'\u2009');
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <span> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
-						if (tmp_str.match()) console.log(tmp_str);//To be deleted.
-						tmp_str=tmp_str.replace(/&nbsp;/,'\u00A0');
-						tmp_str=tmp_str.replace(/&thinsp;/,'\u2009');
-						if (tmp_str.match(/赞同/)) console.log(tmp_str);
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img; //FIXME: the &nbsp; seems not working. Current workaround is to replace all &nbsp; in the "wrappedCJK" function.
+                        tmp_str=tmp_str.replace(/&nbsp;/,'\u00A0'); //Or, tmp_str=tmp_str.replace(/\u0026nbsp\u003B/,'\u00A0');
+                        tmp_str=tmp_str.replace(/&thinsp;/,'\u2009'); //Or, tmp_str=tmp_str.replace(/\u0026thinsp\u003B/,'\u2009');
+                        if (tmp_str.match(/\u0026nbsp\u003B/)) console.log(tmp_str); //To be deleted.
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
                         var space2BeAdded='<span class="CJKTestedAndLabeled MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</span>';
                         if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
+                        if (tmp_str.match(re_enzh)) console.log("MATCHED: "+tmp_str);
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
-                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005C\u005E-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
+                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005C\u005E-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3$4';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
                         //now en["']zh (TODO in 0.15?)
@@ -607,7 +607,6 @@
                         tmp_str=tmp_str.replace(/\uED20/mg,'');
                         tmp_str=tmp_str.replace(/^[^\u0000]*\uF203CJK\uF203([^\u0000]*)$/,'$1'); // '.' does not match \n in whatever mode.
                         tmp_str=tmp_str.replace(/^([^\u0000]*)\uF204CJK\uF204[^\u0000]*$/,'$1');
-						if (tmp_str.match(/人赞同/)) console.log(tmp_str); //To be deleted.
                         allE[is].innerHTML=tmp_str;
                     }
                     else {
@@ -1340,7 +1339,7 @@
                     }
                 }
                 else if (child.nodeType===1 && window.getComputedStyle(child,null).getPropertyValue("display")!=="none" ) {
-                    if (child.nodeName.match(stopTags)) {
+                    if (child.nodeName.match(stopTags) || inTheClassOf(child,stopClasses) ) {
                         return '上下标'+toReturn;
                     }
                     if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
@@ -1373,7 +1372,7 @@
                     }
                 }
                 else if (child.nodeType===1 && window.getComputedStyle(child,null).getPropertyValue("display")!=="none" ) {
-                    if (child.nodeName.match(stopTags)) {
+                    if (child.nodeName.match(stopTags) || inTheClassOf(child,stopClasses) ) {
                         return toReturn+'上下标'; //I just need to add some CJK text. They will be "chopped" anyway.
                     }
                     toReturn = toReturn + displayedText(child);
@@ -1487,7 +1486,7 @@
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
-            currHTML=currHTML.replace(/&nbsp;/g,'\u00A0');
+            currHTML=currHTML.replace(/&nbsp;/gi,'\u00A0');
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\r\n\u0020\u00A0]|&nbsp;){0,2}/g,'$1');
             //'>' means there is a non-CJK tag(?)
             currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
