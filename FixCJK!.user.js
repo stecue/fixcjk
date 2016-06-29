@@ -303,21 +303,32 @@
         else {
             all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         }
-        var t_stop=performance.now(); //if debug_labelCJK===true, t_stop resets before each "continue".
+        var t_stop=performance.now();
+        var t_last=0;
+        var t_init=t_stop;
+        var t_overall=0;
         for (var i=0;i < all.length;i++) {
-            if (debug_labelCJK===true) console.log(all[i].nodeName);
-            if (i%1===0 && performance.now()-t_stop>100) {
-                console.log("FIXME: Too slow. Stopped after “"+all[i-1].nodeName+": "+all[i-1].innerHTML.slice(0,72)+"...”#"+(i-1).toFixed(0)+" @"+(performance.now()-t_stop).toFixed(1)+" ms.");
-                if (debug_labelCJK===true) console.log(document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total");
+            t_last=performance.now()-t_stop;
+            t_stop=performance.now();
+            if (i>0 && t_last>20) {
+                console.log("FIXME: Curr: ");
+                console.log(all[i]);
+                console.log("FIXME: Prev: ");
+                console.log(all[i-1]);
+                console.log("Labeling Last elemnent: <"+all[i-1].nodeName+">.("+all[i-1].className+") took "+t_last.toFixed(1)+" ms.");
+            }
+            t_overall=performance.now()-t_init;
+            if (i%1===0 && t_overall>100) {
+                console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
+                console.log("FIXME: Only "+document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total.");
                 break;
             }
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
-                if (debug_labelCJK===true) console.log("SKIPPED: "+all[i].nodeName);
+                if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
                 all[i].classList.add("CJKTestedAndLabeled");
                 if (all[i].nodeName.match(pureLatinTags)) {
                     window.setTimeout(addTested,5,all[i],0);
                 }
-                if (debug_labelCJK===true) t_stop=performance.now();
                 continue;
             }
             font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
@@ -325,7 +336,6 @@
                 all[i].style.fontFamily=font_str.replace(re_simsun,'SimVecA,SimVecS,SimVecC');
                 all[i].classList.add("CJK2Fix");
                 all[i].classList.add("CJKTestedAndLabeled");
-                if (debug_labelCJK===true) t_stop=performance.now();
                 continue;
             }
             if (debug_01===true) console.log(font_str);
@@ -347,19 +357,16 @@
                     }
                 }
                 all[i].classList.add("CJKTestedAndLabeled");
-                if (debug_labelCJK===true) t_stop=performance.now();
                 continue;
             }
             if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
                 if ( all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) {
                     all[i].classList.add("CJKTestedAndLabeled"); //20 is just to make sure they are actuall Latin elements,not just some place holder.
                     window.setTimeout(addTested,10,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
-                    if (debug_labelCJK===true) t_stop=performance.now();
                     continue;
                 }
                 else {
                     //Just skip here. Might be important in the future.
-                    if (debug_labelCJK===true) t_stop=performance.now();
                     continue;
                 }
             }
@@ -382,7 +389,6 @@
                 child=realSibling;
             }
             all[i].classList.add("CJKTestedAndLabeled");
-            if (debug_labelCJK===true) t_stop=performance.now();
         }
     }
     //return true;
