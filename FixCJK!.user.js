@@ -98,8 +98,6 @@
         ifRound3=false;
         FixPunct=false;
     }
-    //Note that if one prefers using pure Latin punctuation for CJK contents, I'll leave it untouched. (maybe in 0.10.x)
-    //else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\uFF00-\uFFEF]/m))) {
     else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');}
         if (debug_verbose===true) {console.log('FixCJK!: No need to check CJK punctuations.');}
@@ -121,7 +119,6 @@
     var qsig_hei = '"' + sig_hei + '"'; //Quoted sinagure;
     var qsig_bold = '"' + sig_bold + '"';
     var qsig_default = '"' + sig_default + '"';
-    //var qpreCJK = '"' + CJKdefault + '"'; //Quoted "CJK font".
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
