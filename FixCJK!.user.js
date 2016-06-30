@@ -994,25 +994,23 @@
                         if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
                         //Test if contains Sans
                         if (list_has(font_str, re_sans0) !== false) {
-                            //all[i].style.color="Salmon";
+                            if (debug_01===true) all[i].style.color="Salmon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
                             all[i].classList.add("FontsFixedE137");
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
-                            //all[i].style.color="SeaGreen";
+                            if (debug_01===true) all[i].style.color="SeaGreen";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
                             all[i].classList.add("FontsFixedE137");
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
-                            //all[i].style.color="Maroon";
+                            if (debug_01===true) all[i].style.color="Maroon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
                             all[i].classList.add("FontsFixedE137");
                         }        //Just append the fonts to the font preference list.
                         else {
-                            //all[i].style.color="Fuchsia"; //qBold+"false-safe" sans-serif;
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
                             all[i].classList.add("FontsFixedE137");
-                            //console.log(all[i].style.fontFamily);
                         }
                     }
                     child = realSibling;
@@ -1171,7 +1169,7 @@
                     }
                 }
                 else {
-                    //all[i].style.color="Silver"; //Signed-->Silver
+                    if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
                 all[i].classList.add("FontsFixedE137");
                 if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
