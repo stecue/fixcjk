@@ -1,4 +1,7 @@
-## 1.0.6 (2016-06-30)
+## 1.0.7 (2016-06-30)
+Features:
+  - (For Debugging Only) Long-click to force testing and labeling all elements.
+
 Bugfixes:
   - Fix the performance issue of `addSpaces()`.
 

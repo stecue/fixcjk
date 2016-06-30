@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.6
+// @version           1.0.7
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -275,13 +275,10 @@
         node.classList.add("CJKTestedAndLabeled");
         return true;
     }
-    function labelCJK(newElementsOnly) {
-        var useBFS=true;
+    function labelCJK(useCJKTimeOut) {
+        var useBFS=false;
         var child=document.body.firstChild;
         var all='';
-        if (newElementsOnly===true) {
-            useBFS=false;
-        }
         if (useBFS===true) {
             while (child) {
                 if (child.nodeType===1) {
@@ -292,24 +289,18 @@
             }
             return true;
         }
-        if (newElementsOnly===false) {
-            all=document.getElementsByTagName("*");
-        }
-        else {
-            all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
-        }
+        all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
+        if (useCJKTimeOut===false) console.log(all.length+" elements to check and label.");
         var t_stop=performance.now();
         var t_last=0;
         var t_init=t_stop;
         var t_overall=0;
         for (var i=0;i < all.length;i++) {
-            //Just to test the editor: if (all[i].id.match(/mock:b/)) { console.log(all[i].contentEditable); console.log(all[i].textContent);}
-            if (all[i].contentEditable==="true") {
-                all[i].classList.add("preCode");
+            if (useCJKTimeOut===true) { //useCJKTimeOut===false is the "Engineering mode".
+                t_last=performance.now()-t_stop;
+                t_stop=performance.now();
+                t_overall=performance.now()-t_init;
             }
-            t_last=performance.now()-t_stop;
-            t_stop=performance.now();
-            t_overall=performance.now()-t_init;
             if (i>0 && t_last>20) {
                 if ( debug_labelCJK===true) {
                     console.log("FIXME: Curr: ");
@@ -319,14 +310,16 @@
                     console.log("Labeling Last elemnent: <"+all[i-1].nodeName+">.("+all[i-1].className+") took "+t_last.toFixed(1)+" ms.");
                 }
                 if (t_last>100) {
-                    console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
+                    console.log("FIXME: Labeling last element took too much time. Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
                     console.log("FIXME: Only "+document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total.");
+                    if (debug_labelCJK===true) {console.log(all[i-1]);}
                     break;
                 }
             }
             if (i%1===0 && t_overall>200) {
                 console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
                 console.log("FIXME: Only "+document.getElementsByClassName("CJKTestedAndLabeled").length+" tested in Total.");
+                if (debug_labelCJK===true) {console.log(all[i-1]);}
                 break;
             }
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
@@ -461,6 +454,13 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
             setTimeout(ReFixCJK,5,e);
+        }
+        else if (((performance.now()-downtime) > 1500) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
+            //Force to labelCJK;
+            var t_CJK=performance.now();
+            labelCJK(false);
+            t_CJK=performance.now()-t_CJK;
+            console.log("Labeling all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
         }
     },false);
     var fireReFix=false;
