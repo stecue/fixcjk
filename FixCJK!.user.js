@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.5
+// @version           1.0.6
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -81,7 +81,7 @@
     var preOrigPunctSpaceList='pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
-    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath';
+    var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath,SpacesFixedE133';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
     var preCodeTags='code,pre,tt';
     var preMathTags='math'; //Do not change puncts as well as fonts. Just like "math".
@@ -547,18 +547,25 @@
     function addSpaces() {
         var t_spaces=performance.now();
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
-        var allCJKQMs=document.getElementsByClassName('\uE985');
-        var i=0;
-        var tmp_str='';
-        for (i=0;i<allCJKQMs.length;i++) {
-            tmp_str=allCJKQMs[i].innerHTML;
-            tmp_str=tmp_str.replace(/\u2018/g,'\uEB18');
-            tmp_str=tmp_str.replace(/\u2019/g,'\uEB19');
-            tmp_str=tmp_str.replace(/\u201C/g,'\uEB1C');
-            tmp_str=tmp_str.replace(/\u201D/g,'\uEB1D');
-            allCJKQMs[i].innerHTML=tmp_str;
+        var allQ=document.querySelectorAll(".\uE985");
+        for (var iq=0;iq<allQ.length;iq++) {
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\u2018/g,'\uEB18');
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\u2019/g,'\uEB19');
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\u201C/g,'\uEB1C');
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\u201D/g,'\uEB1D');
         }
-        addSpacesHelper(document.getElementsByClassName("PunctSpace2Fix"));
+        addSpacesHelper(document.querySelectorAll(".PunctSpace2Fix:not(.SpacesFixedE133)"),performance.now());
+        allQ=document.querySelectorAll(".\uE985"); //I need to reselect because the "references" are changed?
+        for (iq=0;iq<allQ.length;iq++) {
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\uEB18/g,'\u2018');
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\uEB19/g,'\u2019');
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\uEB1C/g,'\u201C');
+            allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\uEB1D/g,'\u201D');
+        }
+        if (useRemoveSpacesForSimSun===true) {
+            window.setTimeout(removeSpacesForSimSun,10);
+        }
+        console.log("FixCJK: Adding spaces took "+((performance.now()-t_spaces)/1000).toFixed(3)+" seconds.");
         function getAfterHTML(child) { //FIXME: A recursion block might be needed as getAfter(child)
             var toReturn='';
             var t_start=performance.now();
@@ -613,10 +620,14 @@
                 return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
             }
         }
-        function addSpacesHelper(allE) {
+        function addSpacesHelper(allE,t_substart) {
             for (var is=0;is<allE.length;is++) {
-                if (!(allE[is].nodeName.match(/FONT/)) ) {
+                if ( !(allE[is].nodeName.match(/FONT/)) || allE[is].classList.contains("SpacesFixedE133") ) {
                     continue;
+                }
+                if ( (performance.now()-t_substart)> 800) {
+                    console.log("Timeout: exiting addSpaces()...");
+                    return false;
                 }
                 if (allE[is].classList.contains("wrappedCJK2Fix") ) {
                     if ( !(allE[is].classList.contains("preCode")) ) {
@@ -646,6 +657,7 @@
                         tmp_str=tmp_str.replace(/^[^\u0000]*\uF203CJK\uF203([^\u0000]*)$/,'$1'); // '.' does not match \n in whatever mode.
                         tmp_str=tmp_str.replace(/^([^\u0000]*)\uF204CJK\uF204[^\u0000]*$/,'$1');
                         allE[is].innerHTML=tmp_str;
+                        allE[is].classList.add("SpacesFixedE133");
                     }
                     else {
                         if (debug_spaces===true) {console.log("Skipping banned tags:"+allE[is].tagName);}
@@ -653,17 +665,6 @@
                 }
             }
         }
-        if (useRemoveSpacesForSimSun===true) {
-            window.setTimeout(removeSpacesForSimSun,10);
-        }
-        allCJKQMs=document.getElementsByClassName('\uE985');
-        for (i=0;i<allCJKQMs.length;i++) {
-            allCJKQMs[i].innerHTML=allCJKQMs[i].innerHTML.replace(/\uEB18/g,'\u2018');
-            allCJKQMs[i].innerHTML=allCJKQMs[i].innerHTML.replace(/\uEB19/g,'\u2019');
-            allCJKQMs[i].innerHTML=allCJKQMs[i].innerHTML.replace(/\uEB1C/g,'\u201C');
-            allCJKQMs[i].innerHTML=allCJKQMs[i].innerHTML.replace(/\uEB1D/g,'\u201D');
-        }
-        console.log("FixCJK: Adding spaces took "+((performance.now()-t_spaces)/1000).toFixed(3)+" seconds.");
     }
     function removeSpacesForSimSun() { //Need more work.
         var allS=document.getElementsByClassName("\uE699");

@@ -1,3 +1,7 @@
+## 1.0.6 (2016-06-30)
+Bugfixes:
+  - Fix the performance issue of `addSpaces()`.
+
 ## 1.0.5 (2016-06-29)
 Bugfixes:
   - Hidden elements can be deteced now, even if they are hidden inside an inline element.
