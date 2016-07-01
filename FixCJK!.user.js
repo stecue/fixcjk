@@ -321,7 +321,7 @@
             }
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
-                window.setTimeout(function () {all[i].classList.add("CJKTestedAndLabeled");},1); //This is the most time consuming part. Trying to use async i/o.
+                window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                 if (all[i].nodeName.match(pureLatinTags)) {
                     window.setTimeout(addTested,5,all[i],0);
                 }
@@ -1003,21 +1003,21 @@
                         if (list_has(font_str, re_sans0) !== false) {
                             if (debug_01===true) all[i].style.color="Salmon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
-                            window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
                             if (debug_01===true) all[i].style.color="SeaGreen";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
-                            window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
                             if (debug_01===true) all[i].style.color="Maroon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
-                            window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }        //Just append the fonts to the font preference list.
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
-                            window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }
                     }
                     child = realSibling;
@@ -1060,7 +1060,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
-                    window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                    window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     continue;
                 }
                 else {
@@ -1070,17 +1070,17 @@
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
-                        window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
-                        window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
                         //all[i].style.color="Maroon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
-                        window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     }
                     else {
                         if (debug_02===true) {all[i].style.color='Fuchsia';}
@@ -1089,7 +1089,7 @@
                         }
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
-                            window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }
                     }
                 }
@@ -1151,7 +1151,7 @@
                 if (font_str.split(',').length >= rspLength) {
                     //continue if all[i] contains a list of fonts.
                     if (!all[i].classList.contains("CJK2Fix")) {
-                        window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (debug_03===true) {console.log(all[i]);all[i].style.color="FireBrick";} //FireBrick <-- Fixed.
                         continue;
                     }
@@ -1178,7 +1178,7 @@
                 else {
                     if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
-                window.setTimeout(function() {all[i].classList.add("FontsFixedE137");},1); //Slow and Use async I/O.
+                window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                 if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
@@ -1195,21 +1195,18 @@
         if (returnNow===true) {
             return true;
         }
-        var useRecursion=true;
-        if (useRecursion===true) {
-            var allrecur=document.querySelectorAll(".PunctSpace2Fix:not(.MarksFixedE135)");
-            for (var ir=0; ir<allrecur.length; ir++) {
-                //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
-                recursion_start=performance.now();
-                if (allrecur[ir].nodeName.match(/FONT/)) {
-                    FixPunctRecursion(allrecur[ir]);
-                }
-                if ( useTimeout===true && (performance.now()-t_start) > timeOut ) {
-                    processedAll=false;
-                    console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
-                    console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
-                    break;
-                }
+        var allrecur=document.querySelectorAll(".PunctSpace2Fix:not(.MarksFixedE135)");
+        for (var ir=0; ir<allrecur.length; ir++) {
+            //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
+            recursion_start=performance.now();
+            if (allrecur[ir].nodeName.match(/FONT/)) {
+                FixPunctRecursion(allrecur[ir]);
+            }
+            if ( useTimeout===true && (performance.now()-t_start) > timeOut ) {
+                processedAll=false;
+                console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
+                break;
             }
         }
         if (debug_wrap===true || debug_asyncTimers===true) console.log("FixCJK!: Fixing PMs took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
