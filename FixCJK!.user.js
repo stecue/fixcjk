@@ -287,7 +287,12 @@
             return true;
         }
         all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
-        if (useCJKTimeOut===false) console.log(all.length+" elements to check and label.");
+        if (useCJKTimeOut===false) {
+            console.log(all.length+" elements to check and label. From");
+            console.log(all[0]);
+            console.log('To');
+            console.log(all[all.length-1]);
+        }
         var t_stop=performance.now();
         var t_last=0;
         var t_init=t_stop;
