@@ -328,7 +328,12 @@
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
                 window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                 if (all[i].nodeName.match(pureLatinTags)) {
-                    window.setTimeout(addTested,5,all[i],0);
+                    if (useCJKTimeOut===true) {
+                        window.setTimeout(addTested,5,all[i],0);
+                    }
+                    else {
+                        window.setTimeout(addTested,5,all[i],-1000); //Means no limits in actual webpages.
+                    }
                 }
                 continue;
             }
@@ -361,9 +366,15 @@
                 continue;
             }
             if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
-                if ( all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) {
-                    all[i].classList.add("CJKTestedAndLabeled"); //20 is just to make sure they are actuall Latin elements,not just some place holder.
-                    window.setTimeout(addTested,10,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                if ( useCJKTimeOut===true && all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) { //20 is just to make sure they are actuall Latin elements,not just some place holder.
+                    window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
+                    window.setTimeout(addTested,5,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                    continue;
+                }
+                else if (useCJKTimeOut===false && (font_str.split(',').length >= rspLength) ) {
+                    window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
+                    if (debug_labelCJK===true) {console.log("Labeling non-CJK element: ");console.log(all[i]);}
+                    window.setTimeout(addTested,5,all[i],-1000);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
                     continue;
                 }
                 else {
