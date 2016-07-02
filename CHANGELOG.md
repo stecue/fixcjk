@@ -1,9 +1,10 @@
-## 1.0.7 (2016-06-30)
+## 1.1.0 (2016-07-01)
 Features:
   - (For Debugging Only) Long-click to force testing and labeling all elements.
 
 Bugfixes:
   - Fix the performance issue of `addSpaces()`.
+  - Improve the performance of `labelCJK()`.
 
 ## 1.0.5 (2016-06-29)
 Bugfixes:

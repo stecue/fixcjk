@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.0.7
+// @version           1.1.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -62,7 +62,7 @@
     var useFeedback=false;
     var useCSSforSimSun=false;
     var useDelayedFix=false;
-    var useLoop=false;
+    var useTimeout=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
@@ -287,7 +287,12 @@
             return true;
         }
         all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
-        if (useCJKTimeOut===false) console.log(all.length+" elements to check and label.");
+        if (useCJKTimeOut===false) {
+            console.log(all.length+" elements to check and label. From");
+            console.log(all[0]);
+            console.log('To');
+            console.log(all[all.length-1]);
+        }
         var t_stop=performance.now();
         var t_last=0;
         var t_init=t_stop;
@@ -321,9 +326,14 @@
             }
             if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
-                all[i].classList.add("CJKTestedAndLabeled");
+                window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                 if (all[i].nodeName.match(pureLatinTags)) {
-                    window.setTimeout(addTested,5,all[i],0);
+                    if (useCJKTimeOut===true) {
+                        window.setTimeout(addTested,5,all[i],0);
+                    }
+                    else {
+                        window.setTimeout(addTested,5,all[i],-1000); //Means no limits in actual webpages.
+                    }
                 }
                 continue;
             }
@@ -356,9 +366,15 @@
                 continue;
             }
             if ( !(all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
-                if ( all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) {
-                    all[i].classList.add("CJKTestedAndLabeled"); //20 is just to make sure they are actuall Latin elements,not just some place holder.
-                    window.setTimeout(addTested,10,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                if ( useCJKTimeOut===true && all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) { //20 is just to make sure they are actuall Latin elements,not just some place holder.
+                    window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
+                    window.setTimeout(addTested,5,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
+                    continue;
+                }
+                else if (useCJKTimeOut===false && (font_str.split(',').length >= rspLength) ) {
+                    window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
+                    if (debug_labelCJK===true) {console.log("Labeling non-CJK element: ");console.log(all[i]);}
+                    window.setTimeout(addTested,5,all[i],-1000);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
                     continue;
                 }
                 else {
@@ -410,18 +426,18 @@
     var returnLater=false; //Do the actual fixing.
     var MaxNumLoops=1;
     if (document.URL.match(/zhihuxcom|sinaxcom/)) {
-        useLoop=true;
+        seTimeout=true;
     }
     if (useDelayedFix===true) {
         var DelayedTimer=200;
-        window.setTimeout(FunFixPunct(useLoop,MaxNumLoops,returnLater),DelayedTimer);
+        window.setTimeout(FunFixPunct(true,MaxNumLoops,returnLater),DelayedTimer);
     }
     else {
         window.setTimeout(function () {
             labelPreCode();
             labelNoWrappingList();
             if (useWrap===true) wrapCJK();
-            FunFixPunct(useLoop,MaxNumLoops,returnLater);
+            FunFixPunct(true,MaxNumLoops,returnLater);
         },10);
     }
     ///===End of Solving the picture problem===///
@@ -455,9 +471,16 @@
         else if (((performance.now()-downtime) > 1500) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //Force to labelCJK;
             var t_CJK=performance.now();
+            labelPreMath();
             labelCJK(false);
+            FixAllFonts(false);
+            labelPreCode();
+            labelNoWrappingList();
+            if (useWrap===true) wrapCJK();
+            FunFixPunct(false,5,false);
+            addSpaces(false);
             t_CJK=performance.now()-t_CJK;
-            console.log("Labeling all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
+            console.log("Labeling and fixing all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
         }
     },false);
     var fireReFix=false;
@@ -471,7 +494,7 @@
         },t_interval);
     },false);
     document.body.addEventListener("dblclick",function() {
-        addSpaces();
+        addSpaces(true);
         //Prevent ReFixing for a certain time;
     },false);
     ///===Time to exit the main function===///
@@ -541,7 +564,7 @@
         node.classList.add("MarksFixedE135");
         node.classList.add("preMath");
     }
-    function addSpaces() {
+    function addSpaces(useTimeout) {
         var t_spaces=performance.now();
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
         var allQ=document.querySelectorAll(".\uE985");
@@ -622,7 +645,7 @@
                 if ( !(allE[is].nodeName.match(/FONT/)) || allE[is].classList.contains("SpacesFixedE133") ) {
                     continue;
                 }
-                if ( (performance.now()-t_substart)> 800) {
+                if ( useTimeout===true && (performance.now()-t_substart)> 800) {
                     console.log("Timeout: exiting addSpaces()...");
                     return false;
                 }
@@ -714,7 +737,7 @@
             CJKOnlyThreshold = 2000; // Only CJK if the number of elements reaches this threshold.
             labelPreMath();
             labelCJK(true);
-            FixAllFonts();
+            FixAllFonts(true);
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         t_last=performance.now();
@@ -785,13 +808,13 @@
             var NumReFix=0;
             labelPreMath();
             labelCJK(true);
-            FixAllFonts();
+            FixAllFonts(true);
             if (debug_verbose===true) {console.log('FixCJK!: '+NumFixed.toString()+' elements has been fixed.');}
             if (debug_verbose===true) {console.log('FixCJK!: '+NumReFix.toString()+' elements to Re-Fix.');}
             labelPreCode();
             labelNoWrappingList();
             if (useWrap===true) wrapCJK();
-            FunFixPunct(useLoop,2,returnLater);
+            FunFixPunct(true,2,returnLater);
             console.log('FixCJK!: ReFixing (Fixing PMs not included) took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
             NumAllCJKs=(document.getElementsByClassName('MarksFixedE135')).length;
             if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
@@ -927,7 +950,7 @@
         return localed;
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
-    function FixAllFonts () {
+    function FixAllFonts (useTimeout) {
         var func_start=performance.now();
         if (debug_verbose===true) {
             console.log("Round 1: "+ifRound1.toString());
@@ -966,7 +989,7 @@
         if (ifRound1===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                    if ( useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound1=false;
                         ifRound2=false;
                         ifRound3=false;
@@ -996,21 +1019,21 @@
                         if (list_has(font_str, re_sans0) !== false) {
                             if (debug_01===true) all[i].style.color="Salmon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
-                            all[i].classList.add("FontsFixedE137");
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
                             if (debug_01===true) all[i].style.color="SeaGreen";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
-                            all[i].classList.add("FontsFixedE137");
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
                             if (debug_01===true) all[i].style.color="Maroon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
-                            all[i].classList.add("FontsFixedE137");
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }        //Just append the fonts to the font preference list.
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
-                            all[i].classList.add("FontsFixedE137");
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }
                     }
                     child = realSibling;
@@ -1023,7 +1046,7 @@
         /// ===== Second Round: Deal with regular weight. ===== ///
         var tmp_idx=0;
         max = all.length;
-        if ((performance.now()-t_stop)*4 > timeOut) {
+        if (useTimeout===true && (performance.now()-t_stop)*4 > timeOut) {
             ifRound2=false;
             ifRound3=false;
             FixPunct=false;
@@ -1035,7 +1058,7 @@
             //Now fix the rest.
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                    if (useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound2=false;
                         ifRound3=false;
                         FixPunct=false;
@@ -1053,7 +1076,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
-                    all[i].classList.add("FontsFixedE137");
+                    window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     continue;
                 }
                 else {
@@ -1063,17 +1086,17 @@
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
-                        all[i].classList.add("FontsFixedE137");
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
-                        all[i].classList.add("FontsFixedE137");
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
                         //all[i].style.color="Maroon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
-                        all[i].classList.add("FontsFixedE137");
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     }
                     else {
                         if (debug_02===true) {all[i].style.color='Fuchsia';}
@@ -1082,7 +1105,7 @@
                         }
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
-                            all[i].classList.add("FontsFixedE137");
+                            window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         }
                     }
                 }
@@ -1120,7 +1143,7 @@
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if ((performance.now()-t_stop)*invForLimit > timeOut) {
+                    if (useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound3=false;
                         FixPunct=false;
                         processedAll=false;
@@ -1144,7 +1167,7 @@
                 if (font_str.split(',').length >= rspLength) {
                     //continue if all[i] contains a list of fonts.
                     if (!all[i].classList.contains("CJK2Fix")) {
-                        all[i].classList.add("FontsFixedE137");
+                        window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (debug_03===true) {console.log(all[i]);all[i].style.color="FireBrick";} //FireBrick <-- Fixed.
                         continue;
                     }
@@ -1171,7 +1194,7 @@
                 else {
                     if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
-                all[i].classList.add("FontsFixedE137");
+                window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                 if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
@@ -1180,7 +1203,7 @@
         if (debug_wrap===true) console.log("Fixing Fonts took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
     }
     ///===The Actual Round 4===///
-    function FunFixPunct(useLoop,MaxNumLoops,returnNow) {
+    function FunFixPunct(useTimeout,MaxNumLoops,returnNow) {
         SkippedTags=SkippedTagsForMarks;
         var recursion_start=0;
         var func_start=performance.now();
@@ -1188,22 +1211,18 @@
         if (returnNow===true) {
             return true;
         }
-        var useRecursion=true;
-        if (useLoop===true) {console.log('Must use "useRecursion=true"');}
-        if (useRecursion===true) {
-            var allrecur=document.querySelectorAll(".PunctSpace2Fix:not(.MarksFixedE135)");
-            for (var ir=0; ir<allrecur.length; ir++) {
-                //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
-                recursion_start=performance.now();
-                if (allrecur[ir].nodeName.match(/FONT/)) {
-                    FixPunctRecursion(allrecur[ir]);
-                }
-                if ( (performance.now()-t_start) > timeOut ) {
-                    processedAll=false;
-                    console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
-                    console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
-                    break;
-                }
+        var allrecur=document.querySelectorAll(".PunctSpace2Fix:not(.MarksFixedE135)");
+        for (var ir=0; ir<allrecur.length; ir++) {
+            //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
+            recursion_start=performance.now();
+            if (allrecur[ir].nodeName.match(/FONT/)) {
+                FixPunctRecursion(allrecur[ir]);
+            }
+            if ( useTimeout===true && (performance.now()-t_start) > timeOut ) {
+                processedAll=false;
+                console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
+                break;
             }
         }
         if (debug_wrap===true || debug_asyncTimers===true) console.log("FixCJK!: Fixing PMs took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
