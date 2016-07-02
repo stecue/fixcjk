@@ -16,7 +16,7 @@
 
 ## 用法
 ### 脚本安装
-较新的浏览器都需要附加组件来安装和管理用户脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。其他浏览器用户请参考相应的文档安装适当的附加组件或者插件。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。如果您喜欢超前体验胜过稳定，或者有意帮忙测试，也可以到[GitHub 上的项目主页](https://github.com/stecue/fixcjk/)获取最新[开发分支版本](https://github.com/stecue/fixcjk/tree/1.0.x)。
+较新的浏览器都需要附加组件来安装和管理用户脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。其他浏览器用户请参考相应的文档安装适当的附加组件或者插件。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。如果您喜欢超前体验胜过稳定，或者有意帮忙测试，也可以到[GitHub 上的项目主页](https://github.com/stecue/fixcjk/)获取最新[开发分支版本](https://github.com/stecue/fixcjk/tree/1.1.x)。
 
 ### 字体设置
 推荐下载安装 [Noto Sans CJK SC](https://www.google.com/get/noto/help/cjk/) 字体和 [Ubuntu Mono](https://www.google.com/fonts/specimen/Ubuntu+Mono) 字体。默认设置覆盖了大多数 Windows 和 Linux 设备。如果需要自定义设置（包括中英文字体以及修正级别），请直接修改脚本中从`CJKdefault`到`FixPunct`的定义。**注意**：自动更新可能会重置你对脚本做的修改。
