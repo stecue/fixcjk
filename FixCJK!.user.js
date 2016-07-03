@@ -286,6 +286,16 @@
             }
             return true;
         }
+        //Skip wrapping CJK for anchors to javascripts, otherwise the anchors will break.
+        all=document.querySelectorAll('a:not(.preCode)');
+        for (var ia=0;ia<all.length;ia++){
+            if (all[ia].classList.contains("CJKTestedAndLabeled")) {
+                continue;
+            }
+            if(all[ia].nodeName.match(/^A$/i) && all[ia].href.match(/^javascript/i) && (all[ia].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
+                all[ia].classList.add("preCode"); //No wrapping if in the "preCode" class.
+            }
+        }
         all=document.querySelectorAll(":not(.CJKTestedAndLabeled)");
         if (useCJKTimeOut===false) {
             console.log(all.length+" elements to check and label. From");
@@ -335,14 +345,6 @@
                         window.setTimeout(addTested,5,all[i],-1000); //Means no limits in actual webpages.
                     }
                 }
-                continue;
-            }
-            //Skip wrapping CJK for anchors to javascripts, otherwise the anchors will break.
-            if(all[i].nodeName.match(/^A$/i) && all[i].href.match(/^javascript/i) && (all[i].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
-                all[i].classList.add("CJK2Fix");
-                all[i].classList.add("preCode");
-                all[i].classList.add("MarksFixedE135");
-                all[i].classList.add("CJKTestedAndLabeled");
                 continue;
             }
             font_str=dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
