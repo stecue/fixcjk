@@ -37,4 +37,4 @@
 2. 由于脚本注入位置的差异，一些看起来并非动态生成的网页元素（比如本项目在 GitHub 上的[中文 Readme 文件](https://github.com/stecue/fixcjk/blob/master/README.md)）在页面载入完成时也可能尚未被修正。此时一般只需单击网页内的任意一点（包含动态效果或者链接的元素除外）即可修正该网页。也可直接双击，触发从字体到中英文空格的全面修正。
 
 ## 意见反馈
-任何意见或建议，请 Email、提 issue 或者在知乎私信[@猫立刻](https://www.zhihu.com/people/mol-le-kel)。
+任何意见或建议，请 [Email](mailto:stecue@gmail.com)、提 issue 或者在知乎私信[@猫立刻](https://www.zhihu.com/people/mol-le-kel)。
