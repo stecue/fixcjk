@@ -1,3 +1,7 @@
+## 1.1.1 (2016-07-02)
+Bugfixes:
+  - Fix the broken anchors to javascripts.
+
 ## 1.1.0 (2016-07-01)
 Features:
   - (For Debugging Only) Long-click to force testing and labeling all elements.
