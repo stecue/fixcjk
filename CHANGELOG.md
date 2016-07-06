@@ -1,3 +1,7 @@
+## 1.1.2 (2016-07-05)
+Bugfixes:
+  - Add more tags to the "SkippedTagsForMarks" list.
+
 ## 1.1.1 (2016-07-02)
 Bugfixes:
   - Fix the broken anchors to javascripts.
