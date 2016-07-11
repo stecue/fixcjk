@@ -366,6 +366,7 @@
                         if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
                             all[i].classList.remove("PunctSpace2Fix");
+                            all[i].classList.add("preCode");
                         }
                     }
                 }
@@ -378,6 +379,7 @@
                         if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
                             all[i].classList.remove("PunctSpace2Fix");
+                            all[i].classList.add("preCode");
                         }
                     }
                 }
@@ -411,15 +413,10 @@
                         if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
                             all[i].classList.remove("PunctSpace2Fix");
+                            all[i].classList.add("preCode");
                         }
                     }
-                    //Do I need to test the parentNode? I'll comment them out in 1.1.3
-                    if ( 0>1 && !(all[i].parentNode.nodeName.match(SkippedTags))) {
-                        all[i].parentNode.classList.add("CJK2Fix");
-                        if (!inTheClassOf(all[i].parentNode,preOrigPunctSpaceList) && !inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].parentNode.contentEditable!=="true") {
-                            all[i].parentNode.classList.add("PunctSpace2Fix");
-                        }
-                    }
+                    //Do I need to test the parentNode? I deleted them in 1.1.3
                     break;
                 }
                 child=realSibling;
