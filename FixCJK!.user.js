@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.2
+// @version           1.1.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -64,6 +64,7 @@
     var useDelayedFix=false;
     var useTimeout=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
+    var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var refixing=false;
@@ -360,16 +361,24 @@
                 if (font_size < 18) {
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("SimSun2Fix");
-                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable==="true") {
+                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable!=="true") {
                         all[i].classList.add("PunctSpace2Fix");
+                        if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
+                            //Do not wrap if already using "spaces" and no puncts
+                            all[i].classList.remove("PunctSpace2Fix");
+                        }
                     }
                 }
                 else {
                     all[i].style.fontFamily=font_str;
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("LargeSimSun2Fix");
-                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable==="true") {
+                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable!=="true") {
                         all[i].classList.add("PunctSpace2Fix");
+                        if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
+                            //Do not wrap if already using "spaces" and no puncts
+                            all[i].classList.remove("PunctSpace2Fix");
+                        }
                     }
                 }
                 all[i].classList.add("CJKTestedAndLabeled");
@@ -397,12 +406,17 @@
                 var realSibling=child.nextSibling;
                 if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                     all[i].classList.add("CJK2Fix");
-                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable==="true") {
+                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable!=="true") {
                         all[i].classList.add("PunctSpace2Fix");
+                        if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
+                            //Do not wrap if already using "spaces" and no puncts
+                            all[i].classList.remove("PunctSpace2Fix");
+                        }
                     }
-                    if (!(all[i].parentNode.nodeName.match(SkippedTags))) {
+                    //Do I need to test the parentNode? I'll comment them out in 1.1.3
+                    if ( 0>1 && !(all[i].parentNode.nodeName.match(SkippedTags))) {
                         all[i].parentNode.classList.add("CJK2Fix");
-                        if (!inTheClassOf(all[i].parentNode,preOrigPunctSpaceList) && !inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].parentNode.contentEditable==="true") {
+                        if (!inTheClassOf(all[i].parentNode,preOrigPunctSpaceList) && !inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].parentNode.contentEditable!=="true") {
                             all[i].parentNode.classList.add("PunctSpace2Fix");
                         }
                     }
