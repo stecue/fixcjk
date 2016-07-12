@@ -1,6 +1,7 @@
-## 1.1.3 (2016-07-11)
+## 1.1.3 (2016-07-12)
 Bugfixes:
   - Do not wrap CJK if not puncts to fix and no spaces to add.
+  - Disable running on .shtml pages for now.
 
 ## 1.1.2 (2016-07-05)
 Bugfixes:

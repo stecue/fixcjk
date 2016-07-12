@@ -31,6 +31,10 @@
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     var useJustify = true; //Make justify as the default alignment.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
+    if (document.URL.match(/.shtml$/i)) {
+        console.log('SHTML detected and it is currently unsupported.');
+        return false;
+    }
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
@@ -446,9 +450,6 @@
     var returnNow=true;
     var returnLater=false; //Do the actual fixing.
     var MaxNumLoops=1;
-    if (document.URL.match(/zhihuxcom|sinaxcom/)) {
-        seTimeout=true;
-    }
     if (useDelayedFix===true) {
         var DelayedTimer=200;
         window.setTimeout(FunFixPunct(true,MaxNumLoops,returnLater),DelayedTimer);
