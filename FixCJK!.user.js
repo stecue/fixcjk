@@ -1212,7 +1212,7 @@
                     }
                 }
                 else {
-                    console.log("FIXME: "+all[i].nodeName+'.'+all[i].classList+" was not captured in Round 3.");
+                    //font_str already contains signature.
                     if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
                 window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
