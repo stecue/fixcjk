@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.3
+// @version           1.1.4
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1186,7 +1186,7 @@
                 font_str = dequote(window.getComputedStyle(all[i], null).getPropertyValue('font-family'));
                 if (font_str.split(',').length >= rspLength) {
                     //continue if all[i] contains a list of fonts.
-                    if (!all[i].classList.contains("CJK2Fix")) {
+                    if (all[i].classList.contains("CJKTestedAndLabeled") && !all[i].classList.contains("CJK2Fix")) {
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (debug_03===true) {console.log(all[i]);all[i].style.color="FireBrick";} //FireBrick <-- Fixed.
                         continue;
@@ -1212,6 +1212,7 @@
                     }
                 }
                 else {
+                    console.log("FIXME: "+all[i].nodeName+'.'+all[i].classList+" was not captured in Round 3.");
                     if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
                 window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
