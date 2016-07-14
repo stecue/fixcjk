@@ -1,3 +1,7 @@
+## 1.1.4 (2016-07-13)
+Bugfixes:
+  - Check more before adding "FontsFixedE137" in Round 3.
+
 ## 1.1.3 (2016-07-12)
 Bugfixes:
   - Do not wrap CJK if not puncts to fix and no spaces to add.
