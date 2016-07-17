@@ -661,7 +661,7 @@
         }
         function addSpacesHelper(allE,t_substart) {
             for (var is=0;is<allE.length;is++) {
-                if ( !(allE[is].nodeName.match(/FONT/)) || allE[is].classList.contains("SpacesFixedE133") ) {
+                if ( !(allE[is].nodeName.match(/CJKTEXT/)) || allE[is].classList.contains("SpacesFixedE133") ) {
                     continue;
                 }
                 if ( useTimeout===true && (performance.now()-t_substart)> 800) {
@@ -1236,7 +1236,7 @@
         for (var ir=0; ir<allrecur.length; ir++) {
             //Seems no need to add !(allrecur[ir].parentNode.classList.contains("CJK2Fix")). It might be faster to fix the deepest element first through looping.
             recursion_start=performance.now();
-            if (allrecur[ir].nodeName.match(/FONT/)) {
+            if (allrecur[ir].nodeName.match(/CJKTEXT/i)) {
                 FixPunctRecursion(allrecur[ir]);
             }
             if ( useTimeout===true && (performance.now()-t_start) > timeOut ) {
@@ -1253,7 +1253,7 @@
         if (node.classList.contains("MarksFixedE135")) {
             return true;
         }
-        else if ( !(node.tagName.match(/FONT/)) ) {
+        else if ( !(node.tagName.match(/CJKTEXT/i)) ) {
             return false;
         }
         if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking node: "+node.nodeName+"."+node.className+"@"+node.parentNode.nodeName+":: "+node.innerHTML.slice(0,216));}
@@ -1304,7 +1304,7 @@
                 else if (child.classList.contains("MarksFixedE135")) {
                     //Fixed, do nothing.
                 }
-                else if (child.nodeName.match(/FONT/)) {
+                else if (child.nodeName.match(/CJKTEXT/)) {
                     FixPunctRecursion(child); //This is the recursion part. Not really recursion after 0.15.... 
                 }
                 else {
