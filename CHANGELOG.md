@@ -1,3 +1,7 @@
+## 1.1.5 (2016-07-17)
+Bugfixes:
+  - Avoid multiple wraps for "font" elements.
+
 ## 1.1.4 (2016-07-13)
 Bugfixes:
   - Check more before adding "FontsFixedE137" in Round 3.
