@@ -1,3 +1,7 @@
+## 1.1.6 (2016-07-22)
+Bugfixes:
+  - Restore the ability to use SimSun or SimHei if NotoSans is not installed.
+
 ## 1.1.5 (2016-07-17)
 Bugfixes:
   - Avoid multiple wraps for "font" elements.
