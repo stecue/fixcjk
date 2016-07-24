@@ -1,3 +1,7 @@
+## 1.1.7 (2016-07-23)
+Bugfixes:
+  - No longer label as CJK if only quotation marks are detected.
+
 ## 1.1.6 (2016-07-22)
 Bugfixes:
   - Restore the ability to use SimSun or SimHei if NotoSans is not installed.
