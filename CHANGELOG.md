@@ -1,3 +1,7 @@
+## 1.1.8 (2016-07-27)
+Features:
+  - Add "Source Sans Pro" to the font list.
+
 ## 1.1.7 (2016-07-23)
 Bugfixes:
   - No longer label as CJK if only quotation marks are detected.
