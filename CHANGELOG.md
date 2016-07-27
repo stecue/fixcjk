@@ -1,6 +1,6 @@
 ## 1.1.8 (2016-07-27)
 Features:
-  - Add "Source Sans Pro" to the font list.
+  - Add "PT Sans" and "PT Serif" to the font list.
 
 ## 1.1.7 (2016-07-23)
 Bugfixes:
