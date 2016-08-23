@@ -67,7 +67,7 @@
     var useDelayedFix=false;
     var useTimeout=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
-    var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/
+    var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var refixing=false;
@@ -296,7 +296,8 @@
             if (all[ia].classList.contains("CJKTestedAndLabeled")) {
                 continue;
             }
-            if (all[ia].hasArribute("data-mathml") {
+            if (all[ia].hasAttribute("data-mathml")) {
+                console.log(all[ia]);
                 all[ia].classList.add("preMath");
                 banMathHelper(all[ia]);
             }
