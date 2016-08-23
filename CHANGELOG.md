@@ -1,3 +1,8 @@
+## 1.1.8 (2016-07-27)
+Features:
+  - Add "PT Sans" and "PT Serif" to the font list.
+  - More "excludes".
+
 ## 1.1.7 (2016-07-23)
 Bugfixes:
   - No longer label as CJK if only quotation marks are detected.
