@@ -9,7 +9,6 @@
 // @license           GPLv3
 // @match             http://*/*
 // @match             https://*/*
-// @match             file:///*
 // @exclude           https://*jsfiddle.net*/*
 // @exclude           http://*stackexchange.com/*
 // @exclude           http://*mathoverflow.net/*
