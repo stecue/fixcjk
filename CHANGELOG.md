@@ -1,5 +1,13 @@
+## 1.1.10 (2017-08-09)
+Bugfixes:
+  - Remove "// @match             file:///*" to enable the script again with greasemonkey.
+
+## 1.1.9 (2016-08-23)
+Bugfixes:
+  - Compatible with MathJax.
+
 ## 1.1.8 (2016-07-27)
-Features:
+Features/Bugfixes:
   - Add "PT Sans" and "PT Serif" to the font list.
   - More "excludes".
 

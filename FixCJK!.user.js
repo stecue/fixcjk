@@ -2,14 +2,13 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.8
+// @version           1.1.9
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
 // @license           GPLv3
 // @match             http://*/*
 // @match             https://*/*
-// @match             file:///*
 // @exclude           https://*jsfiddle.net*/*
 // @exclude           http://*stackexchange.com/*
 // @exclude           http://*mathoverflow.net/*
@@ -67,7 +66,7 @@
     var useDelayedFix=false;
     var useTimeout=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
-    var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/
+    var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var refixing=false;
@@ -295,6 +294,11 @@
         for (var ia=0;ia<all.length;ia++){
             if (all[ia].classList.contains("CJKTestedAndLabeled")) {
                 continue;
+            }
+            if (all[ia].hasAttribute("data-mathml")) {
+                console.log(all[ia]);
+                all[ia].classList.add("preMath");
+                banMathHelper(all[ia]);
             }
             if(all[ia].nodeName.match(/^A$/i) && all[ia].href.match(/^javascript/i) && (all[ia].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
                 all[ia].classList.add("preCode"); //No wrapping if in the "preCode" class.
