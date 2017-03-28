@@ -12,3 +12,4 @@
 * Also encapsulate Latin QM if context is in SimSun?
 * Use BFS to traverse the DOM tree?
 * ~~Fix the hidden elements problem.~~
+* Optimize speed according to HTMLElement.lang
