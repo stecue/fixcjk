@@ -93,6 +93,7 @@
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */i;
     var docLang = document.documentElement.lang;
     if (docLang === 'ja' ) {
+        console.log('Non-optimal lang attribute detected, exiting...');
         return true;
     }
     var all = document.getElementsByTagName('*');
