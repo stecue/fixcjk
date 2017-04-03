@@ -81,12 +81,12 @@
     var stopClasses='mw-editsection';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
-    var noWrappingClasses='userInfo, pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
+    var noWrappingClasses='userInfo,userName,pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath,SpacesFixedE133';
     var re_autospace_url=/zhihu\.com|guokr\.com|changhai\.org|wikipedia\.org|greasyfork\.org|github\.com/;
-    var preCodeTags='code,pre,tt'; //Is this the same as "SkippedTagsForMarks"?
+    var preCodeTags='userInfo,code,pre,tt'; //Is this the same as "SkippedTagsForMarks"?
     var preMathTags='math'; //Do not change puncts as well as fonts. Just like "math".
     var t_start = performance.now();
     var t_stop = t_start;
