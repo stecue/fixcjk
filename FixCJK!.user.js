@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.50
+// @version           1.1.51
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -81,7 +81,7 @@
     var stopClasses='mw-editsection';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
-    var preOrigPunctSpaceList='pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
+    var noWrappingClasses='userInfo, pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath,SpacesFixedE133';
@@ -251,7 +251,7 @@
                         if (font_size < 18) {
                             node.classList.add("CJK2Fix");
                             node.classList.add("SimSun2Fix");
-                            if (!inTheClassOf(node,preOrigPunctSpaceList)) {
+                            if (!inTheClassOf(node,noWrappingClasses)) {
                                 node.classList.add("PunctSpace2Fix");
                             }
                         }
@@ -259,7 +259,7 @@
                             //node.style.fontFamily=font_str; //Is this to improve the speed?
                             node.classList.add("CJK2Fix");
                             node.classList.add("LargeSimSun2Fix");
-                            if (!inTheClassOf(node,preOrigPunctSpaceList)) {
+                            if (!inTheClassOf(node,noWrappingClasses)) {
                                 node.classList.add("PunctSpace2Fix");
                             }
                         }
@@ -267,7 +267,7 @@
                 }
                 else if (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) {
                     node.classList.add("CJK2Fix");
-                    if (!inTheClassOf(node,preOrigPunctSpaceList)) {
+                    if (!inTheClassOf(node,noWrappingClasses)) {
                         node.classList.add("PunctSpace2Fix");
                     }
                 }
@@ -373,7 +373,7 @@
                 if (font_size < 18) {
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("SimSun2Fix");
-                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable!=="true") {
+                    if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].classList.add("PunctSpace2Fix");
                         if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
@@ -386,7 +386,7 @@
                     //all[i].style.fontFamily=font_str; //Is this to increase the speed?
                     all[i].classList.add("CJK2Fix");
                     all[i].classList.add("LargeSimSun2Fix");
-                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable!=="true") {
+                    if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].classList.add("PunctSpace2Fix");
                         if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
@@ -420,7 +420,7 @@
                 var realSibling=child.nextSibling;
                 if (child.nodeType == 3 && (child.data.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                     all[i].classList.add("CJK2Fix");
-                    if (!inTheClassOf(all[i],preOrigPunctSpaceList) && all[i].contentEditable!=="true") {
+                    if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].classList.add("PunctSpace2Fix");
                         if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
@@ -557,7 +557,7 @@
     }
     function labelNoWrappingList() {
         var ie=0;
-        var bannedClassList=preOrigPunctSpaceList.split(',');
+        var bannedClassList=noWrappingClasses.split(',');
         for (var i=0;i<bannedClassList.length;i++) {
             var all2Ban=document.getElementsByClassName(bannedClassList[i]);
             for (ie=0;ie<all2Ban.length;ie++)
@@ -1273,7 +1273,7 @@
         var currHTML="";
         var allSubSafe=true;
         var node2fix=true;
-        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,preOrigPunctSpaceList)) {
+        if ((node.nodeName.match(tabooedTags)) || inTheClassOf(node,noWrappingClasses)) {
             //Although BODY is tabooed, this is OK because a loop is outside this recursive implementation.
             node.classList.remove("Safe2FixCJK\uE000");
             node.classList.remove("PunctSpace2Fix");
@@ -1300,7 +1300,7 @@
                 }
             }
             if (child.nodeType===1 && !(child instanceof SVGElement))  {
-                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,preOrigPunctSpaceList) ) {
+                if  ((child.nodeName.match(tabooedTags) ) || inTheClassOf(child,noWrappingClasses) ) {
                     //was like this: if  (child.nodeName.match(tabooedTags) || child.classList.contains("MarksFixedE135")) {. I don't know why.
                     child.classList.remove("Safe2FixCJK\uE000");
                     child.classList.remove("CJK2Fix");
@@ -1332,7 +1332,7 @@
             for (var icl=0;icl<CJKclasses.length;icl++) {
                 node.classList.remove(CJKclasses[icl]);
             }
-            if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,preOrigPunctSpaceList))) {
+            if (node.classList.length===0 && node.id.length ===0 && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,noWrappingClasses))) {
                 //It would be crazy if add listeners just by tags.
                 node.className=orig_class;
                 node.classList.add("Safe2FixCJK\uE000");
@@ -1342,7 +1342,7 @@
             }
         }
         //Config and Filtering Done. Fix puncts if necessary.
-        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,preOrigPunctSpaceList)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
+        if (allSubSafe===true && node2fix===true && !(node.nodeName.match(tabooedTags)) && !(inTheClassOf(node,noWrappingClasses)) && node.classList.contains("CJK2Fix") && !(node.classList.contains("MarksFixedE135"))) {
             if (debug_verbose===true) console.log("USING Recursion: "+node.nodeName+'.'+node.className);
             if (debug_verbose===true) { console.log("WARNING: Danger Operation on: "+node.nodeName+"."+node.className+":: "+node.innerHTML.slice(0,216)); }
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking if contain punctuations to fix");}
