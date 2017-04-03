@@ -69,6 +69,7 @@
     var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
+    console.log('FixCJK! version '+GM_info.script.version);
     var refixing=false;
     var refixingFonts=false;
     var rspLength=3; //If the font-list reaches the length here, the author is probably responsible enough to cover most Latin/English environment.
