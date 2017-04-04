@@ -1,4 +1,4 @@
-## 1.1.10 (2017-08-09)
+## 1.1.10 (2017-03-09)
 Bugfixes:
   - Remove "// @match             file:///*" to enable the script again with greasemonkey.
 
