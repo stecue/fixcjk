@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.52
+// @version           1.1.80
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -46,7 +46,7 @@
     var ifRound2=true;
     var ifRound3=true;
     var debug_verbose = false; //show/hide more information on console.
-    var debug_00 = false; //debug codes before Rounds 1/2/3/4.
+    var debug_00 = true; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
     var debug_03 = false;
@@ -77,6 +77,8 @@
     var SkippedTagsForFonts=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|embed|figure|map|object|textarea|input|code|pre|time|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
+    //It seems that "lang" cannot be calculated. Just use node.lang to get the lang of current elements.
+    var SkippedLangs=/(ja|en)/i;
     var pureLatinTags=/^(TITLE|HEAD|LINK|SCRIPT|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|svg)$/i; //No CJK labeling for the elements and their desedents.
     var stopTags=/^(SUB|SUP|BR|VR)$/i; //The "see-through" stops at these tags.
     var stopClasses='mw-editsection';
@@ -147,11 +149,11 @@
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
     //letter-spacing options
-    var kern_consec_ll='-0.35em'; //。” or ））
-    var kern_consec_rr='-0.35em'; //（（
-    var kern_consec_lr='-0.8em'; //）（
-    var kern_ind_open='-0.22em';
-    var kern_ind_close='-0.22em';
+    var kern_consec_ll='0.0em'; //。” or ））
+    var kern_consec_rr='0.0em'; //（（
+    var kern_consec_lr='0.0em'; //）（
+    var kern_ind_open='0.15em'; //margin-left for opening punct.
+    var kern_ind_close='0.15em'; //margin-right closing punct.
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
@@ -184,6 +186,7 @@
         punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
     }
+    punctStyle=punctStyle+'\n cjktext { -moz-font-feature-settings:"palt"; -webkit-font-feature-settings:"palt";font-feature-settings:"palt";}';
     if (debug_00===true) console.log(punctStyle);
     GM_addStyle(punctStyle);
     ///----------------------------
@@ -238,7 +241,7 @@
         var child=node.firstChild;
         while (child) {
             if (child.nodeType===3) {
-                if (node.classList.contains("CJKTestedAndLabeled") || node.nodeName.match(SkippedTags)) {
+                if (node.classList.contains("CJKTestedAndLabeled") ) {
                     //Do nothing if already labeled.
                 }
                 else if (font_str.match(re_simsun)) {
@@ -348,7 +351,7 @@
                 if (debug_labelCJK===true) {console.log(all[i-1]);}
                 break;
             }
-            if ((all[i].nodeName.match(SkippedTags)) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
+            if ((all[i].nodeName.match(SkippedTags)) || (!(!all[i].lang) && all[i].lang.match(SkippedLangs) ) || all[i] instanceof SVGElement || all[i].classList.contains("CJKTestedAndLabeled")){
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
                 window.setTimeout(function (node) {node.classList.add("CJKTestedAndLabeled");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                 if (all[i].nodeName.match(pureLatinTags)) {
@@ -1187,7 +1190,7 @@
                         if (debug_verbose===true) {console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. ');}
                     }
                 }
-                if (all[i].nodeName.match(SkippedTags) || (all[i] instanceof SVGElement) ) {
+                if (all[i].nodeName.match(SkippedTags) || (!(!all[i].lang) && all[i].lang.match(SkippedLangs) ) || (all[i] instanceof SVGElement) ) {
                     if (debug_03===true) {console.log("Skipped:");console.log(all[i]);}
                     continue;
                 }
@@ -1627,8 +1630,9 @@
             }
             //Then, not the first char. The re_ex also covers the first punct of a serise of puncts.
             currHTML=currHTML.replace(/([^\n><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><\uF201-\uF204]|$)/mg,'$1$2<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';">$3</cjktext>$4$5');
-            //Do not squeeze the last punctuation marks in a paragraph. Too risky. $3 seems necessary?
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?$/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:0px">$1</cjktext>$2');
+            //Previously: Do not squeeze the last punctuation marks in a paragraph. Too risky. $3 seems necessary?
+            //Now: Using positive margin seems safe.
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?$/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+'">$1</cjktext>$2');
             //Note that [\uF201-\uF204]CJK[\uF201-\uF204] might be added to the end and it must be excluded.
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?((?:<[^><]*>)+[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]|[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';">$1</cjktext>$2$3');
         }
@@ -1691,6 +1695,9 @@
             console.log("The Continued HTML is:\n"+continuedHTML);
         }
         return currHTML;
+    }
+    function finalCheck() {
+        //the finalCheck, e.g. check if "negative margin-right at the tail".
     }
     function displayedText(node) {
         var child=node.firstChild;
