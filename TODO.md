@@ -13,5 +13,5 @@
 * Use BFS to traverse the DOM tree?
 * ~~Fix the hidden elements problem.~~
 * Optimize speed according to HTMLElement.lang
- * Defer label "lang=en,..." until double click.
+  * Defer label "lang=en,..." until double click.
 
