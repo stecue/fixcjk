@@ -46,7 +46,7 @@
     var ifRound2=true;
     var ifRound3=true;
     var debug_verbose = false; //show/hide more information on console.
-    var debug_00 = true; //debug codes before Rounds 1/2/3/4.
+    var debug_00 = false; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
     var debug_02 = false;
     var debug_03 = false;
@@ -152,8 +152,8 @@
     var kern_consec_ll='0.0em'; //。” or ））
     var kern_consec_rr='0.0em'; //（（
     var kern_consec_lr='0.0em'; //）（
-    var kern_ind_open='0.15em'; //margin-left for opening punct.
-    var kern_ind_close='0.15em'; //margin-right closing punct.
+    var kern_ind_open='0.22em'; //margin-left for opening punct.
+    var kern_ind_close='0.22em'; //margin-right closing punct.
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
