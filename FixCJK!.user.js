@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.85
+// @version           1.1.86
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -37,7 +37,6 @@
     var useJustify = true; //Make justify as the default alignment.
     var forceAutoSpace = false; //if enabled, no need to double-click to add spaces.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
-    var forceFontsImportant = false;
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
@@ -50,6 +49,7 @@
     var ifRound1=true;
     var ifRound2=true;
     var ifRound3=true;
+    var forceNoSimSun = false; //in case SimSun is the "!important" one. Note that other fixes will not be performed for applied tags.
     var debug_verbose = false; //show/hide more information on console.
     var debug_00 = false; //debug codes before Rounds 1/2/3/4.
     var debug_01 = false; //Turn on colors for Round 1.
@@ -547,10 +547,12 @@
             if (fireReFix===true) {
                 ReFixCJKFontsOnly();
             }
+        //setTimeout(function(){ fontsCheck(); }, 30);
         },t_interval);
     },false);
     document.body.addEventListener("dblclick",function() {
         addSpaces(true);
+        //setTimeout(function(){ fontsCheck(); }, 30);
         //Prevent ReFixing for a certain time;
     },false);
     ///===Time to exit the main function===///
@@ -1025,7 +1027,12 @@
             }
             font_str = dequote(window.getComputedStyle(allSuns[isun], null).getPropertyValue('font-family'));
             if (font_str.match(re_simsun) &&  !(font_str.match(sig_sim))  ) {
-                allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qSimSun);
+                if (forceNoSimSun === true ) {
+                    allSuns[isun].style.setProperty("font-family",font_str.replace(re_simsun,qSimSun),"important");
+                    allSuns[isun].classList.add("FontsFixedE137");
+                }
+                else
+                    allSuns[isun].style.fontFamily = font_str.replace(re_simsun,qSimSun);
                 allSuns[isun].classList.add("SimSunFixedE137");
             }
         }
@@ -1077,28 +1084,20 @@
                             if (debug_01===true) all[i].style.color="Salmon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                            if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
                             if (debug_01===true) all[i].style.color="SeaGreen";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                            if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
                             if (debug_01===true) all[i].style.color="Maroon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                            if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }        //Just append the fonts to the font preference list.
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                            if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }
                     }
                     child = realSibling;
@@ -1142,8 +1141,6 @@
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
                     window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                    if (forceFontsImportant === true)
-                        all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     continue;
                 }
                 else {
@@ -1154,22 +1151,16 @@
                         //all[i].style.color="Salmon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                        if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                        if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
                         //all[i].style.color="Maroon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                        if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     }
                     else {
                         if (debug_02===true) {all[i].style.color='Fuchsia';}
@@ -1179,8 +1170,6 @@
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                            if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }
                     }
                 }
@@ -1243,8 +1232,6 @@
                     //continue if all[i] contains a list of fonts.
                     if (all[i].classList.contains("CJKTestedAndLabeled") && !all[i].classList.contains("CJK2Fix")) {
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                        if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         if (debug_03===true) {console.log(all[i]);all[i].style.color="FireBrick";} //FireBrick <-- Fixed.
                         continue;
                     }
@@ -1273,11 +1260,10 @@
                     if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
                 window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
-                if (forceFontsImportant === true)
-                    all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                 if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
+        //setTimeout(function(){ fontsCheck(); }, 30);
         if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
         if (debug_wrap===true) console.log("Fixing Fonts took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
@@ -1740,8 +1726,26 @@
         }
         return currHTML;
     }
-    function finalCheck() {
+    function fontsCheck() {
         //the finalCheck, e.g. check if "negative margin-right at the tail".
+        if (forceNoSimSun === true) {
+            var allCJK=document.getElementsByTagName("CJKTEXT");
+            console.log("Number of tag <cjktext>: "+allCJK.length);
+            for (var ifc=0;ifc<allCJK.length;ifc++) {
+                if (allCJK[ifc].style.cssText.match("font-family")) {
+                    //Make sure just one important.
+                    if (allCJK[ifc].style.cssText.match(/fonts-family[^;]*important/))
+                        continue;
+                    //console.log(allCJK[ifc].style.cssText.replace(/(font-family.[^;]*);/g,'$1 !important;'));
+                    allCJK[ifc].style.cssText=allCJK[ifc].style.cssText.replace(/(font-family.[^;]*);/g,'$1 !important;');
+                }
+                else if (allCJK[ifc].parentNode.style.cssText.match("font-family")) {
+                    allCJK[ifc].style.setProperty("font-family",allCJK[ifc].parentNode.style.fontFamily,"important");
+                }
+                else
+                    console.log("FIXME: no font settings found.");
+            }
+        }
     }
     function displayedText(node) {
         var child=node.firstChild;
