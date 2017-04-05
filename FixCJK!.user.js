@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.83
+// @version           1.1.84
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -32,6 +32,7 @@
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     ///=== Experimental Options. The following options are for experienced users.===///
+    var usePaltForCJKText = false; //If apply "palt" to CJK text (not only puncts) as well.
     var usePaltForAll = false; //If apply "palt" to as much elements as possible.
     var useJustify = true; //Make justify as the default alignment.
     var forceAutoSpace = false; //if enabled, no need to double-click to add spaces.
@@ -197,9 +198,12 @@
         punctStyle=punctStyle+'\n @font-face { font-family: ËÎÌå;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
     }
-    punctStyle=punctStyle+'\n cjktext { -moz-font-feature-settings:"palt"; -webkit-font-feature-settings:"palt";font-feature-settings:"palt";}';
+    punctStyle=punctStyle+'\n cjkpuns { -moz-font-feature-settings:"palt"; -webkit-font-feature-settings:"palt";font-feature-settings:"palt";}';
     if (useNativeKerning === true) {
-        punctStyle=punctStyle+'\n cjktext { font-kerning: normal; }';
+        punctStyle=punctStyle+'\n cjkpuns { font-kerning: normal; }';
+    }
+    if (usePaltForCJKText === true) {
+        punctStyle=punctStyle+'\n cjktext {-moz-font-feature-settings:"palt"; -webkit-font-feature-settings:"palt";font-feature-settings:"palt";}';
     }
     if (usePaltForAll === true) {
         punctStyle=punctStyle+'\n * {-moz-font-feature-settings:"palt"; -webkit-font-feature-settings:"palt";font-feature-settings:"palt";}';
@@ -710,7 +714,7 @@
                         if (tmp_str.match(/[\u3400-\u9FBF][\s\u200B-\u200E\2060]{0,2}$/)) {
                             tmp_str=tmp_str+'\uF204CJK\uF204'+getAfterHTML(allE[is]);
                         }
-                        //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <cjktext> tags.
+                        //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <cjkpuns> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
                         tmp_str=tmp_str.replace(/&nbsp;/,'\u00A0'); //Or, tmp_str=tmp_str.replace(/\u0026nbsp\u003B/,'\u00A0');
                         tmp_str=tmp_str.replace(/&thinsp;/,'\u2009'); //Or, tmp_str=tmp_str.replace(/\u0026thinsp\u003B/,'\u2009');
@@ -752,17 +756,17 @@
         }
         allS=document.getElementsByClassName("checkSpacedQM");
         for (i=0;i<allS.length;i++){
-            var toRemoved=/(<cjktext[^><]*\uE699[^><]*>\u0020<\/cjktext>)((?:<[^><\uE985\uE211]*>)*[\u2018\u201C])/g;
+            var toRemoved=/(<cjktext[^><]*\uE699[^><]*>\u0020<\/cjkpuns>)((?:<[^><\uE985\uE211]*>)*[\u2018\u201C])/g;
             if (allS[i].innerHTML.match(toRemoved)) {
                 allS[i].innerHTML=allS[i].innerHTML.replace(toRemoved,'$2');
             }
             //No closing tag: En"Zh
-            toRemoved=/([\u2019\u201D])<cjktext[^><]*\uE699[^><]*>\u0020<\/cjktext>/g;
+            toRemoved=/([\u2019\u201D])<cjktext[^><]*\uE699[^><]*>\u0020<\/cjkpuns>/g;
             if (allS[i].innerHTML.match(toRemoved)) {
                 allS[i].innerHTML=allS[i].innerHTML.replace(toRemoved,'$1');
             }
             //With closing tag: En"Zh
-            toRemoved=/((?:^|[^>]|<[^><\uE985\uE211]*>)[\u2019\u201D](?:<[^><\uE985\uE211]*>)+)(<cjktext[^><]*\uE699[^><]*>\u0020<\/cjktext>)/mg;
+            toRemoved=/((?:^|[^>]|<[^><\uE985\uE211]*>)[\u2019\u201D](?:<[^><\uE985\uE211]*>)+)(<cjktext[^><]*\uE699[^><]*>\u0020<\/cjkpuns>)/mg;
             if (allS[i].innerHTML.match(toRemoved)) {
                 allS[i].innerHTML=allS[i].innerHTML.replace(toRemoved,'$1');
             }
@@ -1636,22 +1640,22 @@
         while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF201-\uF204]CJK[\uF201-\uF204])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
-                tmp_str='<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';font-family:General Punct \uE137 !important;">$1</cjktext>$2$3';
+                tmp_str='<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_ll+';font-family:General Punct \uE137 !important;">$1</cjkpuns>$2$3';
                 currHTML=currHTML.replace(reLL,tmp_str);
             }
             else if (currHTML.match(reLR)) {
                 //--TWO PUNCTS: {Left}{Right}--//
-                tmp_str='<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';font-family:General Punct \uE137 !important;">$1</cjktext>$2$3';
+                tmp_str='<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_lr+';font-family:General Punct \uE137 !important;">$1</cjkpuns>$2$3';
                 currHTML=currHTML.replace(reLR,tmp_str);
             }
             else if (currHTML.match(reRR)) {
                 //--TWO PUNCTS: {Right}{Right}--//
-                tmp_str='<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_rr+';font-family:General Punct \uE137 !important;">$1</cjktext>$2$3';
+                tmp_str='<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;letter-spacing:'+kern_consec_rr+';font-family:General Punct \uE137 !important;">$1</cjkpuns>$2$3';
                 currHTML=currHTML.replace(reRR,tmp_str);
             }
             else if (currHTML.match(reRL)) {
                 //--TWO PUNCTS: no letter-spacing adjustment for {Right}-{Left}, just a "fake" element--//
-                currHTML=currHTML.replace(reRL,'$1<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;"></cjktext>$2$3');
+                currHTML=currHTML.replace(reRL,'$1<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;"></cjkpuns>$2$3');
             }
             else {
                 console.log("FIXME: current combination of punctuations has not been considered!");
@@ -1666,15 +1670,15 @@
             //In current model (1.0.x), all tags are added within this function (FixMarksInCurrHTML), and it should be safe to skip them.
             //Seems no need to squeeze the puncts at the beginning of a paragraph. It may cause format changes.
             if (SqueezeFirst===true) {
-                currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])?(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjktext>');
+                currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])?(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjkpuns>');
             }
             //Then, not the first char. The re_ex also covers the first punct of a serise of puncts.
-            currHTML=currHTML.replace(/([^\n><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><\uF201-\uF204]|$)/mg,'$1$2<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjktext>$4$5');
+            currHTML=currHTML.replace(/([^\n><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><\uF201-\uF204]|$)/mg,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
             //Previously: Do not squeeze the last punctuation marks in a paragraph. Too risky. $3 seems necessary?
             //Now: Using positive margin seems safe.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?$/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';font-family:General Punct \uE137 !important;">$1</cjktext>$2');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?$/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';font-family:General Punct \uE137 !important;">$1</cjkpuns>$2');
             //Note that [\uF201-\uF204]CJK[\uF201-\uF204] might be added to the end and it must be excluded.
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?((?:<[^><]*>)+[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]|[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';font-family:General Punct \uE137 !important;">$1</cjktext>$2$3');
+            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?((?:<[^><]*>)+[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]|[^><\n\uF201-\uF204、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';font-family:General Punct \uE137 !important;">$1</cjkpuns>$2$3');
         }
         ///=== Squeezing Ends ===///
         var time2squeeze=performance.now()-FixMarks_start-time2shift-time2protect;
@@ -1708,10 +1712,10 @@
         currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
         currHTML=currHTML.replace(/\uEC1D/mg,'\u201D');
         //Use '\uE985' as the class of CJK quotation marks.
-        currHTML=currHTML.replace(/\uEB1C/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u201C</cjktext>');
-        currHTML=currHTML.replace(/\uEB1D/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u201D</cjktext>');
-        currHTML=currHTML.replace(/\uEB18/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u2018</cjktext>');
-        currHTML=currHTML.replace(/\uEB19/mg,'<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u2019</cjktext>');
+        currHTML=currHTML.replace(/\uEB1C/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u201C</cjkpuns>');
+        currHTML=currHTML.replace(/\uEB1D/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u201D</cjkpuns>');
+        currHTML=currHTML.replace(/\uEB18/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u2018</cjkpuns>');
+        currHTML=currHTML.replace(/\uEB19/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE985" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:'+dequote(CJKPunct)+' !important;">\u2019</cjkpuns>');
         ///=== Replacing and Restoring Ends ===///
         var time2replace=performance.now()-FixMarks_start-time2squeeze-time2shift-time2protect;
         if ( (performance.now()-FixMarks_start)>200 ) {
