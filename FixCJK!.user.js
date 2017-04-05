@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.80
+// @version           1.1.81
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -154,6 +154,13 @@
     var kern_consec_lr='0.0em'; //）（
     var kern_ind_open='0.22em'; //margin-left for opening punct.
     var kern_ind_close='0.22em'; //margin-right closing punct.
+    //Whether to use the native embeded OpenType kerning or not, see
+    //https://helpx.adobe.com/typekit/using/open-type-syntax.html
+    var useNativeKerning=false;
+    if (useNativeKerning === true) {
+        kern_ind_open='0.0em';
+        kern_ind_close='0.0em';
+    }
     //Check if the font definitions are valid
     if (check_fonts(CJKdefault, 'CJKdefault') === false)
         return false;
@@ -187,6 +194,9 @@
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly(LatinInSimSun)+');\n unicode-range: U+0000-2C7F;}';
     }
     punctStyle=punctStyle+'\n cjktext { -moz-font-feature-settings:"palt"; -webkit-font-feature-settings:"palt";font-feature-settings:"palt";}';
+    if (useNativeKerning === true) {
+        punctStyle=punctStyle+'\n cjktext { font-kerning: normal; }';
+    }
     if (debug_00===true) console.log(punctStyle);
     GM_addStyle(punctStyle);
     ///----------------------------
