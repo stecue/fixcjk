@@ -14,4 +14,4 @@
 * ~~Fix the hidden elements problem.~~
 * Optimize speed according to HTMLElement.lang
   * Defer label "lang=en,..." until double click.
-
+* Use google fonts service to fetch online fonts.
