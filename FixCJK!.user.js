@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.86
+// @version           1.1.87
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -77,6 +77,8 @@
     console.log('FixCJK! version '+GM_info.script.version);
     var refixing=false;
     var refixingFonts=false;
+    var respacing=false;
+    var lastspacing=0.0;
     var rspLength=3; //If the font-list reaches the length here, the author is probably responsible enough to cover most Latin/English environment.
     var waitForDoubleClick=200;
     var SkippedTagsForFonts=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
@@ -500,11 +502,12 @@
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
     ///===Try to fix spaces if forceAutoSpaces is set===///
     if (forceAutoSpaces === true)
-        window.setTimeout(addSpaces,10);
+        window.setTimeout(function (){addSpaces(true,100);},10);
     ///===Add onClick listener before exiting===///
     var NumClicks=0;
     var t_last=performance.now();
     var t_interval=1000; //The interval between two checks.
+    var t_interSpacing=500;
     var NumAllCJKs=(document.getElementsByClassName('CJK2Fix')).length;
     var NumPureEng=0;
     var LastURL=document.URL;
@@ -527,7 +530,7 @@
             //ReFix after other things are done.
             setTimeout(ReFixCJK,5,e);
             if (forceAutoSpaces === true)
-                setTimeout(addSpaces,5,e);
+                setTimeout(function (){addSpaces(true,300);},5);
         }
         else if (((performance.now()-downtime) > 1500) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //Force to labelCJK;
@@ -539,7 +542,7 @@
             labelNoWrappingList();
             if (useWrap===true) wrapCJK();
             FunFixPunct(false,5,false);
-            addSpaces(false);
+            addSpaces(false,10000);
             t_CJK=performance.now()-t_CJK;
             console.log("Labeling and fixing all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
         }
@@ -552,12 +555,15 @@
             if (fireReFix===true) {
                 ReFixCJKFontsOnly();
             }
-        //setTimeout(function(){ fontsCheck(); }, 30);
+            //setTimeout(function(){ fontsCheck(); }, 30);
+            if (forceAutoSpaces === true) {
+                addSpaces(true,30);
+            }
         },t_interval);
     },false);
     if (forceAutoSpaces === false) {
         document.body.addEventListener("dblclick",function() {
-            addSpaces(true);
+            addSpaces(true,300);
             //setTimeout(function(){ fontsCheck(); }, 30);
             //Prevent ReFixing for a certain time;
         },false);
@@ -629,8 +635,16 @@
         node.classList.add("MarksFixedE135");
         node.classList.add("preMath");
     }
-    function addSpaces(useTimeout) {
+    function addSpaces(useSpacingTimeout,spacingTimeOut) {
+        if (respacing === true)
+            return false;
         var t_spaces=performance.now();
+        if (t_spaces-lastspacing < t_interSpacing ) {
+            //console.log("Skiping spacing...");
+            return false;
+        }
+        lastspacing=t_spaces;
+        respacing=true;
         if (debug_spaces===true) console.log('FixCJK!: Adding spaces...');
         var allQ=document.querySelectorAll(".\uE985");
         for (var iq=0;iq<allQ.length;iq++) {
@@ -639,7 +653,7 @@
             allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\u201C/g,'\uEB1C');
             allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\u201D/g,'\uEB1D');
         }
-        addSpacesHelper(document.querySelectorAll(".PunctSpace2Fix:not(.SpacesFixedE133)"),performance.now());
+        addSpacesHelper(document.querySelectorAll(".PunctSpace2Fix:not(.SpacesFixedE133)"),useSpacingTimeout,spacingTimeOut);
         allQ=document.querySelectorAll(".\uE985"); //I need to reselect because the "references" are changed?
         for (iq=0;iq<allQ.length;iq++) {
             allQ[iq].innerHTML=allQ[iq].innerHTML.replace(/\uEB18/g,'\u2018');
@@ -650,6 +664,7 @@
         if (useRemoveSpacesForSimSun===true) {
             window.setTimeout(removeSpacesForSimSun,10);
         }
+        respacing=false;
         console.log("FixCJK: Adding spaces took "+((performance.now()-t_spaces)/1000).toFixed(3)+" seconds.");
         function getAfterHTML(child) { //FIXME: A recursion block might be needed as getAfter(child)
             var toReturn='';
@@ -705,12 +720,13 @@
                 return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
             }
         }
-        function addSpacesHelper(allE,t_substart) {
+        function addSpacesHelper(allE,useSpacingTimeout,spacingTimeOut) {
+            var t_substart=performance.now();
             for (var is=0;is<allE.length;is++) {
                 if ( !(allE[is].nodeName.match(/CJKTEXT/)) || allE[is].classList.contains("SpacesFixedE133") ) {
                     continue;
                 }
-                if ( useTimeout===true && (performance.now()-t_substart)> 800) {
+                if ( useSpacingTimeout===true && (performance.now()-t_substart)> spacingTimeOut) {
                     console.log("Timeout: exiting addSpaces()...");
                     return false;
                 }
@@ -750,6 +766,7 @@
                 }
             }
         }
+        respacing=false;
     }
     function removeSpacesForSimSun() { //Need more work.
         var allS=document.getElementsByClassName("\uE699");
