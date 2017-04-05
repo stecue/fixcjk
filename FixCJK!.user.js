@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.84
+// @version           1.1.85
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -19,7 +19,7 @@
     'use strict';
     // You can change the the following fonts/settings until the "var FixPunct=" line.
     var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
-    var CJKSimSun= '"Microsoft YaHei","Noto Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
+    var CJKSimSun= '"Microsoft YaHei","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
     var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
     var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
@@ -37,7 +37,7 @@
     var useJustify = true; //Make justify as the default alignment.
     var forceAutoSpace = false; //if enabled, no need to double-click to add spaces.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
-    var forceFontsImportant = true;
+    var forceFontsImportant = false;
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
@@ -1078,27 +1078,27 @@
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_sans0, LatinSans+','+qBold) + ',sans-serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                             if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }        //Test if contains serif
                         else if (list_has(font_str, re_serif) !== false) {
                             if (debug_01===true) all[i].style.color="SeaGreen";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_serif, LatinSerif + ',' +qBold) + ',serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                             if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }        //Test if contains monospace
                         else if (list_has(font_str, re_mono0) !== false) {
                             if (debug_01===true) all[i].style.color="Maroon";
                             all[i].style.fontFamily = genPunct+','+ replace_font(font_str, re_mono0, LatinMono + ',' +qBold) + ',monospace';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                             if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }        //Just append the fonts to the font preference list.
                         else {
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + LatinSans + ',' + qBold + ',' + '  sans-serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                             if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }
                     }
                     child = realSibling;
@@ -1143,7 +1143,7 @@
                 if (font_str.match(sig_hei) || font_str.match(sig_song) ||font_str.match(sig_bold) || font_str.match(sig_mono) || font_str.match(sig_default)) {
                     window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                     if (forceFontsImportant === true)
-                        all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                        all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     continue;
                 }
                 else {
@@ -1155,21 +1155,21 @@
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
                         //all[i].style.color="Maroon";
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                     }
                     else {
                         if (debug_02===true) {all[i].style.color='Fuchsia';}
@@ -1180,7 +1180,7 @@
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                             window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                             if (forceFontsImportant === true)
-                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                                all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         }
                     }
                 }
@@ -1244,7 +1244,7 @@
                     if (all[i].classList.contains("CJKTestedAndLabeled") && !all[i].classList.contains("CJK2Fix")) {
                         window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                         if (forceFontsImportant === true)
-                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                            all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                         if (debug_03===true) {console.log(all[i]);all[i].style.color="FireBrick";} //FireBrick <-- Fixed.
                         continue;
                     }
@@ -1274,7 +1274,7 @@
                 }
                 window.setTimeout(function(node) {node.classList.add("FontsFixedE137");},1,all[i]); //Slow and Use async I/O.
                 if (forceFontsImportant === true)
-                    all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important');
+                    all[i].style.cssText=all[i].style.cssText.replace(/;/g,' !important;');
                 if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
