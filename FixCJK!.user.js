@@ -35,7 +35,7 @@
     var usePaltForCJKText = false; //If apply "palt" to CJK text (not only puncts) as well.
     var usePaltForAll = false; //If apply "palt" to as much elements as possible.
     var useJustify = true; //Make justify as the default alignment.
-    var forceAutoSpace = false; //if enabled, no need to double-click to add spaces.
+    var forceAutoSpaces = true; //if enabled, no need to double-click to add spaces.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
@@ -498,6 +498,9 @@
     }
     ///===End of Solving the picture problem===///
     if (debug_verbose===true) {console.log('FixCJK!: Fixing punctuations took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
+    ///===Try to fix spaces if forceAutoSpaces is set===///
+    if (forceAutoSpaces === true)
+        window.setTimeout(addSpaces,10);
     ///===Add onClick listener before exiting===///
     var NumClicks=0;
     var t_last=performance.now();
@@ -523,6 +526,8 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
             setTimeout(ReFixCJK,5,e);
+            if (forceAutoSpaces === true)
+                setTimeout(addSpaces,5,e);
         }
         else if (((performance.now()-downtime) > 1500) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //Force to labelCJK;
@@ -550,11 +555,13 @@
         //setTimeout(function(){ fontsCheck(); }, 30);
         },t_interval);
     },false);
-    document.body.addEventListener("dblclick",function() {
-        addSpaces(true);
-        //setTimeout(function(){ fontsCheck(); }, 30);
-        //Prevent ReFixing for a certain time;
-    },false);
+    if (forceAutoSpaces === false) {
+        document.body.addEventListener("dblclick",function() {
+            addSpaces(true);
+            //setTimeout(function(){ fontsCheck(); }, 30);
+            //Prevent ReFixing for a certain time;
+        },false);
+    }
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
