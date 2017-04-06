@@ -1,4 +1,17 @@
-## 1.1.10 (2017-08-09)
+## 1.2.0 (2017-04-06)
+Features:
+  - Smarter punctuation mark kerning based on Noto Sans/Source Hans's "palt" property.
+  - Further speed optimization.
+  - Enable autosapce by default. No need to double-click.
+  - More settings such as the size of space and "enable palt for all CJK text".
+
+Bugfixes:
+  - Disable script on Japanese webpages. (Issue #100)
+  - Force applying PM fonts to work with webpages using "!important".
+  - Some bugs caused by the old PM engine.
+  - Other bugfixes. See "Issues" for more.
+
+## 1.1.10 (2017-03-09)
 Bugfixes:
   - Remove "// @match             file:///*" to enable the script again with greasemonkey.
 
