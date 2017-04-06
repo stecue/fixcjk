@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.88
+// @version           1.1.89
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1647,6 +1647,10 @@
         var reRR=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF201-\uF204]CJK[\uF201-\uF204])?([『「《〈【（\uEB1C\uEB18])/m;
         var reRL=/([\n]?[『「《〈【（\uEB1C\uEB18][\n]?)([\uF201-\uF204]CJK[\uF201-\uF204])?([、，。：；！？）】〉》」』\uEB1D\uEB19])/m;
         var sqz_start=performance.now();
+        var debug_SeqPM = false;
+        if (debug_SeqPM === true)
+            if (currHTML.match(/仅用于FixCJK标点测试/))
+                console.log('BEFORE:'+currHTML);
         while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF201-\uF204]CJK[\uF201-\uF204])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
                 //--TWO PUNCTS: {Left}{Left}--//
@@ -1672,21 +1676,29 @@
                 break;
             }
         }
-        ///---The last punct in a seq is left in <cjktext> tag. Must be put in <cjkpuns> tag as well.
-        var reLastP=/(<.cjkpuns>)([\n]?<[^><]*>[\n]?)*([、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])(<[^><]*>)*([^><[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/g
+        ///---The last punct in a seq is left in <cjktext> tag. Must be put in <cjkpuns> tag as well. (Same tag.) Only need to deal 『「《〈【（\uEB1C\uEB18 (openning marks).
+        var reLastP=/([^><]<.cjkpuns>)([\n]?<[^><\uE211]*>[\n]?)*([『「《〈【（\uEB1C\uEB18])(<[^><\uE211]*>)*([^><[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/g
         currHTML=currHTML.replace(reLastP,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
+        //Now let's deal the over-tag marks. They are between two [\uF201-\uF204]CJK[\uF201-\uF204]
+        var overTagLastP=/([^><]<.cjkpuns>)([\uF201-\uF204]CJK[\uF201-\uF204])([『「《〈【（\uEB1C\uEB18])([^><]*[\uF201-\uF204]CJK[\uF201-\uF204])/g;
+        currHTML=currHTML.replace(overTagLastP,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$3</cjkpuns>$4');
+
+        //currHTML=currHTML.replace(/([『「《〈【（\uEB1C\uEB18、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])*(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])(<[^><]*>)*([^><])/g,'$1$2$3<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$4</cjkpuns>$5$6');
         ///---Done with conseqtive puncts--///
+        if (debug_SeqPM === true)
+            if (currHTML.match(/仅用于FixCJK标点测试/))
+                console.log('BEFORE:'+currHTML);
         if (debug_04===true) {node.style.color="Pink";}
-        var SqueezeFirst=false;
+        var wrapFirst=true; //Safe after using the "palt" option. It is also the "lastP in another tag".
         if (SqueezeInd===true) {
             //The punctuation marks is also the first char in a paragraph seems:
             //In current model (1.0.x), all tags are added within this function (FixMarksInCurrHTML), and it should be safe to skip them.
             //Seems no need to squeeze the puncts at the beginning of a paragraph. It may cause format changes.
-            if (SqueezeFirst===true) {
-                currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])?(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])/mg,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjkpuns>');
+            if (wrapFirst===true) {
+                currHTML=currHTML.replace(/^([\uF201-\uF204]CJK[\uF201-\uF204])*(<[^><\uE211]*>)*([『「《〈【（\uEB1C\uEB18])(<[^><]*>)*([^><])/mg,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="margin-left:'+kern_ind_open+';display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
             }
-            //Then, not the first char. The re_ex also covers the first punct of a serise of puncts.
-            currHTML=currHTML.replace(/([^\n><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><\uF201-\uF204]|$)/mg,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
+            //Then, not the first char. The re_ex also covers the first punct of a serise of puncts. use \uE211 to make sure the first PMs will not be "double" fixed.
+            currHTML=currHTML.replace(/([^\n><、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18\uF201-\uF204])((?:<[^><\uE211]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><\uE211]*>)*)([『「《〈【（\uEB1C\uEB18])((?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?(?:<[^><]*>)*(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([^><\uF201-\uF204]|$)/mg,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-left:'+kern_ind_open+';font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
             //Previously: Do not squeeze the last punctuation marks in a paragraph. Too risky. $3 seems necessary?
             //Now: Using positive margin seems safe.
             currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])?$/mg,'<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;margin-right:'+kern_ind_close+';font-family:General Punct \uE137 !important;">$1</cjkpuns>$2');
