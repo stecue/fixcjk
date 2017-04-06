@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.89
+// @version           1.1.90
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1649,7 +1649,7 @@
         var sqz_start=performance.now();
         var debug_SeqPM = false;
         if (debug_SeqPM === true)
-            if (currHTML.match(/仅用于FixCJK标点测试/))
+            if (currHTML.match(/此乃FixCJK标点测试/))
                 console.log('BEFORE:'+currHTML);
         while (currHTML.match(/(?:[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18]([\uF201-\uF204]CJK[\uF201-\uF204])?){2,}/m) && (performance.now()-sqz_start)<sqz_timeout) {
             if (currHTML.match(reLL)) {
@@ -1686,7 +1686,7 @@
         //currHTML=currHTML.replace(/([『「《〈【（\uEB1C\uEB18、，。：；！？）】〉》」』\uEB1D\uEB19])([\uF201-\uF204]CJK[\uF201-\uF204])*(<[^><]*>)*([『「《〈【（\uEB1C\uEB18])(<[^><]*>)*([^><])/g,'$1$2$3<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$4</cjkpuns>$5$6');
         ///---Done with conseqtive puncts--///
         if (debug_SeqPM === true)
-            if (currHTML.match(/仅用于FixCJK标点测试/))
+            if (currHTML.match(/此乃FixCJK标点测试/))
                 console.log('BEFORE:'+currHTML);
         if (debug_04===true) {node.style.color="Pink";}
         var wrapFirst=true; //Safe after using the "palt" option. It is also the "lastP in another tag".
