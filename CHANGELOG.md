@@ -7,6 +7,7 @@ Features:
 
 Bugfixes:
   - Disable script on Japanese webpages. (Issue #100)
+  - Force applying PM fonts to work with webpages using "!important".
   - Some bugs caused by the old PM engine.
   - Other bugfixes. See "Issues" for more.
 
