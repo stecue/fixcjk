@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.90
+// @version           1.1.91
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -36,7 +36,15 @@
     var usePaltForAll = false; //If apply "palt" to as much elements as possible.
     var useJustify = true; //Make justify as the default alignment.
     var forceAutoSpaces = true; //if enabled, no need to double-click to add spaces.
+    var useBroaderSpaces = false; //It will be set to true automatically if usePaltForCJKText===true.
+    var useXBroaderSpaces = false; //It will override useBroaderSpaces.
+    var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
+    var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
+    if (usePaltForAll === true)
+        usePaltForCJKText = true;
+    if (usePaltForCJKText === true)
+        useBroaderSpaces = true;
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
@@ -745,7 +753,17 @@
                         tmp_str=tmp_str.replace(/&thinsp;/,'\u2009'); //Or, tmp_str=tmp_str.replace(/\u0026thinsp\u003B/,'\u2009');
                         var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
                         var space2BeAdded='<cjktext class="CJKTestedAndLabeled MarksFixedE135 \uE699 FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</cjktext>';
-                        if (useSFTags===false) {space2BeAdded='\u2009';} //\u2009 for thin space and \u200A for "hair space".
+                        if (useSFTags===false) {
+                            space2BeAdded='\u2009';
+                            if (useBroaderSpaces === true)
+                                space2BeAdded='\u0020';
+                            if (useXBroaderSpaces === true)
+                                space2BeAdded='\u2004'; // 1/3 EM SPACE;
+                            if (use2XBroaderSpaces === true)
+                                space2BeAdded='\u2002'; // 1/2 EM SPACE;
+                            if (use3XBroaderSpaces === true)
+                                space2BeAdded='\u2003'; // 1/1 EM SPACE;
+                        } //\u2009 for thin space and \u200A for "hair space".
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
