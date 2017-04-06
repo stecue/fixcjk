@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.1.87
+// @version           1.1.88
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -1672,6 +1672,9 @@
                 break;
             }
         }
+        ///---The last punct in a seq is left in <cjktext> tag. Must be put in <cjkpuns> tag as well.
+        var reLastP=/(<.cjkpuns>)([\n]?<[^><]*>[\n]?)*([、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])(<[^><]*>)*([^><[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/g
+        currHTML=currHTML.replace(reLastP,'$1$2<cjkpuns class="CJKTestedAndLabeled MarksFixedE135 \uE211" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
         ///---Done with conseqtive puncts--///
         if (debug_04===true) {node.style.color="Pink";}
         var SqueezeFirst=false;
