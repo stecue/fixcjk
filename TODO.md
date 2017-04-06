@@ -12,3 +12,7 @@
 * Also encapsulate Latin QM if context is in SimSun?
 * Use BFS to traverse the DOM tree?
 * ~~Fix the hidden elements problem.~~
+* Optimize speed according to HTMLElement.lang
+  * Defer label "lang=en,..." until double click.
+* Use google fonts service to fetch online fonts.
+* Fix through-tag auto-space when the parent node contains no CJK or puncts.
