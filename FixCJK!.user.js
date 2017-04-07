@@ -1363,7 +1363,9 @@
         //the blank spaces will be streched but not the "character-spacing" if using align=justify.
         if (window.getComputedStyle(node.parentNode,null).getPropertyValue('text-align').match(/start/) && useJustify===true) {
             node.parentNode.style.textAlign="justify";
-            node.parentNode.style.whiteSpace="normal"; //Need to reset white-space to make justify effective.
+            if ( !node.parentNode.tagName.match(/(TD|TR|TBODY)/) && !(!document.URL.match(/zhihu.com/)) )
+                if ( node.parentNode.classList.contains("RichText") )
+                    node.parentNode.style.whiteSpace="normal"; //Need to reset white-space to make justify effective. However it will mess up the tables!
         }
         //node.lang="zh";
         node.parentNode.lang="zh";
