@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.2
+// @version           1.2.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -43,6 +43,7 @@
     var useXBroaderSpaces = false; //It will override useBroaderSpaces.
     var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
+    var scrollToFixAll = false;
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     if (usePaltForAll === true)
         usePaltForCJKText = true;
@@ -567,12 +568,14 @@
         setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
         setTimeout(function() {
             if (fireReFix===true) {
-                ReFixCJKFontsOnly();
+                if (scrollToFixAll === true)
+                    ReFixCJK(e);
+                else
+                    ReFixCJKFontsOnly();
+                if (forceAutoSpaces === true)
+                    addSpaces(true,30);
             }
             //setTimeout(function(){ fontsCheck(); }, 30);
-            if (forceAutoSpaces === true) {
-                addSpaces(true,30);
-            }
         },t_interval);
     },false);
     if (forceAutoSpaces === false) {
