@@ -1,3 +1,8 @@
+## 1.2.2 (2017-04-08)
+Features/Bugfixes:
+  - Force justify aligment on zhihu.com.
+  - More flexible noWrappingClasses.
+
 ## 1.2.0 (2017-04-06)
 Features:
   - Smarter punctuation mark kerning based on Noto Sans/Source Hans's "palt" property.
