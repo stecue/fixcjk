@@ -43,7 +43,7 @@
     var useXBroaderSpaces = false; //It will override useBroaderSpaces.
     var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
-    var scrollToFixAll = false;
+    var scrollToFixAll = true;
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     if (usePaltForAll === true)
         usePaltForCJKText = true;
@@ -107,7 +107,7 @@
     if ( document.URL.match(/(bgm\.tv|bangumi.tv)/) )
         noWrappingClasses=noWrappingClasses+',userInfo,userName';
     console.log('The following classes won\'t be treated:\n'+noWrappingClasses);
-    var noWrappingHRefs=/^\/user\//;
+    var noWrappingHRefs=/\/user\//;
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath,SpacesFixedE133';
@@ -628,10 +628,10 @@
             banHelper(bannedElementList[ie]);
         }
         var bannedHRefs=document.getElementsByTagName("A");
-        for (var iA=0;iA<bannedElementList.length;iA++) {
+        for (var iA=0;iA<bannedHRefs.length;iA++) {
             if (bannedHRefs[iA].href.match(noWrappingHRefs) ) {
                 banHelper(bannedHRefs[iA]);
-                console.log(bannedHRefs[iA]);
+                //console.log(bannedHRefs[iA]);
             }
         }
     }
