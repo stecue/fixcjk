@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.3
+// @version           1.2.3.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -103,10 +103,11 @@
     var stopClasses='mw-editsection';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
-    var noWrappingClasses='userInfo,userName,pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
+    var noWrappingClasses='pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
     if ( document.URL.match(/(bgm\.tv|bangumi.tv)/) )
-        noWrappingClasses=noWrappingClasses+',l';
+        noWrappingClasses=noWrappingClasses+',userInfo,userName';
     console.log('The following classes won\'t be treated:\n'+noWrappingClasses);
+    var noWrappingHRefs=/^\/user\//;
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     var CJKclassList='CJK2Fix,MarksFixedE135,FontsFixedE137,\uE211,\uE985,Safe2FixCJK\uE000,PunctSpace2Fix,CJKTestedAndLabeled,SimSun2Fix,SimSunFixedE137,LargeSimSun2Fix,\uE699,checkSpacedQM,wrappedCJK2Fix,preCode,preMath,SpacesFixedE133';
@@ -625,6 +626,13 @@
         for (ie=0;ie<bannedElementList.length;ie++) {
             if (debug_noWrapping===true) console.log(bannedElementList[ie]);
             banHelper(bannedElementList[ie]);
+        }
+        var bannedHRefs=document.getElementsByTagName("A");
+        for (var iA=0;iA<bannedElementList.length;iA++) {
+            if (bannedHRefs[iA].href.match(noWrappingHRefs) ) {
+                banHelper(bannedHRefs[iA]);
+                console.log(bannedHRefs[iA]);
+            }
         }
     }
     function banHelper(node) {
