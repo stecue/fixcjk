@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.5
+// @version           1.2.5.1
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -107,7 +107,11 @@
     if ( document.URL.match(/(bgm\.tv|bangumi.tv)/) )
         noWrappingClasses=noWrappingClasses+',userInfo,userName';
     console.log('The following classes won\'t be treated:\n'+noWrappingClasses);
-    var noWrappingHRefs=/\/user\//;
+    //Just define a "dumb" noWrappingHRefs.
+    var noWrappingHRefs=/^\uE000\uE000\uE000/;
+    //The folloing noWraping HRefs is still for bgm.tv
+    if ( document.URL.match(/(bgm\.tv|bangumi.tv)/) )
+        noWrappingHRefs=/\/user\//;
     var preSimSunList='c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40,c41,c42,c43,c44,c45,c46';
     var preSimSunTags=/^(pre|code|tt)$/i;
     //Safe2FixCJK\uE000,\uE211,\uE985,\uE699
@@ -381,14 +385,15 @@
                 }
                 if (t_last>100) {
                     console.log("FIXME: Labeling last element took too much time. Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
-                    console.log("FIXME: Only "+document.querySelectorAll([data-CJKTestedAndLabeled]).length+" tested in total on "+document.URL);
+                    console.log("FIXME: Only "+document.querySelectorAll("[data-CJKTestedAndLabeled]").length+" tested in total on "+document.URL);
                     if (debug_labelCJK===true) {console.log(all[i-1]);}
                     break;
                 }
             }
-            if (i%1===0 && t_overall>200) {
+            if ( i%100 ===0 && t_overall>200) {
                 console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
-                console.log("FIXME: Only "+document.querySelectorAll([data-CJKTestedAndLabeled]).length+" tested in total on "+document.URL);
+                //console.log("FIXME: Only "+document.querySelectorAll("[data-CJKTestedAndLabeled]").length+" tested in total on "+document.URL);
+                console.log("FIXME: Only "+i+" tested in total on "+document.URL);
                 if (debug_labelCJK===true) {console.log(all[i-1]);}
                 break;
             }
@@ -576,7 +581,8 @@
             setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
             setTimeout(function() {
                 if (fireReFix===true) {
-                    ReFixCJKFontsOnly();
+                    ReFixCJKFast();
+                    FixPunct
                 }
                 //setTimeout(function(){ fontsCheck(); }, 30);
                 if (forceAutoSpaces === true) {
@@ -839,7 +845,7 @@
             }
         }
     }
-    function ReFixCJKFontsOnly () {
+    function ReFixCJKFast () {
         if (refixingFonts===true) {
             console.log("Refixing, skipping this refix...");
             window.setTimeout(function () {refixingFonts=false;},t_interval/ItvScl/2);
@@ -861,6 +867,7 @@
             labelPreMath();
             labelCJK(true);
             FixAllFonts(true);
+            FunFixPunct(true,2,returnLater);
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         t_last=performance.now();
@@ -926,6 +933,9 @@
             ifRound1=true;
             ifRound2=true;
             ifRound3=false;
+            if ( scrollToFixAll === true ) {
+                ifRound3=true;
+            }
             var ReFixAll=document.getElementsByTagName('*');
             var NumFixed=0;
             var NumReFix=0;
