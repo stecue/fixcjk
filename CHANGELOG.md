@@ -1,7 +1,12 @@
-## 1.2.2 (2017-04-08)
+## 1.2.6 (2017-04-10)
+Features/Bugfixes:
+  - Use custom attributes to avoid messing up with HTML classes.
+
+## 1.2.3 (2017-04-08)
 Features/Bugfixes:
   - Force justify aligment on zhihu.com.
   - More flexible noWrappingClasses.
+  - Add `scrollToFixAll` option.
 
 ## 1.2.0 (2017-04-06)
 Features:
