@@ -1,4 +1,4 @@
-## 1.2.5 (2017-04-10)
+## 1.2.6 (2017-04-10)
 Features/Bugfixes:
   - Use custom attributes to avoid messing up with HTML classes.
 
