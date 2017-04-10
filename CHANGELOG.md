@@ -1,3 +1,7 @@
+## 1.2.5 (2017-04-10)
+Features/Bugfixes:
+  - Use custom attributes to avoid messing up with HTML classes.
+
 ## 1.2.3 (2017-04-08)
 Features/Bugfixes:
   - Force justify aligment on zhihu.com.
