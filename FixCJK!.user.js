@@ -20,11 +20,11 @@
     // You can change the the following fonts/settings until the "var FixPunct=" line.
     ///--CJK Fonts--///
     var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
-    var CJKSimSun= '"Microsoft YaHei","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
-    var CJKserif = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
-    var CJKsans = '"Microsoft YaHei","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
+    var CJKSimSun= '"Microsoft YaHei","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
+    var CJKserif = '"Microsoft YaHei","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
+    var CJKsans = '"Microsoft YaHei","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
-    var CJKPunct = 'Noto Sans CJK SC,SimHei,SimSun'; //The font to use for CJK quotation marks.
+    var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
