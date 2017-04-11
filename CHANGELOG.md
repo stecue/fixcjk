@@ -1,6 +1,7 @@
-## 1.2.6 (2017-04-10)
+## 1.2.7 (2017-04-10)
 Features/Bugfixes:
   - Use custom attributes to avoid messing up with HTML classes.
+  - Do not getAfterHTML and getBeforeHTML for the right- and left-floated elements.
 
 ## 1.2.3 (2017-04-08)
 Features/Bugfixes:

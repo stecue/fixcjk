@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.6
+// @version           1.2.7
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -100,7 +100,7 @@
     var SkippedLangs=/(ja|en)/i;
     var pureLatinTags=/^(TITLE|HEAD|LINK|SCRIPT|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|svg)$/i; //No CJK labeling for the elements and their desedents.
     var stopTags=/^(SUB|SUP|BR|VR)$/i; //The "see-through" stops at these tags.
-    var stopClasses='mw-editsection';
+    var stopClasses='mw-editsection,date';
     var upEnoughTags=/^(address|article|aside|blockquote|canvas|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|H[1-6]|header|hgroup|hr|li|main|nav|noscript|ol|output|p|pre|section|table|td|th|tr|tfoot|ul|video|BODY)$/ig; //"See-Through" stops here, the "block-lelvel" elements.
     var ignoredTags=/^(math)$/i;
     var noWrappingClasses='pl-c,toggle-comment,answer-date-link'; //Also known as "no wrapping list". Only wrapped CJK will be treated.
@@ -771,10 +771,13 @@
                     if ( !(allE[is].hasAttribute("data-preCode")) ) {
                         var tmp_str=allE[is].innerHTML;
                         if (tmp_str.match(/^([\s\u0020\u00A0\u2009\u200B-\u200E]|&nbsp;|&thinsp;){0,5}[\u3400-\u9FBF]/)) {
-                            tmp_str=getBeforeHTML(allE[is])+'\uF203CJK\uF203'+tmp_str;
+                            //Make sure no text will be prepended to the "left" floated elements.
+                            if (window.getComputedStyle(allE[is].parentNode, null).getPropertyValue('float')!=='left')
+                                tmp_str=getBeforeHTML(allE[is])+'\uF203CJK\uF203'+tmp_str;
                         }
                         if (tmp_str.match(/[\u3400-\u9FBF][\s\u200B-\u200E\2060]{0,2}$/)) {
-                            tmp_str=tmp_str+'\uF204CJK\uF204'+getAfterHTML(allE[is]);
+                            if (window.getComputedStyle(allE[is].parentNode, null).getPropertyValue('float')!=='right')
+                                tmp_str=tmp_str+'\uF204CJK\uF204'+getAfterHTML(allE[is]);
                         }
                         //protect the Latins in tags, no need in 1.0+ b/c no “”’‘ in CJK <cjkpuns> tags.
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
