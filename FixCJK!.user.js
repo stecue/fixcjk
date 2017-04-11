@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.7
+// @version           1.2.8
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -44,6 +44,7 @@
     var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
     var scrollToFixAll = false; //Scoll to FixAll. Might slow down the browser.
+    var skipJaLang = false; //Skip lang=ja elements and webpages (usually pure Japanese pages). Keep it true if you want to apply your brower's Japanese font settings.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     if (usePaltForAll === true)
         usePaltForCJKText = true;
@@ -97,7 +98,9 @@
     var SkippedTagsForMarks=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|embed|figure|map|object|textarea|input|code|pre|time|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     //It seems that "lang" cannot be calculated. Just use node.lang to get the lang of current elements.
-    var SkippedLangs=/(ja|en)/i;
+    var SkippedLangs='/(xa|en)/i';
+    if (skipJaLang === true)
+        SkippedLangs=RegExp(SkippedLangs.replace(/xa/,'ja'));
     var pureLatinTags=/^(TITLE|HEAD|LINK|SCRIPT|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|svg)$/i; //No CJK labeling for the elements and their desedents.
     var stopTags=/^(SUB|SUP|BR|VR)$/i; //The "see-through" stops at these tags.
     var stopClasses='mw-editsection,date';
@@ -123,7 +126,7 @@
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */i;
     var docLang = document.documentElement.lang;
-    if (docLang === 'ja' ) {
+    if (docLang === 'ja' && skipJaLang === true ) {
         console.log('Non-optimal lang attribute detected, exiting...');
         return true;
     }
