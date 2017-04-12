@@ -1,8 +1,9 @@
-## 1.2.8 (2017-04-11)
+## 1.2.9 (2017-04-11)
 Features/Bugfixes:
   - Use custom attributes to avoid messing up with HTML classes.
   - Do not getAfterHTML and getBeforeHTML for the right- and left-floated elements.
   - Add "skipJaLang" option to control whether to skip Japanese contents or not.
+  - Add Source Han to the font fallback list.
 
 ## 1.2.3 (2017-04-08)
 Features/Bugfixes:

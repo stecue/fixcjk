@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.8
+// @version           1.2.9
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -20,9 +20,9 @@
     // You can change the the following fonts/settings until the "var FixPunct=" line.
     ///--CJK Fonts--///
     var CJKdefault = '"Microsoft YaHei",SimSun,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
-    var CJKSimSun= '"Microsoft YaHei","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
-    var CJKserif = '"Microsoft YaHei","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
-    var CJKsans = '"Microsoft YaHei","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
+    var CJKSimSun= '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
+    var CJKserif = '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
+    var CJKsans = '"Microsoft YaHei","Source Han Sans SC","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
@@ -125,30 +125,6 @@
     var t_start = performance.now();
     var t_stop = t_start;
     var re_simsun = / *simsun *| *宋体 *| *ËÎÌå *| *\5b8b\4f53 */i;
-    var docLang = document.documentElement.lang;
-    if (docLang === 'ja' && skipJaLang === true ) {
-        console.log('Non-optimal lang attribute detected, exiting...');
-        return true;
-    }
-    var all = document.getElementsByTagName('*');
-    var NumAllDOMs=all.length;
-    var bodyhtml=document.getElementsByTagName("HTML");
-    if (bodyhtml[0].innerHTML.length > maxlength) {
-        console.log('FixCJK!: HTML too long, skip everything. Exiting now...');
-        ifRound1=false;
-        ifRound2=false;
-        ifRound3=false;
-        FixPunct=false;
-    }
-    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
-        if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');}
-        if (debug_verbose===true) {console.log('FixCJK!: No need to check CJK punctuations.');}
-        FixPunct=false;
-    }
-    else {
-        if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
-        FixPunct=true;
-    }
     var sig_sim = 'RealCJKBold\u0020易'; //Just for SimSun;
     var sig_song = 'RealCJKBold\u0020宋'; // signature to check if change is sucssful or not.
     var sig_hei = 'RealCJKBold\u0020黑'; // signature to check if change is sucssful or not.
@@ -170,12 +146,32 @@
     var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
     var qserif = LatinSerif + ',' + CJKserif +','+qsig_song+ ',' + 'serif'; //To replace "serif"
     var qmono = sig_mono+','+LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
+    //--Check the length of the webpage --//
+    var all = document.getElementsByTagName('*');
+    var NumAllDOMs=all.length;
+    var bodyhtml=document.getElementsByTagName("HTML");
+    if (bodyhtml[0].innerHTML.length > maxlength) {
+        console.log('FixCJK!: HTML too long, skip everything. Exiting now...');
+        ifRound1=false;
+        ifRound2=false;
+        ifRound3=false;
+        FixPunct=false;
+    }
+    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+        if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');}
+        if (debug_verbose===true) {console.log('FixCJK!: No need to check CJK punctuations.');}
+        FixPunct=false;
+    }
+    else {
+        if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. CJK found.');}
+        FixPunct=true;
+    }
     var i = 0;
     var max = all.length;
     var child = all[i].firstChild;
     var if_replace = false;
-    var font_str = window.getComputedStyle(all[i], null).getPropertyValue('font-family');
-    var fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
+    var font_str = ""; //window.getComputedStyle(all[i], null).getPropertyValue('font-family');
+    var fweight = ""; //window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
     var re_sans0 = /^ ?sans ?$|^ ?sans-serif ?$/i;
     var re_serif = /^ ?serif ?$/i;
     var re_mono0 = /^ ?mono ?$|^ ?monospace ?$/i;
@@ -237,6 +233,12 @@
     if (debug_00===true)
         console.log(punctStyle);
     GM_addStyle(punctStyle);
+    //--Style settings done. Now let's check if we need to continue--//    
+    var docLang = document.documentElement.lang;
+    if (docLang === 'ja' && skipJaLang === true ) {
+        console.log('Non-optimal lang attribute detected, exiting...');
+        return true;
+    }
     ///----------------------------
     qpreCJK = dequote(qpreCJK);
     qCJK = dequote(qCJK);//LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
@@ -393,7 +395,7 @@
                     break;
                 }
             }
-            if ( i%100 ===0 && t_overall>200) {
+            if ( i%100 ===0 && t_overall>1000) {
                 console.log("FIXME: Too slow to labelCJK after "+t_overall.toFixed(1)+" ms.");
                 //console.log("FIXME: Only "+document.querySelectorAll("[data-CJKTestedAndLabeled]").length+" tested in total on "+document.URL);
                 console.log("FIXME: Only "+i+" tested in total on "+document.URL);
