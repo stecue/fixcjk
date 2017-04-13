@@ -1,8 +1,9 @@
-## 1.2.9 (2017-04-13)
+## 1.2.11 (2017-04-13)
 Features:
   - Kana fonts can be set now.(`KanaSans` and `KanaSerif`)
   - Turn `usePaltForCJKText` to `on` by default because it only affects kanas and
     won't affect other CJK characters.
+  - add `LatinDefault` so that the font won't fallback to `LatinInSimSun` if not found.
 
 ## 1.2.9 (2017-04-11)
 Features/Bugfixes:

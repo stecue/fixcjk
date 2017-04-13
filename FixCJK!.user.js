@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.10
+// @version           1.2.11
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -32,6 +32,7 @@
     var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif = '"PT Serif",Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinDefault = LatinSans; //The default Latin fonts if no "serif" or "sans-serif" is provided. It is also the font that will be used if the specified fonts (by the webpage) cannot be found.
     ///---Choose what to fix---///
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
@@ -141,7 +142,8 @@
     var qsig_default = '"' + sig_default + '"';
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
-    var qCJK = LatinInSimSun + ',' + CJKdefault + ',' + qsig_default;
+    var qCJK = LatinDefault + ',' + CJKdefault + ',' + qsig_default;
+    console.log(qCJK);
     var qSimSun = qsig_sim+','+LatinInSimSun + ',' + CJKSimSun;
     var qLargeSimSun = qsig_sim+','+ LatinSerif + ',' + 'SimSun';
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
@@ -212,6 +214,7 @@
     if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
+    //Use punct fonts of SimHei in SimSun;
     punctStyle=punctStyle+'\n@font-face {font-family:RealCJKBold\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-B6,U+B8-2FF,U+2000-2017,U+201E-2FFF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecA;\n src:local(Ubuntu Mono);\n unicode-range: U+0-7F;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
@@ -408,7 +411,8 @@
             }
             if ((all[i].nodeName.match(SkippedTags)) || (!(!all[i].lang) && all[i].lang.match(SkippedLangs) ) || all[i] instanceof SVGElement || all[i].hasAttribute("data-CJKTestedAndLabeled")){
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
-                window.setTimeout(function (node) {node.setAttribute("data-CJKTestedAndLabeled","");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
+                window.setTimeout(function (node) {node.setAttribute("data-CJKTestedAndLabeled","");
+                    },1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                 if (all[i].nodeName.match(pureLatinTags)) {
                     if (useCJKTimeOut===true) {
                         window.setTimeout(addTested,5,all[i],0);
@@ -1333,7 +1337,7 @@
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
-                        if (debug_03 === true) all[i].style.color="Maroon";
+                        if (debug_03 === true) all[i].style.color="Maroon"; //Maroon
                         all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_mono0, qmono);
                     }
                     else {
@@ -1346,8 +1350,9 @@
                     //font_str already contains signature.
                     if (debug_03 === true) all[i].style.color="Silver"; //Signed-->Silver
                 }
-                window.setTimeout(function(node) {node.setAttribute("data-FontsFixedE137","");},1,all[i]); //Slow and Use async I/O.
-                if (debug_03===true) all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
+                window.setTimeout(function(node) {node.setAttribute("data-FontsFixedE137","");node.setAttribute("data-CJKTestedAndLabeled","");},1,all[i]); //Slow and Use async I/O.
+                if (debug_03===true)
+                    all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
         //setTimeout(function(){ fontsCheck(); }, 30);
