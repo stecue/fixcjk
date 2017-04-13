@@ -236,7 +236,6 @@
         console.log(punctStyle);
     punctStyle=punctStyle+'\n @font-face { font-family:FixKanaSans;\n src:'+AddLocal(KanaSans)+';\n unicode-range: U+3040-30FF;}';
     punctStyle=punctStyle+'\n @font-face { font-family:FixKanaSerif;\n src:'+AddLocal(KanaSerif)+';\n unicode-range: U+3040-30FF;}';
-    console.log(punctStyle);
     GM_addStyle(punctStyle);
     //--Style settings done. Now let's check if we need to continue--//    
     var docLang = document.documentElement.lang;
