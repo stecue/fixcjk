@@ -49,6 +49,8 @@
     var scrollToFixAll = false; //Scoll to FixAll. Might slow down the browser.
     var skipJaLang = false; //Skip lang=ja elements and webpages (usually pure Japanese pages). Keep it true if you want to apply your brower's Japanese font settings.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
+    //--output the version info first--//
+    console.log('FixCJK! version '+GM_info.script.version);
     if (usePaltForAll === true)
         usePaltForCJKText = true;
     if (usePaltForCJKText === true)
@@ -90,7 +92,6 @@
     var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
-    console.log('FixCJK! version '+GM_info.script.version);
     var refixing=false;
     var refixingFonts=false;
     var respacing=false;
@@ -143,7 +144,6 @@
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinDefault + ',' + CJKdefault + ',' + qsig_default;
-    console.log(qCJK);
     var qSimSun = qsig_sim+','+LatinInSimSun + ',' + CJKSimSun;
     var qLargeSimSun = qsig_sim+','+ LatinSerif + ',' + 'SimSun';
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
@@ -211,7 +211,11 @@
         return false;
     else {
     }
-    if (debug_00===true) {console.log(dequote('"SimSun","Times New Roman"""""'));}
+    //---Some inital checkup and output the version info--//
+    if (debug_00 === true) {
+        console.log(dequote('"SimSun","Times New Roman"""""'));
+        console.log(qCJK);
+    }
     //Assign fonts for puncts:
     var punctStyle='@font-face { font-family: '+genPunct+';\n src: '+AddLocal(CJKPunct)+';\n unicode-range: U+3000-303F,U+FF00-FFEF;}';
     //Use punct fonts of SimHei in SimSun;
