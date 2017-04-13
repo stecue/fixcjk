@@ -1,3 +1,9 @@
+## 1.2.9 (2017-04-13)
+Features:
+  - Kana fonts can be set now.(`KanaSans` and `KanaSerif`)
+  - Turn `usePaltForCJKText` to `on` by default because it only affects kanas and
+    won't affect other CJK characters.
+
 ## 1.2.9 (2017-04-11)
 Features/Bugfixes:
   - Use custom attributes to avoid messing up with HTML classes.

@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.9
+// @version           1.2.10
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -25,6 +25,8 @@
     var CJKsans = '"Microsoft YaHei","Source Han Sans SC","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans SC,Source Han Serif SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
+    var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名).
+    var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名).
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
@@ -35,7 +37,7 @@
     var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     ///=== Experimental Options. The following options are for experienced users.===///
-    var usePaltForCJKText = false; //If apply "palt" to CJK text (not only puncts) as well.
+    var usePaltForCJKText = true; //If apply "palt" to CJK text (not only puncts) as well.
     var usePaltForAll = false; //If apply "palt" to as much elements as possible.
     var useJustify = true; //Make justify as the default alignment.
     var forceAutoSpaces = true; //if enabled, no need to double-click to add spaces.
@@ -143,8 +145,8 @@
     var qSimSun = qsig_sim+','+LatinInSimSun + ',' + CJKSimSun;
     var qLargeSimSun = qsig_sim+','+ LatinSerif + ',' + 'SimSun';
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
-    var qsans = LatinSans + ',' + CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
-    var qserif = LatinSerif + ',' + CJKserif +','+qsig_song+ ',' + 'serif'; //To replace "serif"
+    var qsans = LatinSans + ',FixKanaSans,'+CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
+    var qserif = LatinSerif + ',FixKanaSerif,'+CJKserif +','+qsig_song+ ',' + 'serif'; //To replace "serif"
     var qmono = sig_mono+','+LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     //--Check the length of the webpage --//
     var all = document.getElementsByTagName('*');
@@ -232,6 +234,9 @@
     }
     if (debug_00===true)
         console.log(punctStyle);
+    punctStyle=punctStyle+'\n @font-face { font-family:FixKanaSans;\n src:'+AddLocal(KanaSans)+';\n unicode-range: U+3040-30FF;}';
+    punctStyle=punctStyle+'\n @font-face { font-family:FixKanaSerif;\n src:'+AddLocal(KanaSerif)+';\n unicode-range: U+3040-30FF;}';
+    console.log(punctStyle);
     GM_addStyle(punctStyle);
     //--Style settings done. Now let's check if we need to continue--//    
     var docLang = document.documentElement.lang;
