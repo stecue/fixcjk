@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.11
+// @version           1.2.12
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -25,12 +25,16 @@
     var CJKsans = '"Microsoft YaHei","Source Han Sans SC","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans SC,Source Han Serif SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
-    var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名).
-    var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名).
+    var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名) if no lang=ja is set.
+    var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名) if no lang=ja is set.
+    var JaSerif = 'Noto Serif CJK JP,Source Han Serif,Source Han Serif JP,Meiryo,MS Gothic,Noto Serif CJK SC'; //Used in lang=ja elements only. KanaSans will be overrided.
+    var JaSans = 'Noto Sans CJK JP,Source Han Sans,Source Han Sans JP,MS Mincho,Noto Sans CJK SC'; //Used in lang=ja elements only. KanaSerif will be overrided.
+    var JaDefault = JaSans;
+    var uniCJK = false; // Use Chinese fonts for lang=ja if set to "true".
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
-    var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSerif = '"PT Serif",Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinDefault = LatinSans; //The default Latin fonts if no "serif" or "sans-serif" is provided. It is also the font that will be used if the specified fonts (by the webpage) cannot be found.
     ///---Choose what to fix---///
@@ -90,6 +94,9 @@
     var useTimeout=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
     var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
+    //var re_extCJK=/[“”‘’\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/;
+    var re_extCJK=/[“”‘’\u3000-\u9FBF\uFF00-\uFFEF]/;
+    var re_pureCJK=/[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/;
     var re_to_check = /^\uEEEE/; //use ^\uEEEE for placeholder. Avoid using the "m" or "g" modifier for long document, but the difference seems small?
     ///=== The following variables should be strictly for internal use only.====///
     var refixing=false;
@@ -144,11 +151,14 @@
     var genPunct='General Punct \uE137'; //Different from sig_punct
     var qpreCJK = CJKdefault;
     var qCJK = LatinDefault + ',' + CJKdefault + ',' + qsig_default;
+    var qCJK_ja = LatinDefault + ',' + JaDefault + ',' + qsig_default;
     var qSimSun = qsig_sim+','+LatinInSimSun + ',' + CJKSimSun;
     var qLargeSimSun = qsig_sim+','+ LatinSerif + ',' + 'SimSun';
     var qBold = LatinInSimSun + ',' + CJKBold + ',' + qsig_bold;
     var qsans = LatinSans + ',FixKanaSans,'+CJKsans + ',' + qsig_hei + ',' + 'sans-serif'; //To replace "sans-serif"
+    var qsans_ja = dequote(LatinSans + ',' + JaSans + ',' + qsig_hei + ',' + 'sans-serif');
     var qserif = LatinSerif + ',FixKanaSerif,'+CJKserif +','+qsig_song+ ',' + 'serif'; //To replace "serif"
+    var qserif_ja = dequote(LatinSans + ',' + JaSerif + ',' + qsig_song + ',' + 'serif');
     var qmono = sig_mono+','+LatinMono + ',' + CJKdefault + ',' + qsig_default + ',' + 'monospace'; //To replace "monospace".
     //--Check the length of the webpage --//
     var all = document.getElementsByTagName('*');
@@ -161,7 +171,7 @@
         ifRound3=false;
         FixPunct=false;
     }
-    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+    else if (!(bodyhtml[0].innerHTML.match(/[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/))) {
         if (debug_verbose===true) {console.log('FixCJK!: Checking for CJK took '+((performance.now()-t_stop)/1000.0).toFixed(3)+' seconds. No CJK found.');}
         if (debug_verbose===true) {console.log('FixCJK!: No need to check CJK punctuations.');}
         FixPunct=false;
@@ -292,7 +302,7 @@
             return false;
         }
         //One do need to recheck the textContent everytime "ReFix" is triggered.
-        if ( (levelIndex < 2) && (!node.textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
+        if ( (levelIndex < 2) && (!node.textContent.match(re_extCJK)) ) {
             if (!node.hasAttribute("data-CJKTestedAndLabeled")) {
                 window.setTimeout(addTested,5,node,0);
             }
@@ -330,7 +340,7 @@
                         }
                     }
                 }
-                else if (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) {
+                else if (child.data.match(re_extCJK)) {
                     node.setAttribute("data-CJK2Fix","");
                     if (!inTheClassOf(node,noWrappingClasses)) {
                         node.setAttribute("data-PunctSpace2Fix","");
@@ -370,7 +380,7 @@
                 all[ia].setAttribute("data-preMath","");
                 banMathHelper(all[ia]);
             }
-            if(all[ia].nodeName.match(/^A$/i) && all[ia].href.match(/^javascript/i) && (all[ia].textContent.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
+            if(all[ia].nodeName.match(/^A$/i) && all[ia].href.match(/^javascript/i) && (all[ia].textContent.match(re_extCJK)) ) {
                 all[ia].setAttribute("data-preCode",""); //No wrapping if in the "preCode" class.
             }
         }
@@ -442,7 +452,7 @@
                     all[i].setAttribute("data-SimSun2Fix","");
                     if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].setAttribute("data-PunctSpace2Fix","");
-                        if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
+                        if ( all[i].textContent.match(/\w\s[\u3040-\u30FF\u3400-\u9FBF]|[\u3040-\u30FF\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
                             all[i].removeAttribute("data-PunctSpace2Fix");
                             all[i].setAttribute("data-preCode","");
@@ -455,7 +465,7 @@
                     all[i].setAttribute("data-LargeSimSun2Fix","");
                     if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].setAttribute("data-PunctSpace2Fix","");
-                        if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
+                        if ( all[i].textContent.match(/\w\s[\u3040-\u30FF\u3400-\u9FBF]|[\u3040-\u30FF\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
                             all[i].removeAttribute("data-PunctSpace2Fix");
                             all[i].setAttribute("data-preCode","");
@@ -465,7 +475,7 @@
                 all[i].setAttribute("data-CJKTestedAndLabeled","");
                 continue;
             }
-            if ( !(all[i].textContent.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
+            if ( !(all[i].textContent.match(/[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
                 if ( useCJKTimeOut===true && all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) { //20 is just to make sure they are actuall Latin elements,not just some place holder.
                     window.setTimeout(function (node) {node.setAttribute("data-CJKTestedAndLabeled","");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                     window.setTimeout(addTested,5,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
@@ -485,11 +495,11 @@
             child = all[i].firstChild;
             while (child) {
                 var realSibling=child.nextSibling;
-                if (child.nodeType == 3 && (child.data.match(/[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+                if (child.nodeType == 3 && (child.data.match(/[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                     all[i].setAttribute("data-CJK2Fix","");
                     if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].setAttribute("data-PunctSpace2Fix","");
-                        if ( all[i].textContent.match(/\w\s[\u3400-\u9FBF]|[\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
+                        if ( all[i].textContent.match(/\w\s[\u3040-\u30FF\u3400-\u9FBF]|[\u3040-\u30FF\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
                             all[i].removeAttribute("data-PunctSpace2Fix");
                             all[i].setAttribute("data-preCode","");
@@ -787,12 +797,12 @@
                 if (allE[is].hasAttribute("data-wrappedCJK2Fix") ) {
                     if ( !(allE[is].hasAttribute("data-preCode")) ) {
                         var tmp_str=allE[is].innerHTML;
-                        if (tmp_str.match(/^([\s\u0020\u00A0\u2009\u200B-\u200E]|&nbsp;|&thinsp;){0,5}[\u3400-\u9FBF]/)) {
+                        if (tmp_str.match(/^([\s\u0020\u00A0\u2009\u200B-\u200E]|&nbsp;|&thinsp;){0,5}[\u3040-\u30FF\u3400-\u9FBF]/)) {
                             //Make sure no text will be prepended to the "left" floated elements.
                             if (window.getComputedStyle(allE[is].parentNode, null).getPropertyValue('float')!=='left')
                                 tmp_str=getBeforeHTML(allE[is])+'\uF203CJK\uF203'+tmp_str;
                         }
-                        if (tmp_str.match(/[\u3400-\u9FBF][\s\u200B-\u200E\2060]{0,2}$/)) {
+                        if (tmp_str.match(/[\u3040-\u30FF\u3400-\u9FBF][\s\u200B-\u200E\2060]{0,2}$/)) {
                             if (window.getComputedStyle(allE[is].parentNode, null).getPropertyValue('float')!=='right')
                                 tmp_str=tmp_str+'\uF204CJK\uF204'+getAfterHTML(allE[is]);
                         }
@@ -800,7 +810,7 @@
                         //en:zh; //why didn't I use "non-CJK" list for Latin?
                         tmp_str=tmp_str.replace(/&nbsp;/,'\u00A0'); //Or, tmp_str=tmp_str.replace(/\u0026nbsp\u003B/,'\u00A0');
                         tmp_str=tmp_str.replace(/&thinsp;/,'\u2009'); //Or, tmp_str=tmp_str.replace(/\u0026thinsp\u003B/,'\u2009');
-                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3400-\u9FBF])/img;
+                        var re_enzh=/([\u0021\u0023-\u0026\u0029\u002A-\u003B\u003D\u003F-\u005A\u005C-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF’”])([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]){0,5}(\uF203CJK\uF203)?(?:[\u0020\u00A0\u200B-\u200E\u2060]){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([\u3040-\u30FF\u3400-\u9FBF])/img;
                         var space2BeAdded='<cjktext data-CJKTestedAndLabeled data-MarksFixedE135 data-cjkpua=\uE699 class="FontsFixedE137" style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:Arial,Helvetica,sans-serif;font-size:80%;">\u0020</cjktext>';
                         if (useSFTags===false) {
                             space2BeAdded='\u2009';
@@ -816,7 +826,7 @@
                         var enzh_withSpace='$1$2$3$4'+space2BeAdded+'$5';
                         tmp_str=tmp_str.replace(re_enzh,enzh_withSpace);
                         //now zh:en
-                        var re_zhen=/([\u3400-\u9FBF])(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005C\u005E-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
+                        var re_zhen=/([\u3040-\u30FF\u3400-\u9FBF])(?:[\u0020\u00A0\u2009\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?(?:[\u0020\u00A0\u200B-\u200E\u2060]|&nbsp;){0,5}([\uF201-\uF204]CJK[\uF201-\uF204])?([‘“\u0021\u0023-\u0026\u0028\u002A-\u003B\u003D\u003F-\u005C\u005E-\u007B\u007D-\u009F\u00A1-\u00FF\u0391-\u03FF\u2027\u2600-\u26FF])/img;
                         var zhen_withSpace='$1'+space2BeAdded+'$2$3$4';
                         tmp_str=tmp_str.replace(re_zhen,zhen_withSpace);
                         //now en["']zh (TODO in 1.x?)
@@ -997,7 +1007,7 @@
             var child=allCJK[i].firstChild;
             while(child) {
                 var realSibling=child.nextSibling;
-                if (child.nodeType===3  && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) ) {
+                if (child.nodeType===3  && (child.data.match(re_extCJK)) ) {
                     wrapCJKHelper(child);
                 }
                 child=realSibling;
@@ -1164,6 +1174,9 @@
                 if (all[i].hasAttribute("data-FontsFixedE137")) {
                     continue;
                 }
+                if ( (all[i].lang === 'ja'|docLang === 'ja') && uniCJK === false) {
+                    continue;
+                }
                 child = all[i].firstChild;
                 if_replace = false;
                 //Only change if current node (not child node) contains CJK characters.
@@ -1171,7 +1184,7 @@
                 fweight = window.getComputedStyle(all[i], null).getPropertyValue('font-weight');
                 while (child) {
                     var realSibling=child.nextSibling;
-                    if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]/)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
+                    if (child.nodeType == 3 && (child.data.match(re_extCJK)) && (fweight == 'bold' || fweight > 500) && (!(font_str.match(sig_bold)))) {
                         //Test if contains SimSun
                         if (debug_01===true) {all[i].style.color="Blue";} //Bold-->Blue;
                         //Test if contains Sans
@@ -1244,12 +1257,18 @@
                     //Test if contains Sans
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
-                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                        if ( (all[i].lang === 'ja'|docLang === 'ja') && uniCJK === false)
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans_ja);
+                        else
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                         window.setTimeout(function(node) {node.setAttribute("data-FontsFixedE137","");},1,all[i]); //Slow and Use async I/O.
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
-                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif_ja);
+                        else
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
                         window.setTimeout(function(node) {node.setAttribute("data-FontsFixedE137","");},1,all[i]); //Slow and Use async I/O.
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
@@ -1263,7 +1282,10 @@
                             //Do nothing.
                         }
                         else {
-                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                            if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                                all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK_ja + ',' + 'sans-serif';
+                            else
+                                all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                             window.setTimeout(function(node) {node.setAttribute("data-FontsFixedE137","");},1,all[i]); //Slow and Use async I/O.
                         }
                     }
@@ -1334,11 +1356,17 @@
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
                         if (debug_03 === true) all[i].style.color="Salmon";
-                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
+                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans_ja);
+                        else
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         if (debug_03 === true) all[i].style.color="SeaGreen";
-                        all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
+                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif_ja);
+                        else
+                            all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
                     }      //Test if contains monospace
                     else if (list_has(font_str, re_mono0) !== false) {
                         if (debug_03 === true) all[i].style.color="Maroon"; //Maroon
@@ -1347,7 +1375,10 @@
                     else {
                         //SimSun should be taken care of throught the "SimSun2Fix" class.
                         if (debug_03 === true) { all[i].style.color='Olive';}
-                        all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
+                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK_ja + ',' + 'sans-serif';
+                        else
+                            all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
                     }
                 }
                 else {
@@ -1515,8 +1546,8 @@
         var continuedHTML='';
         if (changhai_style===true) {
             //Simply inserting blanck space, like changhai.org.
-            currHTML=currHTML.replace(/([\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
-            currHTML=currHTML.replace(/([\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF])([”’])([^，, ])/g,'$1$2 $3');
+            currHTML=currHTML.replace(/([\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]?)([“‘])([\u3400-\u9FBF\u3000-\u303F\uFF00-\uFFEF]+)/g,'$1 $2$3');
+            currHTML=currHTML.replace(/([\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF])([”’])([^，, ])/g,'$1$2 $3');
             if (debug_04===true) {console.log(currHTML);}
             node.innerHTML=currHTML;
             return true;
@@ -1550,7 +1581,7 @@
                 if (child.nodeType===3) {
                     if (debug_tagSeeThrough===true) console.log("T3: "+child.data);
                     toReturn = child.data + toReturn;
-                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         return toReturn;
                     }
@@ -1561,7 +1592,7 @@
                     }
                     if (debug_tagSeeThrough===true) console.log("T1: "+child.textContent);
                     toReturn = displayedText(child) + toReturn;
-                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         return toReturn;
                     }
@@ -1569,8 +1600,8 @@
                 child=child.previousSibling;
             }
             if (debug_tagSeeThrough===true) console.log("BEFORE: "+toReturn+"@"+performance.now());
-            if (debug_tagSeeThrough===true) console.log("CJK? "+toReturn.match(/[\u3400-\u9FBF]/)+'@'+toReturn);
-            if ((toReturn.length < 1 || !toReturn.match(/[\u3400-\u9FBF]/)) && (!inputNode.parentNode.nodeName.match(upEnoughTags)) ) {
+            if (debug_tagSeeThrough===true) console.log("CJK? "+toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/)+'@'+toReturn);
+            if ((toReturn.length < 1 || !toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/)) && (!inputNode.parentNode.nodeName.match(upEnoughTags)) ) {
                 return getBefore(inputNode.parentNode)+toReturn;
             }
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
@@ -1583,7 +1614,7 @@
             while (child && (performance.now()-t_start<2) ) {
                 if (child.nodeType===3) {
                     toReturn = toReturn + child.data;
-                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         return toReturn;
                     }
@@ -1593,7 +1624,7 @@
                         return toReturn+'上下标'; //I just need to add some CJK text. They will be "chopped" anyway.
                     }
                     toReturn = toReturn + displayedText(child);
-                    if (toReturn.length>1024 || toReturn.match(/[\u3400-\u9FBF]/) ) {
+                    if (toReturn.length>1024 || toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/) ) {
                         //Stop if to Return is already too long;
                         return toReturn;
                     }
@@ -1601,7 +1632,7 @@
                 child=child.nextSibling;
             }
             if (debug_tagSeeThrough===true) console.log("AFTER: "+toReturn+"@"+performance.now());
-            if ((toReturn.length < 1 || !toReturn.match(/[\u3400-\u9FBF]/)) && (!inputNode.parentNode.nodeName.match(upEnoughTags)) ) {
+            if ((toReturn.length < 1 || !toReturn.match(/[\u3040-\u30FF\u3400-\u9FBF]/)) && (!inputNode.parentNode.nodeName.match(upEnoughTags)) ) {
                 return toReturn+getAfter(inputNode.parentNode);
             }
             return (toReturn.replace(/</,'&lt;')).replace(/>/,'&gt;');
@@ -1652,19 +1683,19 @@
         var fixpair_stop=performance.now()-fixpair_start;
         var paired_start=performance.now();
         //Find and preserve paired Latin marks.
-        var paired=/(\u201C)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/mg;
+        var paired=/(\u201C)([^\u3000-\u30FF\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC1C$2\uEC1D');
         }
         //Paired single quotations are diffcult because of the double-indentiy of '‘'.
-        paired=/(\u2018)([^\u3000-\u303F\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]{0,2})(\u2019)/mg;
+        paired=/(\u2018)([^\u3000-\u30FF\u3400-\u9FBF\uE000-\uED00\uFF00-\uFFEF]{0,2})(\u2019)/mg;
         while (currHTML.match(paired)) {
             if (debug_re_to_check===true && currHTML.match(re_to_check)) console.log("Quotation mark pair found@"+currHTML);
             currHTML=currHTML.replace(paired,'\uEC18$2\uEC19');
         }
         //Find paired CJK marks. Seems like O(n^2) without the "g" modifier?
-        paired=/(\u201C)([^\u201D]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u201D]*)(\u201D)/mg;
+        paired=/(\u201C)([^\u201D]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^\u201D]*)(\u201D)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB1C$2\uEB1D');
         }
@@ -1672,29 +1703,29 @@
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
         var unpaired_timeout = noBonusTimeout; //not so important, therefore cannot spend too much time here.
         var unpaired_start=performance.now();
-        var unpaired=/\u201C((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u201C\u201D]*$)/m;
+        var unpaired=/\u201C((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^\u201C\u201D]*$)/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
-        unpaired=/(^[^\u201C\u201D]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u201D/m;
+        unpaired=/(^[^\u201C\u201D]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u201D/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
         //For single quotations:
         var paired_single_start=performance.now();
-        paired=/(\u2018)([^\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/mg;
+        paired=/(\u2018)([^\u2019]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^\u2019]*)(\u2019)/mg;
         while (currHTML.match(paired)) {
             currHTML=currHTML.replace(paired,'\uEB18$2\uEB19');
         }
         var paired_single_stop=performance.now()-paired_single_start;
         //"unpaired ‘ (\u2018)", not just use at the beginning of a paragraph.
         unpaired_start=performance.now();
-        unpaired=/\u2018((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF][^\u2018\u2019]*$)/m;
+        unpaired=/\u2018((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^\u2018\u2019]*$)/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB18$1'); //We need the greedy method to get the longest match.
         }
         //CJK’, otherwise words like it's might be affected.
-        unpaired=/(^[^\u2018\u2019]*[\u3000-\u303F\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u2019/m;
+        unpaired=/(^[^\u2018\u2019]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u2019/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB19'); //We need the greedy method to get the longest match.
         }

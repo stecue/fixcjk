@@ -1,6 +1,7 @@
-## 1.2.11 (2017-04-13)
+## 1.2.12 (2017-04-13)
 Features:
   - Kana fonts can be set now.(`KanaSans` and `KanaSerif`)
+  - Japanese fonts can be set for `lang=ja` elements as well.
   - Turn `usePaltForCJKText` to `on` by default because it only affects kanas and
     won't affect other CJK characters.
   - add `LatinDefault` so that the font won't fallback to `LatinInSimSun` if not found.
