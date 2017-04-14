@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.12
+// @version           1.2.13
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -30,7 +30,7 @@
     var JaSerif = 'Noto Serif CJK JP,Source Han Serif,Source Han Serif JP,Meiryo,MS Gothic,Noto Serif CJK SC'; //Used in lang=ja elements only. KanaSans will be overrided.
     var JaSans = 'Noto Sans CJK JP,Source Han Sans,Source Han Sans JP,MS Mincho,Noto Sans CJK SC'; //Used in lang=ja elements only. KanaSerif will be overrided.
     var JaDefault = JaSans;
-    var uniCJK = false; // Use Chinese fonts for lang=ja if set to "true".
+    var unifiedCJK = false; // Use Chinese fonts for lang=ja if set to "true".
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSerif = '"PT Serif",Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
@@ -46,7 +46,7 @@
     var usePaltForAll = false; //If apply "palt" to as much elements as possible.
     var useJustify = true; //Make justify as the default alignment.
     var forceAutoSpaces = true; //if enabled, no need to double-click to add spaces.
-    var useBroaderSpaces = false; //It will be set to true automatically if usePaltForCJKText===true.
+    var useBroaderSpaces = false; //Now It will NOT be set to true automatically if usePaltForCJKText===true.
     var useXBroaderSpaces = false; //It will override useBroaderSpaces.
     var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
@@ -57,8 +57,8 @@
     console.log('FixCJK! version '+GM_info.script.version);
     if (usePaltForAll === true)
         usePaltForCJKText = true;
-    if (usePaltForCJKText === true)
-        useBroaderSpaces = true;
+    //if (usePaltForCJKText === true)
+    //    useBroaderSpaces = true;
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
     var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
     var maxNumElements = 81024; // maximum number of elements to process.
@@ -108,7 +108,7 @@
     var SkippedTagsForFonts=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea)$/i;
     var SkippedTagsForMarks=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|embed|figure|map|object|textarea|input|code|pre|time|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
-    //It seems that "lang" cannot be calculated. Just use node.lang to get the lang of current elements.
+    //It seems that "lang" cannot be calculated. Just use node.getAttribute("lang") to get the lang of current elements.
     var SkippedLangs='/(xa|en)/i';
     if (skipJaLang === true)
         SkippedLangs=RegExp(SkippedLangs.replace(/xa/,'ja'));
@@ -255,7 +255,7 @@
     punctStyle=punctStyle+'\n @font-face { font-family:FixKanaSerif;\n src:'+AddLocal(KanaSerif)+';\n unicode-range: U+3040-30FF;}';
     GM_addStyle(punctStyle);
     //--Style settings done. Now let's check if we need to continue--//    
-    var docLang = document.documentElement.lang;
+    var docLang = document.documentElement.getAttribute("lang");
     if (docLang === 'ja' && skipJaLang === true ) {
         console.log('Non-optimal lang attribute detected, exiting...');
         return true;
@@ -423,7 +423,7 @@
                 if (debug_labelCJK===true) {console.log(all[i-1]);}
                 break;
             }
-            if ((all[i].nodeName.match(SkippedTags)) || (!(!all[i].lang) && all[i].lang.match(SkippedLangs) ) || all[i] instanceof SVGElement || all[i].hasAttribute("data-CJKTestedAndLabeled")){
+            if ((all[i].nodeName.match(SkippedTags)) || (!(!all[i].getAttribute("lang")) && all[i].getAttribute("lang").match(SkippedLangs) ) || all[i] instanceof SVGElement || all[i].hasAttribute("data-CJKTestedAndLabeled")){
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
                 window.setTimeout(function (node) {node.setAttribute("data-CJKTestedAndLabeled","");
                     },1,all[i]); //This is the most time consuming part. Trying to use async i/o.
@@ -1174,7 +1174,7 @@
                 if (all[i].hasAttribute("data-FontsFixedE137")) {
                     continue;
                 }
-                if ( (all[i].lang === 'ja'|docLang === 'ja') && uniCJK === false) {
+                if ( (all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false) {
                     continue;
                 }
                 child = all[i].firstChild;
@@ -1257,7 +1257,7 @@
                     //Test if contains Sans
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
-                        if ( (all[i].lang === 'ja'|docLang === 'ja') && uniCJK === false)
+                        if ( (all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
@@ -1265,7 +1265,7 @@
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
-                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja')  && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
@@ -1282,7 +1282,7 @@
                             //Do nothing.
                         }
                         else {
-                            if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                            if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
                                 all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK_ja + ',' + 'sans-serif';
                             else
                                 all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
@@ -1336,7 +1336,7 @@
                         if (debug_verbose===true) {console.log('FixCJK!: Round 3 itself has been running for '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds. ');}
                     }
                 }
-                if (all[i].nodeName.match(SkippedTags) || (!(!all[i].lang) && all[i].lang.match(SkippedLangs) ) || (all[i] instanceof SVGElement) ) {
+                if (all[i].nodeName.match(SkippedTags) || (!(!all[i].getAttribute("lang")) && all[i].getAttribute("lang").match(SkippedLangs) ) || (all[i] instanceof SVGElement) ) {
                     if (debug_03===true) {console.log("Skipped:");console.log(all[i]);}
                     continue;
                 }
@@ -1356,14 +1356,14 @@
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
                         if (debug_03 === true) all[i].style.color="Salmon";
-                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         if (debug_03 === true) all[i].style.color="SeaGreen";
-                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
@@ -1375,7 +1375,7 @@
                     else {
                         //SimSun should be taken care of throught the "SimSun2Fix" class.
                         if (debug_03 === true) { all[i].style.color='Olive';}
-                        if ((all[i].lang === 'ja'|docLang === 'ja') &&all[i].lang === 'ja' && uniCJK === false)
+                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK_ja + ',' + 'sans-serif';
                         else
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
@@ -1450,7 +1450,16 @@
                     node.parentNode.style.whiteSpace="normal"; //Need to reset white-space to make justify effective. However it will mess up the tables!
         }
         //node.lang="zh";
-        node.parentNode.lang="zh";
+        if (node.parentNode.getAttribute('lang') === 'zh') {
+            //do nothing if it is lang=zh;
+        }
+        else if (node.parentNode.getAttribute('lang') === 'ja' | node.parentNode.parentNode.getAttribute('lang') === 'ja'| docLang==='ja') {
+            // if the parentNode.parentNode of the <cjktext> node is 'ja', for example, <p lang='ja'><b><cjktext>.
+            // It won't affect fonts anyway.
+            node.parentNode.lang='ja';
+        }
+        else
+            node.parentNode.lang="zh";
         while (child) {
             if (debug_re_to_check===true && (node.innerHTML.match(re_to_check))) {console.log("Checking subnode: "+child+"@"+node.nodeName);}
             if ( child.nodeType === 3 && !(node.nodeName.match(tabooedTags)) ) {
