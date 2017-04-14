@@ -109,9 +109,11 @@
     var SkippedTagsForMarks=/^(HTML|TITLE|HEAD|LINK|BODY|SCRIPT|noscript|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|embed|figure|map|object|textarea|input|code|pre|time|tt|BUTTON|select|option|label|fieldset|datalist|keygen|output)$/i;
     var SkippedTags=SkippedTagsForFonts;
     //It seems that "lang" cannot be calculated. Just use node.getAttribute("lang") to get the lang of current elements.
-    var SkippedLangs='/(xa|en)/i';
+    var SkippedLangs='(xa|en)';
     if (skipJaLang === true)
-        SkippedLangs=RegExp(SkippedLangs.replace(/xa/,'ja'));
+        SkippedLangs=RegExp(SkippedLangs.replace(/xa/,'ja'),'i');
+    else
+        SkippedLangs=RegExp(SkippedLangs,'i');
     var pureLatinTags=/^(TITLE|HEAD|LINK|SCRIPT|META|STYLE|AUDIO|video|source|AREA|BASE|canvas|figure|map|object|textarea|svg)$/i; //No CJK labeling for the elements and their desedents.
     var stopTags=/^(SUB|SUP|BR|VR)$/i; //The "see-through" stops at these tags.
     var stopClasses='mw-editsection,date';
@@ -255,10 +257,19 @@
     punctStyle=punctStyle+'\n @font-face { font-family:FixKanaSerif;\n src:'+AddLocal(KanaSerif)+';\n unicode-range: U+3040-30FF;}';
     GM_addStyle(punctStyle);
     //--Style settings done. Now let's check if we need to continue--//    
-    var docLang = document.documentElement.getAttribute("lang");
-    if (docLang === 'ja' && skipJaLang === true ) {
-        console.log('Non-optimal lang attribute detected, exiting...');
-        return true;
+    var docLang = document.documentElement.getAttribute("lang")+' '; //make sure docLang is not "";
+    if (debug_00 === true) {
+        console.log(docLang);
+        console.log(!(!docLang.match(SkippedLangs)));
+    }
+    if ( docLang.match(SkippedLangs) ) {
+        if (debug_00 === true) {
+            console.log(document.documentElement.innerText.match(re_pureCJK) );
+        }
+        if ( !document.documentElement.innerText.match(re_pureCJK) ) {
+            console.log('Non-optimal lang attribute detected, exiting...');
+            return true;
+        }
     }
     ///----------------------------
     qpreCJK = dequote(qpreCJK);
@@ -425,6 +436,7 @@
             }
             if ((all[i].nodeName.match(SkippedTags)) || (!(!all[i].getAttribute("lang")) && all[i].getAttribute("lang").match(SkippedLangs) ) || all[i] instanceof SVGElement || all[i].hasAttribute("data-CJKTestedAndLabeled")){
                 if (debug_labelCJK===true && t_last>10 ) console.log("SKIPPED: "+all[i].nodeName);
+                //FIXME:HERE
                 window.setTimeout(function (node) {node.setAttribute("data-CJKTestedAndLabeled","");
                     },1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                 if (all[i].nodeName.match(pureLatinTags)) {
