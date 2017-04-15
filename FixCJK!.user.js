@@ -39,7 +39,7 @@
     var LatinDefault = LatinSans; //The default Latin fonts if no "serif" or "sans-serif" is provided. It is also the font that will be used if the specified fonts (by the webpage) cannot be found.
     ///---Choose what to fix---///
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-    var FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
+    var FixPureLatin = false; //Appendent CJK fonts to all elements. No side effects found so far. Turn off to speed up.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     ///=== Experimental Options. The following options are for experienced users.===///
     var usePaltForCJKText = true; //If apply "palt" to CJK text (not only puncts) as well.
@@ -898,7 +898,7 @@
         t_start=performance.now();
         if ( (t_start-t_last)*ItvScl > t_interval ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-            FixMore = false; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixPureLatin = false; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
             ifRound1 = true;
             ifRound2 = true;
@@ -965,7 +965,7 @@
         }
         if ((NumClicks < 1) || (t_start-t_last)*ItvScl > t_interval ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-            FixMore = true; //Appendent CJK fonts to all elements. No side effects found so far.
+            FixPureLatin = true; //Appendent CJK fonts to all elements. No side effects found so far.
             FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
             maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
             maxNumElements = 8000; // maximum number of elements to process.
@@ -1309,9 +1309,9 @@
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+all[tmp_idx].innerHTML);
         if (debug_02===true) console.log('Just before Round 3:'+tmp_idx.toString()+'::'+dequote(window.getComputedStyle(all[tmp_idx], null).getPropertyValue('font-family')));
         /// ===== The Third round (Round 3): Add CJKdefault to all elements ===== ///
-        if (FixMore === false) {
+        if (FixPureLatin === false) {
             t_stop=performance.now();
-            if (debug_verbose===true) {console.log('FixCJK!: FixMore/Round 3 is intentionally skipped.');}
+            if (debug_verbose===true) {console.log('FixCJK!: FixPureLatin/Round 3 is intentionally skipped.');}
             return false;
         }
         all=document.querySelectorAll(":not([data-FontsFixedE137])");
