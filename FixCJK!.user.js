@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.14
+// @version           1.2.15
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -621,7 +621,7 @@
             setTimeout(function() {
                 if (fireReFix===true) {
                     ReFixCJKFast();
-                    FixPunct
+                    FunFixPunct(true,2,returnLater);
                 }
                 //setTimeout(function(){ fontsCheck(); }, 30);
                 if (forceAutoSpaces === true) {
@@ -1186,7 +1186,7 @@
                 if (all[i].hasAttribute("data-FontsFixedE137")) {
                     continue;
                 }
-                if ( (all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false) {
+                if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja') && unifiedCJK === false) {
                     continue;
                 }
                 child = all[i].firstChild;
@@ -1269,7 +1269,7 @@
                     //Test if contains Sans
                     if (list_has(font_str, re_sans0) !== false) {
                         //all[i].style.color="Salmon";
-                        if ( (all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
+                        if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
@@ -1277,7 +1277,7 @@
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         //all[i].style.color="SeaGreen";
-                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja')  && unifiedCJK === false)
+                        if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja')  && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
@@ -1294,7 +1294,7 @@
                             //Do nothing.
                         }
                         else {
-                            if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
+                            if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja') && unifiedCJK === false)
                                 all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK_ja + ',' + 'sans-serif';
                             else
                                 all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
@@ -1368,14 +1368,14 @@
                 if (!(font_str.match(sig_song) || font_str.match(sig_hei) || font_str.match(sig_bold) || font_str.match(sig_default) || font_str.match(/\uE137/))) {
                     if (list_has(font_str, re_sans0) !== false) {
                         if (debug_03 === true) all[i].style.color="Salmon";
-                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
+                        if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_sans0, qsans);
                     }      //Test if contains serif
                     else if (list_has(font_str, re_serif) !== false) {
                         if (debug_03 === true) all[i].style.color="SeaGreen";
-                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
+                        if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif_ja);
                         else
                             all[i].style.fontFamily = genPunct+','+replace_font(font_str, re_serif, qserif);
@@ -1387,7 +1387,7 @@
                     else {
                         //SimSun should be taken care of throught the "SimSun2Fix" class.
                         if (debug_03 === true) { all[i].style.color='Olive';}
-                        if ((all[i].getAttribute("lang") === 'ja' | all[i].parentNode.getAttribute("lang") === 'ja' | docLang === 'ja') && unifiedCJK === false)
+                        if ( ((all[i].closest('[lang]') && all[i].closest('[lang]').lang === 'ja') | docLang === 'ja') && unifiedCJK === false)
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK_ja + ',' + 'sans-serif';
                         else
                             all[i].style.fontFamily = genPunct+','+font_str + ',' + qCJK + ',' + 'sans-serif';
@@ -1465,7 +1465,7 @@
         if (node.parentNode.getAttribute('lang') === 'zh') {
             //do nothing if it is lang=zh;
         }
-        else if (node.parentNode.getAttribute('lang') === 'ja' | node.parentNode.parentNode.getAttribute('lang') === 'ja'| docLang==='ja') {
+        else if ((node.closest('[lang]') && node.closest('[lang]').lang === 'ja') | docLang==='ja') {
             // if the parentNode.parentNode of the <cjktext> node is 'ja', for example, <p lang='ja'><b><cjktext>.
             // It won't affect fonts anyway.
             node.parentNode.lang='ja';
@@ -1804,7 +1804,7 @@
             }
         }
         ///---The last punct in a seq is left in <cjktext> tag. Must be put in <cjkpuns> tag as well. (Same tag.) Only need to deal 『「《〈【（\uEB1C\uEB18 (openning marks).
-        var reLastP=/([^><]<.cjkpuns>)([\n]?<[^><\uE211]*>[\n]?)*([『「《〈【（\uEB1C\uEB18])(<[^><\uE211]*>)*([^><[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/g
+        var reLastP=/([^><]<.cjkpuns>)([\n]?<[^><\uE211]*>[\n]?)*([『「《〈【（\uEB1C\uEB18])(<[^><\uE211]*>)*([^><[、，。：；！？）】〉》」』\uEB1D\uEB19『「《〈【（\uEB1C\uEB18])/g;
         currHTML=currHTML.replace(reLastP,'$1$2<cjkpuns data-CJKTestedAndLabeled data-MarksFixedE135 data-cjkpua=\uE211 style="display:inline;padding-left:0px;padding-right:0px;float:none;font-family:General Punct \uE137 !important;">$3</cjkpuns>$4$5');
         //Now let's deal the over-tag marks. They are between two [\uF201-\uF204]CJK[\uF201-\uF204]
         var overTagLastP=/([^><]<.cjkpuns>)([\uF201-\uF204]CJK[\uF201-\uF204])([『「《〈【（\uEB1C\uEB18])([^><]*[\uF201-\uF204]CJK[\uF201-\uF204])/g;

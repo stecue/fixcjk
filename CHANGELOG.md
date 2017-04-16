@@ -1,6 +1,7 @@
-## 1.2.13 (2017-04-14)
+## 1.2.15 (2017-04-14)
 Bugfixes:
   - Fix some bugs which prevent correct rendering for lang=ja elements in 1.2.12.
+  - Use "Element.closest()" to get the accurate lang attribute.
 
 ## 1.2.12 (2017-04-13)
 Features:
