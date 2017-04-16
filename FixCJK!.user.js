@@ -12,7 +12,6 @@
 // @exclude           https://*jsfiddle.net*/*
 // @exclude           http://*stackexchange.com/*
 // @exclude           http://*mathoverflow.net/*
-// @exclude           http://dnf.qq.com/main.shtml
 // @grant             GM_addStyle
 // ==/UserScript==
 (function () {
