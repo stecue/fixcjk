@@ -1,6 +1,26 @@
-## 1.2.6 (2017-04-10)
+## 1.3.0 (2017-04-16)
+Features/Bugfixes:
+  - Official support for Janpanese font settings.
+
+## 1.2.15 (2017-04-14)
+Bugfixes:
+  - Fix some bugs which prevent correct rendering for lang=ja elements in 1.2.12.
+  - Use "Element.closest()" to get the accurate lang attribute.
+
+## 1.2.12 (2017-04-13)
+Features:
+  - Kana fonts can be set now.(`KanaSans` and `KanaSerif`)
+  - Japanese fonts can be set for `lang=ja` elements as well.
+  - Turn `usePaltForCJKText` to `on` by default because it only affects kanas and
+    won't affect other CJK characters.
+  - add `LatinDefault` so that the font won't fallback to `LatinInSimSun` if not found.
+
+## 1.2.9 (2017-04-11)
 Features/Bugfixes:
   - Use custom attributes to avoid messing up with HTML classes.
+  - Do not getAfterHTML and getBeforeHTML for the right- and left-floated elements.
+  - Add "skipJaLang" option to control whether to skip Japanese contents or not.
+  - Add Source Han to the font fallback list.
 
 ## 1.2.3 (2017-04-08)
 Features/Bugfixes:
