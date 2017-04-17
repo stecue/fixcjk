@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.2.15
+// @version           1.3.0
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -28,8 +28,7 @@
     var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名) if no lang=ja is set.
     var JaSerif = 'Noto Serif CJK JP,Source Han Serif,Source Han Serif JP,Noto Serif CJK SC,Source Han Serif SC,MS Mincho'; //Used in lang=ja elements only. KanaSans will be overrided.
     var JaSans = 'Noto Sans CJK JP,Source Han Sans,Source Han Sans JP,Noto Sans CJK SC,Source Han Sans SC,Meiryo,MS Gothic'; //Used in lang=ja elements only. KanaSerif will be overrided.
-    var JaDefault = JaSans;
-    var unifiedCJK = false; // Use Chinese fonts for lang=ja if set to "true".
+    var JaDefault = JaSans; //Default fonts if no "sans" or "sans-serif" is set for lang=ja elements.
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSerif = '"PT Serif",Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
@@ -38,7 +37,6 @@
     var LatinDefault = LatinSans; //The default Latin fonts if no "serif" or "sans-serif" is provided. It is also the font that will be used if the specified fonts (by the webpage) cannot be found.
     ///---Choose what to fix---///
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
-    var FixPureLatin = false; //Appendent CJK fonts to all elements. No side effects found so far. Turn off to speed up.
     var FixPunct = true; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
     ///=== Experimental Options. The following options are for experienced users.===///
     var usePaltForCJKText = true; //If apply "palt" to CJK text (not only puncts) as well.
@@ -51,6 +49,8 @@
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
     var scrollToFixAll = false; //Scoll to FixAll. Might slow down the browser.
     var skipJaLang = false; //Skip lang=ja elements and webpages (usually pure Japanese pages). Keep it true if you want to apply your brower's Japanese font settings.
+    var unifiedCJK = false; // Use Chinese fonts for lang=ja if set to "true".
+    var FixPureLatin = false; //Appendent the script to all elements, including pure latins. The option is here for historical reasons and usually you should use the built-in font settings of your browser.
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     //--output the version info first--//
     console.log('FixCJK! version '+GM_info.script.version);
@@ -59,11 +59,11 @@
     //if (usePaltForCJKText === true)
     //    useBroaderSpaces = true;
     var timeOut=3000; //allow maximum 3.0 seconds to run this script.
-    var maxlength = 1100200; //maximum length of the page HTML to check for CJK punctuations.
-    var maxNumElements = 81024; // maximum number of elements to process.
-    var CJKOnlyThreshold = 11024; // Only CJK if the number of elements reaches this threshold.
-    var noBonusLength = 11024; //no bonus functions such as fixing "reversed" pairs.
-    var noBonusTimeout = 20; //Longest time (in ms) to run bonus functions for each element.
+    var maxlength = 11002000; //maximum length of the page HTML to check for CJK punctuations.
+    var maxNumElements = 810240; // maximum number of elements to process.
+    var CJKOnlyThreshold = 110240; // Only CJK if the number of elements reaches this threshold.
+    var noBonusLength = 110240; //no bonus functions such as fixing "reversed" pairs.
+    var noBonusTimeout = 200; //Longest time (in ms) to run bonus functions for each element.
     var sqz_timeout=50; // 50ms per element seems long enough.
     var invForLimit=6; //the time limit factor (actual limit is timeOut/invForLimit) for the "for loop" in Round 2 & 3.
     var processedAll=true;

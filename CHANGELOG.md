@@ -1,3 +1,7 @@
+## 1.3.0 (2017-04-16)
+Features/Bugfixes:
+  - Official support for Janpanese font settings.
+
 ## 1.2.15 (2017-04-14)
 Bugfixes:
   - Fix some bugs which prevent correct rendering for lang=ja elements in 1.2.12.
