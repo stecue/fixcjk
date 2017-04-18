@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.2
+// @version           1.3.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -47,7 +47,7 @@
     var useXBroaderSpaces = false; //It will override useBroaderSpaces.
     var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
-    var scrollToFixAll = false; //Scoll to FixAll. Might slow down the browser.
+    var scrollToFixAll = false; //Scoll to FixAll,including PMs. Might slow down the browser.
     var skipJaLang = false; //Skip lang=ja elements and webpages (usually pure Japanese pages). Keep it true if you want to apply your brower's Japanese font settings.
     var unifiedCJK = false; // Use Chinese fonts for lang=ja if set to "true".
     var FixPureLatin = false; //Appendent the script to all elements, including pure latins. The option is here for historical reasons and usually you should use the built-in font settings of your browser.
@@ -70,6 +70,7 @@
     var ifRound1=true;
     var ifRound2=true;
     var ifRound3=true;
+    var RawFixPunct=FixPunct;
     var forceNoSimSun = false; //in case SimSun is the "!important" one. Note that other fixes will not be performed for applied tags.
     var debug_verbose = false; //show/hide more information on console.
     var debug_00 = false; //debug codes before Rounds 1/2/3/4.
@@ -541,7 +542,7 @@
     if (debug_verbose===true) {console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');}
     if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
         console.log('FixCJK!: Too slow or too many elements.');
-        FixPunct=false;
+        //FixPunct=false; //This seems meaningless. There is a overal timeOut anyway.
     }
     if (FixPunct===false) {
         if (debug_verbose===true) {console.log('FixCJK!: Skipping fixing punctuations...');}
@@ -591,6 +592,7 @@
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
+            FixPunct=RawFixPunct;
             setTimeout(ReFixCJK,5,e);
             if (forceAutoSpaces === true)
                 setTimeout(function (){addSpaces(true,300);},5);
@@ -604,7 +606,6 @@
             labelPreCode();
             labelNoWrappingList();
             if (useWrap===true) wrapCJK();
-            var RawFixPunct=FixPunct;
             FixPunct = true;
             FunFixPunct(false,5,false);
             FixPunct=RawFixPunct;
@@ -616,6 +617,7 @@
     var fireReFix=false;
     window.addEventListener("scroll",function (e){
         if (scrollToFixAll === true) {
+            FixPunct=RawFixPunct;
             setTimeout(ReFixCJK,50,e);
             setTimeout(addSpaces,100,true,300);
         }
@@ -625,7 +627,6 @@
             setTimeout(function() {
                 if (fireReFix===true) {
                     ReFixCJKFast();
-                    FunFixPunct(true,2,returnLater);
                 }
                 //setTimeout(function(){ fontsCheck(); }, 30);
                 if (forceAutoSpaces === true) {
@@ -913,7 +914,7 @@
             labelPreMath();
             labelCJK(true);
             FixAllFonts(true);
-            FunFixPunct(true,2,returnLater);
+            //FunFixPunct(true,2,returnLater); //No FixPunct unless "scrollToFixAll" is set to "true".
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         t_last=performance.now();
