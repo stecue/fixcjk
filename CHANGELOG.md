@@ -1,3 +1,7 @@
+## 1.3.4 (2017-04-18)
+Bugfixes:
+  - Fix a bug that prevents recognizing ending "”(\u201D)".
+
 ## 1.3.3 (2017-04-17)
 Bugfixes:
   - Correct font list (Thanks to @Explorare)
