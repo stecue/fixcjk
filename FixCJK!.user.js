@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.3
+// @version           1.3.4
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -308,6 +308,7 @@
             return true;
         }
     }
+    /*
     function labelCJKByNode(node,levelIndex) {
         var t_stop=performance.now();
         if (node instanceof SVGElement) {
@@ -367,10 +368,12 @@
         node.setAttribute("data-CJKTestedAndLabeled","");
         return true;
     }
+    */
     function labelCJK(useCJKTimeOut) {
         var useBFS=false;
         var child=document.body.firstChild;
         var all='';
+        /*
         if (useBFS===true) {
             while (child) {
                 if (child.nodeType===1) {
@@ -381,6 +384,7 @@
             }
             return true;
         }
+        */
         //Skip wrapping CJK for anchors to javascripts, otherwise the anchors will break.
         all=document.querySelectorAll('a:not([data-preCode])');
         for (var ia=0;ia<all.length;ia++){
@@ -467,8 +471,10 @@
                         all[i].setAttribute("data-PunctSpace2Fix","");
                         if ( all[i].textContent.match(/\w\s[\u3040-\u30FF\u3400-\u9FBF]|[\u3040-\u30FF\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
-                            all[i].removeAttribute("data-PunctSpace2Fix");
-                            all[i].setAttribute("data-preCode","");
+                            if (!all[i].textContent.match(/^([\s\u0020\u00A0\u2009\u200B-\u200E]|&nbsp;|&thinsp;)[^\s\u0020\u00A0\u2009\u200B-\u200E]/)) {
+                                all[i].removeAttribute("data-PunctSpace2Fix");
+                                all[i].setAttribute("data-preCode","");
+                            }
                         }
                     }
                 }
@@ -480,15 +486,17 @@
                         all[i].setAttribute("data-PunctSpace2Fix","");
                         if ( all[i].textContent.match(/\w\s[\u3040-\u30FF\u3400-\u9FBF]|[\u3040-\u30FF\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
-                            all[i].removeAttribute("data-PunctSpace2Fix");
-                            all[i].setAttribute("data-preCode","");
+                            if (!all[i].textContent.match(/^([\s\u0020\u00A0\u2009\u200B-\u200E]|&nbsp;|&thinsp;)[^\s\u0020\u00A0\u2009\u200B-\u200E]/)) {
+                                all[i].removeAttribute("data-PunctSpace2Fix");
+                                all[i].setAttribute("data-preCode","");
+                            }
                         }
                     }
                 }
                 all[i].setAttribute("data-CJKTestedAndLabeled","");
                 continue;
             }
-            if ( !(all[i].textContent.match(/[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
+            if ( !(all[i].textContent.match(/[“”‘’\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/)) ){
                 if ( useCJKTimeOut===true && all[i].textContent.length > 20 && (font_str.split(',').length >= rspLength) ) { //20 is just to make sure they are actuall Latin elements,not just some place holder.
                     window.setTimeout(function (node) {node.setAttribute("data-CJKTestedAndLabeled","");},1,all[i]); //This is the most time consuming part. Trying to use async i/o.
                     window.setTimeout(addTested,5,all[i],0);//Still, it might cause some childs to be "unfixable", if the length of the place holder is longer than 100...
@@ -508,14 +516,17 @@
             child = all[i].firstChild;
             while (child) {
                 var realSibling=child.nextSibling;
-                if (child.nodeType == 3 && (child.data.match(/[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/))) {
+                if (child.nodeType == 3 && (child.data.match(/[“”‘’\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/))) {
                     all[i].setAttribute("data-CJK2Fix","");
                     if (!inTheClassOf(all[i],noWrappingClasses) && all[i].contentEditable!=="true") {
                         all[i].setAttribute("data-PunctSpace2Fix","");
                         if ( all[i].textContent.match(/\w\s[\u3040-\u30FF\u3400-\u9FBF]|[\u3040-\u30FF\u3400-\u9FBF]\s\w/) && !all[i].textContent.match(re_allpuncts)){
                             //Do not wrap if already using "spaces" and no puncts
-                            all[i].removeAttribute("data-PunctSpace2Fix");
-                            all[i].setAttribute("data-preCode","");
+                            //If space at the beginning, it might the "extra space at the beginning but after PM in another node" case.
+                            if (!all[i].textContent.match(/^([\s\u0020\u00A0\u2009\u200B-\u200E]|&nbsp;|&thinsp;)[^\s\u0020\u00A0\u2009\u200B-\u200E]/)) {
+                                all[i].removeAttribute("data-PunctSpace2Fix");
+                                all[i].setAttribute("data-preCode","");
+                            }
                         }
                     }
                     //Do I need to test the parentNode? I deleted them in 1.1.3
@@ -1738,11 +1749,16 @@
         //"unpaired \u201C or \u201D", not just use at the beginning of a paragraph.
         var unpaired_timeout = noBonusTimeout; //not so important, therefore cannot spend too much time here.
         var unpaired_start=performance.now();
-        var unpaired=/\u201C((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^\u201C\u201D]*$)/m;
+        //Note that to make "delete_all_extra_spaces" possible, we must take "spaces before and after QMs" into account.
+        var unpaired=/\u201C((?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}(?:[\uF202\uF204]CJK[\uF202\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,5}(?:[\uF202\uF204]CJK[\uF202\uF204])?[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^u201D]*$)/m;
+        //Before 1.3.4. Why [^\u201C\u201D]*$ ?
+        //var unpaired=/\u201C((?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}(?:[\uF202\uF204]CJK[\uF202\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,5}(?:[\uF202\uF204]CJK[\uF202\uF204])?[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF][^\u201C\u201D]*$)/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'\uEB1C$1'); //We need the greedy method to get the longest match.
         }
-        unpaired=/(^[^\u201C\u201D]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201-\uF204]CJK[\uF201-\uF204])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,3}(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)\u201D/m;
+        //Before 1.3.4. Why ^[^\u201C\u201D] ?
+        //unpaired=/(^[^\u201C\u201D]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201\uF203]CJK[\uF201\uF203])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,5}(?:[\uF201\uF203]CJK[\uF201\uF203])?(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,1})\u201D/m;
+        unpaired=/(^[^\u201C]*[\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF](?:[\uF201\uF203]CJK[\uF201\uF203])?[^\u201D\u3400-\u9FBF\uF201-\uF204]{0,5}(?:[\uF201\uF203]CJK[\uF201\uF203])?(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,1})\u201D/m;
         while ( currHTML.length< noBonusLength && currHTML.match(unpaired) && (performance.now()-unpaired_start)<unpaired_timeout) {
             currHTML=currHTML.replace(unpaired,'$1\uEB1D'); //We need the greedy method to get the longest match.
         }
@@ -1769,11 +1785,13 @@
         //Remove extra spaces if necessary
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
+            //Note that it is actually meaningless to chang text after \uF202 or \uF204CJK, because they belong to the "after" HTML and any change will be discarded once "trimmed" and I included them for simplicity.
+            //Note that it is actually meaningless to chang text before \uF201 or \uF203CJK, because they belong to the "before" HTML and any change will be discarded once "trimmed" and I just included them for simplicity.
             currHTML=currHTML.replace(/&nbsp;/gi,'\u00A0');
-            currHTML=currHTML.replace(/([\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}/g,'$2');
+            currHTML=currHTML.replace(/([\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[、，。：；！？）】〉》」』\uEB1D\uEB19]+(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}/g,'$2');
             //'>' means there is a non-CJK tag(?)
             //currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2'); //before 1.3.2
-            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)([\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}/g,'$1$2');
+            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}((?:[\uF201-\uF204]CJK[\uF201-\uF204])?[『「《〈【（\uEB1C\uEB18]+(?:[\uF201-\uF204]CJK[\uF201-\uF204])?)([\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}/g,'$1$2');
         }
         else {
             //Delete at most 1 spaces before and after because of the wider CJK marks.
@@ -1873,7 +1891,7 @@
         currHTML=currHTML.replace(/\uEA17/mg,'〈');
         currHTML=currHTML.replace(/\uEA18/mg,'【');
         currHTML=currHTML.replace(/\uEA19/mg,'（');
-        ///////==== Change quotation marks back =====/////
+        ///////==== Change Latin quotation marks back =====/////
         currHTML=currHTML.replace(/\uEC18/mg,'\u2018');
         currHTML=currHTML.replace(/\uEC19/mg,'\u2019');
         currHTML=currHTML.replace(/\uEC1C/mg,'\u201C');
