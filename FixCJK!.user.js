@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.2
+// @version           1.3.3
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -47,7 +47,7 @@
     var useXBroaderSpaces = false; //It will override useBroaderSpaces.
     var use2XBroaderSpaces = false; //It will override useXBroaderSpaces.
     var use3XBroaderSpaces = false; //It will override use2XBroaderSpaces.
-    var scrollToFixAll = false; //Scoll to FixAll. Might slow down the browser.
+    var scrollToFixAll = false; //Scoll to FixAll,including PMs. Might slow down the browser.
     var skipJaLang = false; //Skip lang=ja elements and webpages (usually pure Japanese pages). Keep it true if you want to apply your brower's Japanese font settings.
     var unifiedCJK = false; // Use Chinese fonts for lang=ja if set to "true".
     var FixPureLatin = false; //Appendent the script to all elements, including pure latins. The option is here for historical reasons and usually you should use the built-in font settings of your browser.
@@ -70,6 +70,7 @@
     var ifRound1=true;
     var ifRound2=true;
     var ifRound3=true;
+    var RawFixPunct=FixPunct;
     var forceNoSimSun = false; //in case SimSun is the "!important" one. Note that other fixes will not be performed for applied tags.
     var debug_verbose = false; //show/hide more information on console.
     var debug_00 = false; //debug codes before Rounds 1/2/3/4.
@@ -90,7 +91,7 @@
     var useFeedback=false;
     var useCSSforSimSun=false;
     var useDelayedFix=false;
-    var useTimeout=false;
+    var useOverallTimeOut=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
     var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
     //var re_extCJK=/[“”‘’\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/;
@@ -541,7 +542,7 @@
     if (debug_verbose===true) {console.log('FixCJK!: Labling and Fixing fonts took '+((t_stop-t_start)/1000).toFixed(3)+' seconds.');}
     if ((t_stop-t_start)*2 > timeOut || max > maxNumElements ) {
         console.log('FixCJK!: Too slow or too many elements.');
-        FixPunct=false;
+        //FixPunct=false; //This seems meaningless. There is a overal timeOut anyway.
     }
     if (FixPunct===false) {
         if (debug_verbose===true) {console.log('FixCJK!: Skipping fixing punctuations...');}
@@ -576,9 +577,10 @@
     var LastURL=document.URL;
     var LastMod=document.lastModified;
     var ItvScl=2.0; //Real "cooling down time" is t_interval/ItvScl
-    if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
-        NumPureEng++;
-    }
+    // NumPureEng++ will cause problems on kkj.cn.
+    //if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
+    //    NumPureEng++;
+    //}
     //document.onClick will cause problems on some webpages on Firefox.
     var downtime=performance.now();
     var downX=0;
@@ -591,6 +593,7 @@
         }
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
+            FixPunct=RawFixPunct;
             setTimeout(ReFixCJK,5,e);
             if (forceAutoSpaces === true)
                 setTimeout(function (){addSpaces(true,300);},5);
@@ -604,7 +607,6 @@
             labelPreCode();
             labelNoWrappingList();
             if (useWrap===true) wrapCJK();
-            var RawFixPunct=FixPunct;
             FixPunct = true;
             FunFixPunct(false,5,false);
             FixPunct=RawFixPunct;
@@ -616,6 +618,7 @@
     var fireReFix=false;
     window.addEventListener("scroll",function (e){
         if (scrollToFixAll === true) {
+            FixPunct=RawFixPunct;
             setTimeout(ReFixCJK,50,e);
             setTimeout(addSpaces,100,true,300);
         }
@@ -625,7 +628,6 @@
             setTimeout(function() {
                 if (fireReFix===true) {
                     ReFixCJKFast();
-                    FunFixPunct(true,2,returnLater);
                 }
                 //setTimeout(function(){ fontsCheck(); }, 30);
                 if (forceAutoSpaces === true) {
@@ -913,7 +915,7 @@
             labelPreMath();
             labelCJK(true);
             FixAllFonts(true);
-            FunFixPunct(true,2,returnLater);
+            //FunFixPunct(true,2,returnLater); //No FixPunct unless "scrollToFixAll" is set to "true".
             console.log('FixCJK!: Fast ReFixing took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
         }
         t_last=performance.now();
@@ -929,10 +931,11 @@
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
         if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
-        if (document.URL!==LastURL) {
-            NumPureEng = 0;
-            LastURL=document.URL;
-        }
+        //The "LastURL" method is not reliable.
+        //if (document.URL!==LastURL) {
+        //    NumPureEng = 0;
+        //    LastURL=document.URL;
+        //}
         var clickedNode=e.target;
         while (clickedNode && clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
@@ -949,12 +952,12 @@
         else {
             if (debug_verbose===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
         }
-        //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
-        if (NumPureEng >= 2) {
-            console.log('Probably pure English/Latin site, re-checking skipped.');
-            refixing=false;
-            return true;
-        }
+        //Note that NumPureEng method is no accurate. It might be still usefull because document.lastModified method is only partially reliable.
+        //if (NumPureEng >= 2) {
+        //    console.log('Probably pure English/Latin site, re-checking skipped.');
+        //    refixing=false;
+        //    return true;
+        //}
         if (debug_verbose===true) {console.log('FixCJK!: NumClicks='+NumClicks.toString());}
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.querySelectorAll("[data-FontsFixedCJK]");
@@ -995,10 +998,11 @@
             if (useWrap===true) wrapCJK();
             FunFixPunct(true,2,returnLater);
             console.log('FixCJK!: ReFixing (Fixing PMs not included) took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
-            NumAllCJKs=(document.querySelectorAll("[data-MarksFixedE135]")).length;
-            if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
-                NumPureEng++;
-            }
+            //The following is not needed b/c not Round3 is skipped by default.
+            //NumAllCJKs=(document.querySelectorAll("[data-MarksFixedE135]")).length;
+            //if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
+            //    NumPureEng++;
+            //}
         }
         else {
             console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
@@ -1129,7 +1133,7 @@
         return localed;
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
-    function FixAllFonts (useTimeout) {
+    function FixAllFonts (useOverallTimeOut) {
         var func_start=performance.now();
         if (debug_verbose===true) {
             console.log("Round 1: "+ifRound1.toString());
@@ -1174,7 +1178,7 @@
         if (ifRound1===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if ( useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
+                    if ( useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound1=false;
                         ifRound2=false;
                         ifRound3=false;
@@ -1234,7 +1238,7 @@
         /// ===== Second Round: Deal with regular weight. ===== ///
         var tmp_idx=0;
         max = all.length;
-        if (useTimeout===true && (performance.now()-t_stop)*4 > timeOut) {
+        if (useOverallTimeOut===true && (performance.now()-t_stop)*4 > timeOut) {
             ifRound2=false;
             ifRound3=false;
             FixPunct=false;
@@ -1246,7 +1250,7 @@
             //Now fix the rest.
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if (useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
+                    if (useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound2=false;
                         ifRound3=false;
                         FixPunct=false;
@@ -1341,7 +1345,7 @@
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if (useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
+                    if (useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound3=false;
                         FixPunct=false;
                         processedAll=false;
@@ -1413,7 +1417,8 @@
         if (debug_wrap===true) console.log("Fixing Fonts took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
     }
     ///===The Actual Round 4===///
-    function FunFixPunct(useTimeout,MaxNumLoops,returnNow) {
+    function FunFixPunct(useOverallTimeOut,MaxNumLoops,returnNow) {
+        var funcTimeOut = 300; //in ms.
         if (FixPunct === false) {
             console.log('No PM will be fixed.');
             return true;
@@ -1432,9 +1437,9 @@
             if (allrecur[ir].nodeName.match(/CJKTEXT/i)) {
                 FixPunctRecursion(allrecur[ir]);
             }
-            if ( useTimeout===true && (performance.now()-t_start) > timeOut ) {
+            if ( (useOverallTimeOut===true && (performance.now()-t_start) > timeOut) | (performance.now()-func_start) > funcTimeOut ) {
                 processedAll=false;
-                console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                console.log("FIXME: FunFixPunct Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
                 console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
                 break;
             }

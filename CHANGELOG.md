@@ -1,4 +1,4 @@
-## 1.3.2 (2017-04-17)
+## 1.3.3 (2017-04-17)
 Bugfixes:
   - Correct font list (Thanks to @Explorare)
   - Drop using unicode PUA in font signatures to fix issue #113.
