@@ -1,7 +1,9 @@
-## 1.3.1 (2017-04-17)
+## 1.3.2 (2017-04-17)
 Bugfixes:
   - Correct font list (Thanks to @Explorare)
   - Drop using unicode PUA in font signatures to fix issue #113.
+  - Some bugfixes related to the `FixPunct`.
+  - Partial support for "space between PMs CJK characters".
 
 ## 1.3.0 (2017-04-16)
 Features/Bugfixes:

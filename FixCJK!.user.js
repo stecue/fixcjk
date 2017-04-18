@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.1
+// @version           1.3.2
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -529,10 +529,11 @@
     //Do not try to fixpuncts if it is an English site. Just trying to save time.
     labelPreMath();
     labelCJK(true);
-    if ((document.querySelectorAll("[data-CJK2Fix]")).length < 1) {
-        FixPunct=false;
-        console.log("No puncts will be fixed.");
-    }
+    //The following is not needed and the manipulation of global variables should not be performed.
+    //if ((document.querySelectorAll("[data-CJK2Fix]")).length < 1) {
+    //    FixPunct=false;
+    //    console.log("No puncts will be fixed.");
+    //}
     if (debug_verbose===true) {console.log('FixCJK!: Labling took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
     ///===FixFonts, Rounds 1-3===///
     FixAllFonts();
@@ -603,7 +604,10 @@
             labelPreCode();
             labelNoWrappingList();
             if (useWrap===true) wrapCJK();
+            var RawFixPunct=FixPunct;
+            FixPunct = true;
             FunFixPunct(false,5,false);
+            FixPunct=RawFixPunct;
             addSpaces(false,10000);
             t_CJK=performance.now()-t_CJK;
             console.log("Labeling and fixing all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
@@ -899,7 +903,7 @@
         if ( (t_start-t_last)*ItvScl > t_interval ) {
             FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
             FixPureLatin = false; //Appendent CJK fonts to all elements. No side effects found so far.
-            FixPunct = false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
+            //FixPunct = false; //If Latin punctions in CJK paragraph need to be fixed. Usually one needs full-width punctions in CJK context. Turn it off if the script runs too slow or HTML strings are adding to your editing area.
             ifRound1 = true;
             ifRound2 = true;
             ifRound3 = false;
@@ -1761,14 +1765,15 @@
         if (delete_all_extra_spaces===true) {
             //For changhai.org and similar sites.
             currHTML=currHTML.replace(/&nbsp;/gi,'\u00A0');
-            currHTML=currHTML.replace(/([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\r\n\u0020\u00A0]|&nbsp;){0,2}/g,'$1');
+            currHTML=currHTML.replace(/([\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}([、，。：；！？）】〉》」』\uEB1D\uEB19]+)(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}/g,'$2');
             //'>' means there is a non-CJK tag(?)
-            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2');
+            //currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)/g,'$1$2'); //before 1.3.2
+            currHTML=currHTML.replace(/([^\s\u00A0>])(?:[\r\n\u0020\u00A0\u2009]|&nbsp;){0,2}([『「《〈【（\uEB1C\uEB18]+)([\r\n\u0020\u00A0\u2009]|&nbsp;){0,1}/g,'$1$2');
         }
         else {
             //Delete at most 1 spaces before and after because of the wider CJK marks.
-            currHTML=currHTML.replace(/([\uEB1D\uEB19])[ ]?/mg,'$1');
-            currHTML=currHTML.replace(/[ ]?([\uEB1C\uEB18])/mg,'$1');
+            currHTML=currHTML.replace(/([\uEB1D\uEB19])[ \u2009\u00A0]?/mg,'$1');
+            currHTML=currHTML.replace(/[ \u2009\u00A0]?([\uEB1C\uEB18])/mg,'$1');
         }
         ///--Group Left: [、，。：；！？）】〉》」』\uEB1D\uEB19] //Occupies the left half width.
         ///--Group Right:[『「《〈【（\uEB1C\uEB18] //Occupies the right half width.
