@@ -91,7 +91,7 @@
     var useFeedback=false;
     var useCSSforSimSun=false;
     var useDelayedFix=false;
-    var useTimeout=false;
+    var useOverallTimeOut=false;
     var useSFTags=false; //FIXME: use tags may cause problems on jd.com.
     var re_allpuncts=/[、，。：；！？）】〉》」』『「《〈【（“”‘’]/;
     //var re_extCJK=/[“”‘’\u3000-\u30FF\u3400-\u9FBF\uFF00-\uFFEF]/;
@@ -1133,7 +1133,7 @@
         return localed;
     }
     /// ======================== FixAllFonts, 3 Rounds ==============================///
-    function FixAllFonts (useTimeout) {
+    function FixAllFonts (useOverallTimeOut) {
         var func_start=performance.now();
         if (debug_verbose===true) {
             console.log("Round 1: "+ifRound1.toString());
@@ -1178,7 +1178,7 @@
         if (ifRound1===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if ( useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
+                    if ( useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound1=false;
                         ifRound2=false;
                         ifRound3=false;
@@ -1238,7 +1238,7 @@
         /// ===== Second Round: Deal with regular weight. ===== ///
         var tmp_idx=0;
         max = all.length;
-        if (useTimeout===true && (performance.now()-t_stop)*4 > timeOut) {
+        if (useOverallTimeOut===true && (performance.now()-t_stop)*4 > timeOut) {
             ifRound2=false;
             ifRound3=false;
             FixPunct=false;
@@ -1250,7 +1250,7 @@
             //Now fix the rest.
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if (useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
+                    if (useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound2=false;
                         ifRound3=false;
                         FixPunct=false;
@@ -1345,7 +1345,7 @@
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
-                    if (useTimeout===true && (performance.now()-t_stop)*invForLimit > timeOut) {
+                    if (useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound3=false;
                         FixPunct=false;
                         processedAll=false;
@@ -1417,7 +1417,8 @@
         if (debug_wrap===true) console.log("Fixing Fonts took "+((performance.now()-func_start)/1000).toFixed(3)+" seconds.");
     }
     ///===The Actual Round 4===///
-    function FunFixPunct(useTimeout,MaxNumLoops,returnNow) {
+    function FunFixPunct(useOverallTimeOut,MaxNumLoops,returnNow) {
+        var funcTimeOut = 300; //in ms.
         if (FixPunct === false) {
             console.log('No PM will be fixed.');
             return true;
@@ -1436,9 +1437,9 @@
             if (allrecur[ir].nodeName.match(/CJKTEXT/i)) {
                 FixPunctRecursion(allrecur[ir]);
             }
-            if ( useTimeout===true && (performance.now()-t_start) > timeOut ) {
+            if ( (useOverallTimeOut===true && (performance.now()-t_start) > timeOut) | (performance.now()-func_start) > funcTimeOut ) {
                 processedAll=false;
-                console.log("FixCJK!: Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
+                console.log("FIXME: FunFixPunct Time out. Last fixing took "+((performance.now()-recursion_start)/1000).toFixed(3)+" seconds.");
                 console.log("FIXME:"+allrecur[ir].nodeName+"."+allrecur[ir].className);
                 break;
             }
