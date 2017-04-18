@@ -577,9 +577,10 @@
     var LastURL=document.URL;
     var LastMod=document.lastModified;
     var ItvScl=2.0; //Real "cooling down time" is t_interval/ItvScl
-    if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
-        NumPureEng++;
-    }
+    // NumPureEng++ will cause problems on kkj.cn.
+    //if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
+    //    NumPureEng++;
+    //}
     //document.onClick will cause problems on some webpages on Firefox.
     var downtime=performance.now();
     var downX=0;
@@ -930,10 +931,11 @@
         var bannedTagsInReFix=/^(A|BUTTON|TEXTAREA|AUDIO|VIDEO|SOURCE|FORM|INPUT|select|option|label|fieldset|datalist|keygen|output|canvas|nav|svg|img|figure|map|area|track|menu|menuitem)$/i;
         if (debug_verbose===true) {console.log(e.target.nodeName);}
         t_start=performance.now();
-        if (document.URL!==LastURL) {
-            NumPureEng = 0;
-            LastURL=document.URL;
-        }
+        //The "LastURL" method is not reliable.
+        //if (document.URL!==LastURL) {
+        //    NumPureEng = 0;
+        //    LastURL=document.URL;
+        //}
         var clickedNode=e.target;
         while (clickedNode && clickedNode.nodeName!=="BODY") {
             if (clickedNode.nodeName.match(bannedTagsInReFix)) {
@@ -950,12 +952,12 @@
         else {
             if (debug_verbose===true) {console.log('FixCJK!: Document modified at '+document.lastModified);}
         }
-        //NumPureEng method is still usefull because document.lastModified method is only partially reliable.
-        if (NumPureEng >= 2) {
-            console.log('Probably pure English/Latin site, re-checking skipped.');
-            refixing=false;
-            return true;
-        }
+        //Note that NumPureEng method is no accurate. It might be still usefull because document.lastModified method is only partially reliable.
+        //if (NumPureEng >= 2) {
+        //    console.log('Probably pure English/Latin site, re-checking skipped.');
+        //    refixing=false;
+        //    return true;
+        //}
         if (debug_verbose===true) {console.log('FixCJK!: NumClicks='+NumClicks.toString());}
         //First remove the "CJK2Fix" attibute for those already processed.
         var AllCJKFixed=document.querySelectorAll("[data-FontsFixedCJK]");
@@ -996,10 +998,11 @@
             if (useWrap===true) wrapCJK();
             FunFixPunct(true,2,returnLater);
             console.log('FixCJK!: ReFixing (Fixing PMs not included) took '+((performance.now()-t_start)/1000).toFixed(3)+' seconds.');
-            NumAllCJKs=(document.querySelectorAll("[data-MarksFixedE135]")).length;
-            if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
-                NumPureEng++;
-            }
+            //The following is not needed b/c not Round3 is skipped by default.
+            //NumAllCJKs=(document.querySelectorAll("[data-MarksFixedE135]")).length;
+            //if (NumAllCJKs*1.0/NumAllDOMs*100 < 1.0) {
+            //    NumPureEng++;
+            //}
         }
         else {
             console.log('FixCJK!: No need to rush. Just wait for '+(t_interval/1000/ItvScl).toFixed(1)+' seconds before clicking again.');
