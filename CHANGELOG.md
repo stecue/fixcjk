@@ -1,3 +1,8 @@
+## 1.3.5 (2017-04-19)
+Bugfixes:
+  - Change the implementation of "SkippedLangs" so that the inital lang=en pages
+    can still be checked by click or double click.
+
 ## 1.3.4 (2017-04-18)
 Bugfixes:
   - Fix a bug that prevents recognizing ending "”(\u201D)".
