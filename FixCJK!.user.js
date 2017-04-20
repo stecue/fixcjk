@@ -33,7 +33,7 @@
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSerif = '"PT Serif",Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
-    var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinMono = '"DejaVu Sans Mono",Consolas'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinDefault = LatinSans; //The default Latin fonts if no "serif" or "sans-serif" is provided. It is also the font that will be used if the specified fonts (by the webpage) cannot be found.
     ///---Choose what to fix---///
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
