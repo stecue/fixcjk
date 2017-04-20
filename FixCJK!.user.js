@@ -70,7 +70,7 @@
     var processedAll=true;
     var ifRound1=true;
     var ifRound2=true;
-    var ifRound3=true;
+    var ifRound3=false;
     var RawFixPunct=FixPunct;
     var forceNoSimSun = false; //in case SimSun is the "!important" one. Note that other fixes will not be performed for applied tags.
     var debug_verbose = false; //show/hide more information on console.
@@ -269,7 +269,7 @@
             console.log(document.documentElement.innerText.match(re_pureCJK) );
         }
         if ( !document.documentElement.innerText.match(re_pureCJK) ) {
-            console.log('Non-optimal lang attribute detected...Long-click to re-enable FixCJK!');
+            console.log('Non-optimal lang attribute detected...Long-click or double-click to re-enable FixCJK!');
             SkipLabelCJK = true;
         }
     }
@@ -610,7 +610,8 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
             FixPunct=RawFixPunct;
-            SkipLabelCJK = false;
+            //Do not change SkipLabelCJK for single clicks.
+            //SkipLabelCJK = false;
             setTimeout(ReFixCJK,5,e);
             if (forceAutoSpaces === true)
                 setTimeout(function (){addSpaces(true,300);},5);
@@ -1363,6 +1364,7 @@
         else {
             if (debug_verbose===true) {console.log('FixCJK!: All elements will be processed in Round 3.');}
         }
+        /*
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
@@ -1432,6 +1434,7 @@
                     all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
+        */ //Skip Round3, now hard-coded.
         //setTimeout(function(){ fontsCheck(); }, 30);
         if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
