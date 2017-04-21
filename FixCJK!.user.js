@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.4
+// @version           1.3.5
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -33,7 +33,7 @@
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
     var LatinSerif = '"PT Serif",Constantia,"Liberation Serif","Times New Roman"'; //Serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinSans = '"Open Sans","PT Sans",Lato,Verdana,Arial'; //Sans-serif fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
-    var LatinMono = 'Consolas,"DejaVu Sans Mono"'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
+    var LatinMono = '"DejaVu Sans Mono",Consolas'; //Monospace fonts for Latin script. It will be overridden by  a non-virtual font in the CSS font list if present.
     var LatinDefault = LatinSans; //The default Latin fonts if no "serif" or "sans-serif" is provided. It is also the font that will be used if the specified fonts (by the webpage) cannot be found.
     ///---Choose what to fix---///
     var FixRegular = true; //Also fix regular fonts. You need to keep this true if you want to use "LatinInSimSun" in Latin/CJK mixed context.
@@ -54,6 +54,7 @@
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     //--output the version info first--//
     console.log('FixCJK! version '+GM_info.script.version);
+    var SkipLabelCJK = false; //for internal use only. It will set to true if the page is pure Eng.
     if (usePaltForAll === true)
         usePaltForCJKText = true;
     //if (usePaltForCJKText === true)
@@ -69,7 +70,7 @@
     var processedAll=true;
     var ifRound1=true;
     var ifRound2=true;
-    var ifRound3=true;
+    var ifRound3=false;
     var RawFixPunct=FixPunct;
     var forceNoSimSun = false; //in case SimSun is the "!important" one. Note that other fixes will not be performed for applied tags.
     var debug_verbose = false; //show/hide more information on console.
@@ -268,8 +269,8 @@
             console.log(document.documentElement.innerText.match(re_pureCJK) );
         }
         if ( !document.documentElement.innerText.match(re_pureCJK) ) {
-            console.log('Non-optimal lang attribute detected, exiting...');
-            return true;
+            console.log('Non-optimal lang attribute detected...Long-click or double-click to re-enable FixCJK!');
+            SkipLabelCJK = true;
         }
     }
     ///----------------------------
@@ -370,6 +371,10 @@
     }
     */
     function labelCJK(useCJKTimeOut) {
+        if (SkipLabelCJK === true) {
+            console.log('Skipping labelCJK...');
+            return false;
+        }
         var useBFS=false;
         var child=document.body.firstChild;
         var all='';
@@ -605,14 +610,17 @@
         else if (((performance.now()-downtime) < 300) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
             //ReFix after other things are done.
             FixPunct=RawFixPunct;
+            //Do not change SkipLabelCJK for single clicks.
+            //SkipLabelCJK = false;
             setTimeout(ReFixCJK,5,e);
             if (forceAutoSpaces === true)
                 setTimeout(function (){addSpaces(true,300);},5);
         }
         else if (((performance.now()-downtime) > 1500) && (Math.abs(e.clientX-downX)+Math.abs(e.clientY-downY)) ===0 ) {
-            //Force to labelCJK;
+            //Force to labelCJK for all elements;
             var t_CJK=performance.now();
             labelPreMath();
+            SkipLabelCJK = false; //reset the variable which could be set b/c of the SkippedLangs.
             labelCJK(false);
             FixAllFonts(false);
             labelPreCode();
@@ -647,13 +655,16 @@
             },t_interval);
         }
     },false);
-    if (forceAutoSpaces === false) {
-        document.body.addEventListener("dblclick",function() {
+    document.body.addEventListener("dblclick",function(e) {
+        setTimeout(function (e) {
+            SkipLabelCJK = false;
+            FixPunct=RawFixPunct;
+            ReFixCJK(e);
             addSpaces(true,300);
-            //setTimeout(function(){ fontsCheck(); }, 30);
-            //Prevent ReFixing for a certain time;
-        },false);
-    }
+        },5,e);
+        //setTimeout(function(){ fontsCheck(); }, 30);
+        //Prevent ReFixing for a certain time;
+    },false);
     ///===Time to exit the main function===///
     var t_fullstop=performance.now();
     if (processedAll===true) {
@@ -1353,6 +1364,7 @@
         else {
             if (debug_verbose===true) {console.log('FixCJK!: All elements will be processed in Round 3.');}
         }
+        /*
         if (ifRound3===true) {
             for (i = 0; i < all.length; i++) {
                 if (i % 500===0) { //Check every 500 elements.
@@ -1422,6 +1434,7 @@
                     all[i].style.color="FireBrick"; //FireBrick <-- Fixed.
             }
         }
+        */ //Skip Round3, now hard-coded.
         //setTimeout(function(){ fontsCheck(); }, 30);
         if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
