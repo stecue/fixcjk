@@ -22,7 +22,7 @@
     var CJKSimSun= '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
     var CJKserif = '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
     var CJKsans = '"Microsoft YaHei","Source Han Sans SC","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
-    var CJKBold = '"Microsoft YaHei","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
+    var CJKBold = '"Microsoft YaHei","Noto Sans CJK SC Bold","Noto Sans CJK SC","Source Han Sans SC Bold","Source Han Sans SC Bold","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans SC,Source Han Serif SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
     var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名) if no lang=ja is set.
     var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名) if no lang=ja is set.
