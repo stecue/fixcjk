@@ -64,8 +64,6 @@ latin_serif=`mktemp --tmpdir fixcjk.XXXXX`
 tmptmp=`mktemp --tmpdir fixcjk.XXXXX`
 #Get the default sans/serif fonts
 fc-match -s -f "%{file}\n" sans > $tmpsans
-cat $tmpsans
-echo "---------------------"
 fc-match -s -f "%{file}\n" serif > $tmpserif
 #
 while read nonCJK
@@ -77,6 +75,7 @@ do
         echo "      <string>${ffamily}</string>" >> ${latin_sans}
     fi
 done < $tmpsans
+echo "$(cat ${latin_sans}|wc -l) latin fonts found..."
 #constructing the preference part of .conf file
 cat >> $outtmp <<EOF
   <match target="pattern">
@@ -105,3 +104,4 @@ rm ${tmptmp}
 rm ${latin_sans}
 rm ${latin_serif}
 popd
+echo "All done!"
