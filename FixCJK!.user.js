@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.5
+// @version           1.3.6
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -237,6 +237,9 @@
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecA;\n src:local(Ubuntu Mono);\n unicode-range: U+0-7F;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;}';
+    //Make sure we only use the good "Chinese" part of YaHei.
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
