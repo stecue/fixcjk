@@ -10,23 +10,13 @@ allinput="$@"
 function getFONT {
     #the input should be `getFONT {--sans|--serif|--mono}`
     str_after=`echo ${allinput}|sed -e 's/.*\('$1'.*\).*/\1/g'`
-    nfonts=`echo "$str_after"|tr ' ' '\n'|grep -- '--'|wc -l`
-    while [ $nfonts -gt 1 ]
-    do
-        echo $nfonts
-        nfonts=`echo "$str_after"|tr ' ' '\n'|grep -- '--'|wc -l`
-    done
-    echo $str_after
+    str_after=`echo ${str_after}|sed -e 's/'$1'[ ]*//g'`
+    str_font=`echo ${str_after}|sed -e 's/ *--.*//g'`
+    echo $str_font
 }
-getFONT --sans
-getFONT --serif
-exit
-defaultSANS=$(echo $allinput|sed -e 's/.*--sans \(.*\)\( --.*\|$\)/\1/g')
-defaultSERIF=$(echo $allinput|sed -e 's/.*--serif \(.*\)\( --.*\|$\)/\1/g')
-defaultMONO=$defaultSANS
-echo "Default sans for CJK: $defaultSANS"
-echo "Default serif for CJK: $defaultSERIF"
-echo "Default mono for CJK: $defaultMONO"
+defaultSANS=$(getFONT --sans)
+defaultSERIF=$(getFONT --serif)
+defaultMONO=$(getFONT --mono)
 validate () {
     finput="$1"
     ffamily=$(fc-match "$finput"|tr '"' ':'|cut -d':' -f3)
@@ -50,6 +40,10 @@ then
     echo "Bad mono font!"
     exit
 else
+    echo "Validated fonts are:"
+    echo "Default sans for CJK: $defaultSANS"
+    echo "Default serif for CJK: $defaultSERIF"
+    echo "Default mono for CJK: $defaultMONO"
     echo "Making .conf files..."
 fi
 if [ `grep -R 'include.*xdg.*fontconfig\/conf.d' /etc/fonts/ |wc -l` -lt 1 ]
@@ -84,21 +78,27 @@ latin_serif=`mktemp --tmpdir fixcjk.XXXXX`
 tmpmono=`mktemp --tmpdir fixcjk.XXXXX`
 latin_mono=`mktemp --tmpdir fixcjk.XXXXX`
 tmptmp=`mktemp --tmpdir fixcjk.XXXXX`
-#Get the default sans/serif fonts
+#Get the default sans/serif/mono fonts
 fc-match -s -f "%{file}\n" sans > $tmpsans
 fc-match -s -f "%{file}\n" serif > $tmpserif
-fc-match -s -f "%{file}\n" mono > $tmpmono
-#
+fc-match -s -f "%{file}\n" monospace > $tmpmono
+#Remove .pfb and .pfa files
+for currtmpf in "$tmpsans $tmpserif $tmpmono"
+do
+    sed -i -e '/\.pfb/d' $currtmpf
+    sed -i -e '/\.pfa/d' $currtmpf
+done
+
+#check for latin/non-latin fonts
 while read nonCJK
 do
     ifCJK=`fc-query -f "%{lang}" "$nonCJK"|grep -F 'zh' |wc -l`
     if [ $ifCJK -eq 0 ]
     then
-        ffamily=`fc-query -f "%{family}" "$nonCJK"`
+        ffamily=`fc-query -f "%{family}\n" "$nonCJK"|head -n1`
         echo "      <string>${ffamily}</string>" >> ${latin_sans}
     fi
 done < $tmpsans
-echo "$(cat ${latin_sans}|wc -l) latin fonts found..."
 #constructing the preference part of .conf file
 cat >> $outtmp <<EOF
   <match target="pattern">
@@ -107,8 +107,9 @@ cat >> $outtmp <<EOF
     </test>
     <edit name="family" mode="prepend">
 EOF
-    cat ${latin_sans}|uniq >> ${tmptmp}
-    cat ${tmptmp} > ${latin_sans}
+cat ${latin_sans}|uniq > ${tmptmp}
+cat ${tmptmp} > ${latin_sans}
+echo "$(cat ${latin_sans}|wc -l) sans latin fonts found..."
 cat ${latin_sans} >> $outtmp
 echo "      <string>${defaultSANS}</string>" >> ${outtmp}
 cat >> $outtmp <<EOF
@@ -122,11 +123,10 @@ do
     ifCJK=`fc-query -f "%{lang}" "$nonCJK"|grep -F 'zh' |wc -l`
     if [ $ifCJK -eq 0 ]
     then
-        ffamily=`fc-query -f "%{family}" "$nonCJK"`
+        ffamily=`fc-query -f "%{family}\n" "$nonCJK"|head -n1`
         echo "      <string>${ffamily}</string>" >> ${latin_serif}
     fi
 done < $tmpserif
-echo "$(cat ${latin_serif}|wc -l) latin fonts found..."
 #constructing the preference part of .conf file
 cat >> $outtmp <<EOF
   <match target="pattern">
@@ -135,8 +135,9 @@ cat >> $outtmp <<EOF
     </test>
     <edit name="family" mode="prepend">
 EOF
-    cat ${latin_serif}|uniq >> ${tmptmp}
-    cat ${tmptmp} > ${latin_serif}
+cat ${latin_serif}|uniq > ${tmptmp}
+cat ${tmptmp} > ${latin_serif}
+echo "$(cat ${latin_serif}|wc -l) serif latin fonts found..."
 cat ${latin_serif} >> $outtmp
 echo "      <string>${defaultSERIF}</string>" >> ${outtmp}
 cat >> $outtmp <<EOF
@@ -150,11 +151,10 @@ do
     ifCJK=`fc-query -f "%{lang}" "$nonCJK"|grep -F 'zh' |wc -l`
     if [ $ifCJK -eq 0 ]
     then
-        ffamily=`fc-query -f "%{family}" "$nonCJK"`
+        ffamily=`fc-query -f "%{family}\n" "$nonCJK"|head -n1`
         echo "      <string>${ffamily}</string>" >> ${latin_mono}
     fi
 done < $tmpmono
-echo "$(cat ${latin_mono}|wc -l) latin fonts found..."
 #constructing the preference part of .conf file
 cat >> $outtmp <<EOF
   <match target="pattern">
@@ -163,8 +163,9 @@ cat >> $outtmp <<EOF
     </test>
     <edit name="family" mode="prepend">
 EOF
-    cat ${latin_mono}|uniq >> ${tmptmp}
-    cat ${tmptmp} > ${latin_mono}
+cat ${latin_mono}|uniq > ${tmptmp}
+cat ${tmptmp} > ${latin_mono}
+echo "$(cat ${latin_mono}|wc -l) monospace latin fonts found..."
 cat ${latin_mono} >> $outtmp
 echo "      <string>${defaultMONO}</string>" >> ${outtmp}
 cat >> $outtmp <<EOF
@@ -180,6 +181,7 @@ EOF
 mv ${outtmp} ${outconf}
 rm ${tmpsans}
 rm ${tmpserif}
+rm ${tmpmono}
 rm ${tmptmp}
 rm ${latin_sans}
 rm ${latin_serif}
