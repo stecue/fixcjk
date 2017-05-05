@@ -7,6 +7,20 @@
 #
 # Usage: ./set-default-cjk-fonts.sh --sans 'Noto Sans CJK SC' --serif 'Noto Serif CJK SC'
 allinput="$@"
+function getFONT {
+    #the input should be `getFONT {--sans|--serif|--mono}`
+    str_after=`echo ${allinput}|sed -e 's/.*\('$1'.*\).*/\1/g'`
+    nfonts=`echo "$str_after"|tr ' ' '\n'|grep -- '--'|wc -l`
+    while [ $nfonts -gt 1 ]
+    do
+        echo $nfonts
+        nfonts=`echo "$str_after"|tr ' ' '\n'|grep -- '--'|wc -l`
+    done
+    echo $str_after
+}
+getFONT --sans
+getFONT --serif
+exit
 defaultSANS=$(echo $allinput|sed -e 's/.*--sans \(.*\)\( --.*\|$\)/\1/g')
 defaultSERIF=$(echo $allinput|sed -e 's/.*--serif \(.*\)\( --.*\|$\)/\1/g')
 defaultMONO=$defaultSANS
