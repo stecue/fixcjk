@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.5
+// @version           1.3.6
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -18,11 +18,11 @@
     'use strict';
     // You can change the the following fonts/settings until the "var FixPunct=" line.
     ///--CJK Fonts--///
-    var CJKdefault = '"Noto Sans CJK SC",SimSun,Source Han Sans SC,Noto Sans CJK SC,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
-    var CJKSimSun= '"Noto Sans CJK SC","Source Han Serif SC","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
-    var CJKserif = '"Noto Sans CJK SC","Source Han Serif SC","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
-    var CJKsans = '"Noto Sans CJK SC","Source Han Sans SC","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
-    var CJKBold = '"Noto Sans CJK SC","Noto Sans CJK SC Bold","Noto Sans CJK SC","Source Han Sans SC Bold","Source Han Sans SC Bold","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
+    var CJKdefault = '"Microsoft YaHei",SimSun,Source Han Sans SC,Noto Sans CJK SC,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
+    var CJKSimSun= '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
+    var CJKserif = '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
+    var CJKsans = '"Microsoft YaHei","Source Han Sans SC","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
+    var CJKBold = '"Microsoft YaHei","Noto Sans CJK SC Bold","Noto Sans CJK SC","Source Han Sans SC Bold","Source Han Sans SC Bold","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans SC,Source Han Serif SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
     var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名) if no lang=ja is set.
     var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名) if no lang=ja is set.
@@ -236,7 +236,12 @@
     punctStyle=punctStyle+'\n@font-face {font-family:FixedCJKFont\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-B6,U+B8-2FF,U+2000-2017,U+201E-2FFF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecA;\n src:local(Ubuntu Mono);\n unicode-range: U+0-7F;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Noto Sans CJK SC);\n unicode-range: U+3400-9FBF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Noto Sans CJK SC DemiLight);}';
+    //Make sure we only use the good "Chinese" part of YaHei.
+    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Noto Sans CJK SC Medium);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Noto Sans CJK SC Medium);\n font-weight: bold;}';
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
