@@ -238,6 +238,10 @@
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;}';
     //Make sure we only use the good "Chinese" part of YaHei.
+    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
     punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
     punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
     punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';

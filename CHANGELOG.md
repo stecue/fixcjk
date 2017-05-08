@@ -1,3 +1,8 @@
+## 1.3.6 (2017-05-08)
+Features/Bugfixes:
+  - Use font-face to disable YaHei for ASCII characters.
+  - Add use-noto-only.sh to generte the "Noto Sans" only flavor
+
 ## 1.3.5 (2017-04-19)
 Bugfixes:
   - Change the implementation of "SkippedLangs" so that the inital lang=en pages
