@@ -238,6 +238,8 @@
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Noto Sans CJK SC DemiLight);}';
     //Make sure we only use the good "Chinese" part of YaHei.
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei UI;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei UI;\n src:local(Noto Sans CJK SC Medium);\n font-weight: bold;}';
     punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
     punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Noto Sans CJK SC Medium);\n font-weight: bold;}';
     punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
