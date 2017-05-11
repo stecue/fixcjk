@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.6
+// @version           1.3.7
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -645,25 +645,41 @@
             console.log("Labeling and fixing all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
         }
     },false);
-    var fireReFix=false;
+    //use named timers to keep track of refixes.
+    var timerReFix= null;
+    var timerSpaces = null;
+    var waitAfterScolling=300;
+    var isScolling = false;
     window.addEventListener("scroll",function (e){
+        isScolling = true;
+        if(timerReFix !== null) {
+            clearTimeout(timerReFix);
+        }
+        if(timerSpaces !== null) {
+            clearTimeout(timerSpaces);
+        }
         if (scrollToFixAll === true) {
             FixPunct=RawFixPunct;
-            setTimeout(ReFixCJK,50,e);
-            setTimeout(addSpaces,100,true,300);
+            timerReFix=setTimeout(function (e) {
+                isScolling=false;
+                ReFixCJK(e);
+                addSpaces(true,300);
+            },waitAfterScolling,e);
+            //timerReFix=setTimeout(ReFixCJK,waitAfterScolling,e);
+            //timerSpaces=setTimeout(addSpaces,waitAfterScolling,true,300);
         }
         else {
-            fireReFix=false; //Prevent from firing ReFixCJK() while scrolling.
-            setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
-            setTimeout(function() {
-                if (fireReFix===true) {
+            //setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
+            timerReFix=setTimeout(function() {
+                isScolling = false;
+            //    if (fireReFix===true) {
                     ReFixCJKFast();
-                }
+            //    }
                 //setTimeout(function(){ fontsCheck(); }, 30);
                 if (forceAutoSpaces === true) {
                     addSpaces(true,30);
                 }
-            },t_interval);
+            },waitAfterScolling);
         }
     },false);
     document.body.addEventListener("dblclick",function(e) {

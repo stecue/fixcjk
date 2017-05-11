@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.5
+// @version           1.3.7
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -18,11 +18,11 @@
     'use strict';
     // You can change the the following fonts/settings until the "var FixPunct=" line.
     ///--CJK Fonts--///
-    var CJKdefault = '"Noto Serif CJK SC",SimSun,Source Han Serif SC,Noto Serif CJK SC,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
-    var CJKSimSun= '"Noto Serif CJK SC","Source Han Serif SC","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
-    var CJKserif = '"Noto Serif CJK SC","Source Han Serif SC","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
-    var CJKsans = '"Noto Serif CJK SC","Source Han Serif SC","Source Han Serif CN","Noto Serif CJK SC","Noto Serif CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
-    var CJKBold = '"Noto Serif CJK SC","Noto Serif CJK SC Bold","Noto Serif CJK SC","Source Han Serif SC Bold","Source Han Serif SC Bold","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
+    var CJKdefault = '"Microsoft YaHei",SimSun,Source Han Serif SC,Noto Serif CJK SC,"WenQuanYi Zen Hei Sharp","WenQuanYi Micro Hei"'; //The default CJK font if no sans or serif is specified. Regular weight.
+    var CJKSimSun= '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","Note Serif CJK SC","WenQuanYi Micro Hei"'; //Fonts to replace SimSun;
+    var CJKserif = '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
+    var CJKsans = '"Microsoft YaHei","Source Han Serif SC","Source Han Serif CN","Noto Serif CJK SC","Noto Serif CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
+    var CJKBold = '"Microsoft YaHei","Noto Serif CJK SC Bold","Noto Serif CJK SC","Source Han Serif SC Bold","Source Han Serif SC Bold","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
     var CJKPunct = 'Noto Serif CJK SC,Noto Serif CJK SC,Source Han Serif SC,Source Han Serif SC,Source Han Serif CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
     var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名) if no lang=ja is set.
     var KanaSans = 'Source Han Serif SC,Noto Serif CJK SC'; //The sans fonts for kana (假名) if no lang=ja is set.
@@ -236,7 +236,18 @@
     punctStyle=punctStyle+'\n@font-face {font-family:FixedCJKFont\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-B6,U+B8-2FF,U+2000-2017,U+201E-2FFF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecA;\n src:local(Ubuntu Mono);\n unicode-range: U+0-7F;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Noto Serif CJK SC);\n unicode-range: U+3400-9FBF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Noto Serif CJK SC);}';
+    //Make sure we only use the good "Chinese" part of YaHei.
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei UI;\n src:local(Noto Serif CJK SC);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei UI;\n src:local(Noto Serif CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Noto Serif CJK SC);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Noto Serif CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Noto Serif CJK SC);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Noto Serif CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Noto Serif CJK SC);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Noto Serif CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Noto Serif CJK SC);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Noto Serif CJK SC Bold);\n font-weight: bold;}';
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
@@ -634,25 +645,41 @@
             console.log("Labeling and fixing all CJK elements took "+(t_CJK/1000).toFixed(1)+" seconds.");
         }
     },false);
-    var fireReFix=false;
+    //use named timers to keep track of refixes.
+    var timerReFix= null;
+    var timerSpaces = null;
+    var waitAfterScolling=300;
+    var isScolling = false;
     window.addEventListener("scroll",function (e){
+        isScolling = true;
+        if(timerReFix !== null) {
+            clearTimeout(timerReFix);
+        }
+        if(timerSpaces !== null) {
+            clearTimeout(timerSpaces);
+        }
         if (scrollToFixAll === true) {
             FixPunct=RawFixPunct;
-            setTimeout(ReFixCJK,50,e);
-            setTimeout(addSpaces,100,true,300);
+            timerReFix=setTimeout(function (e) {
+                isScolling=false;
+                ReFixCJK(e);
+                addSpaces(true,300);
+            },waitAfterScolling,e);
+            //timerReFix=setTimeout(ReFixCJK,waitAfterScolling,e);
+            //timerSpaces=setTimeout(addSpaces,waitAfterScolling,true,300);
         }
         else {
-            fireReFix=false; //Prevent from firing ReFixCJK() while scrolling.
-            setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
-            setTimeout(function() {
-                if (fireReFix===true) {
+            //setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
+            timerReFix=setTimeout(function() {
+                isScolling = false;
+            //    if (fireReFix===true) {
                     ReFixCJKFast();
-                }
+            //    }
                 //setTimeout(function(){ fontsCheck(); }, 30);
                 if (forceAutoSpaces === true) {
                     addSpaces(true,30);
                 }
-            },t_interval);
+            },waitAfterScolling);
         }
     },false);
     document.body.addEventListener("dblclick",function(e) {
