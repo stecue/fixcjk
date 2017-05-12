@@ -236,16 +236,18 @@
     punctStyle=punctStyle+'\n@font-face {font-family:FixedCJKFont\u0020易;\n src:local(SimHei);\n unicode-range: U+A0-B6,U+B8-2FF,U+2000-2017,U+201E-2FFF;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecA;\n src:local(Ubuntu Mono);\n unicode-range: U+0-7F;}';
     punctStyle=punctStyle+'\n@font-face {font-family:SimVecS;\n src:local(SimHei);\n unicode-range: U+A0-33FF;}';
-    punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;}';
+    punctStyle=punctStyle+'\n@font-face {font-family:SimVecC;\n src:local(Noto Sans CJK SC DemiLight);}';
     //Make sure we only use the good "Chinese" part of YaHei.
-    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Microsoft YaHei);\n unicode-range: U+3400-9FBF;\n font-weight: normal;}';
-    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Microsoft YaHei Bold);\n unicode-range: U+3400-9FBF;\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei UI;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei UI;\n src:local(Noto Sans CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 微软雅黑;\n src:local(Noto Sans CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 雅黑;\n src:local(Noto Sans CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: 黑体;\n src:local(Noto Sans CJK SC Bold);\n font-weight: bold;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Noto Sans CJK SC DemiLight);\n font-weight: normal;}';
+    punctStyle=punctStyle+'\n@font-face { font-family: Microsoft YaHei;\n src:local(Noto Sans CJK SC Bold);\n font-weight: bold;}';
     if (useCSSforSimSun===true) {
         punctStyle=punctStyle+'\n @font-face { font-family: SimSun;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
         punctStyle=punctStyle+'\n @font-face { font-family: 宋体;\n src: local('+FirstFontOnly('SimSun')+');\n unicode-range: U+3400-9FBF;}';
