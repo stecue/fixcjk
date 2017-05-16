@@ -1460,7 +1460,7 @@
             }
         }
         */
- //Skip Round3, now hard-coded.
+        //Skip Round3 (fix fonts for Latin as well) to increase speed and compatibility, now hard-coded.
         //setTimeout(function(){ fontsCheck(); }, 30);
         if (debug_verbose===true) {console.log('FixCJK!: Round 3 took '+((performance.now()-t_stop)/1000).toFixed(3)+' seconds.');}
         t_stop=performance.now();
