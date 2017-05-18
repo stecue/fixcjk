@@ -18,6 +18,6 @@ popd
 #Copy the packed file to the "home" folder of the project
 cp -f "src/$ujs" ./
 #generate different flavors
-for currFlavor in util/use*sh;do
+for currFlavor in utils/use*sh;do
     sh "$currFlavor"
 done
