@@ -1,4 +1,11 @@
 #!/bin/bash
+#
+# Run this script at the home path of the FixCJK project 
+# to repack the js source code.
+#
+# Usage: sh repack.py
+#
+
 pushd .
 ujs='FixCJK!.user.js'
 if [ ! -d src ];then

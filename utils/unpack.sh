@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# Run this script at the home path of the FixCJK project 
+# to unpack the js source code.
+#
+# Usage: sh unpack.py
+#
 pushd .
 ujs='FixCJK!.user.js'
 if [ ! -e "$ujs" ];then
