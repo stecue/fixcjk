@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.7
+// @version           1.3.8
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -54,6 +54,8 @@
     ///=== "Safe" Zone Ends Here.Do not change following code unless you know the results! ===///
     //--output the version info first--//
     console.log('FixCJK! version '+GM_info.script.version);
+    // Global runtime flags
+    var isScrolling = false;
     var SkipLabelCJK = false; //for internal use only. It will set to true if the page is pure Eng.
     if (usePaltForAll === true)
         usePaltForCJKText = true;
@@ -404,6 +406,7 @@
         //Skip wrapping CJK for anchors to javascripts, otherwise the anchors will break.
         all=document.querySelectorAll('a:not([data-preCode])');
         for (var ia=0;ia<all.length;ia++){
+            //if (isScrolling == true) {alert('trying to label CJK, but in scrolling....');break;}
             if (all[ia].hasAttribute("data-CJKTestedAndLabeled")) {
                 continue;
             }
@@ -427,8 +430,9 @@
         var t_last=0;
         var t_init=t_stop;
         var t_overall=0;
-        for (var i=0;i < all.length;i++) {
-            if (useCJKTimeOut===true) { //useCJKTimeOut===false is the "Engineering mode".
+        for (var i=all.length-1;i >= 0;i--) {
+            //if (isScrolling == true) {alert('trying to label CJK, but in scrolling....');break;}
+            if (useCJKTimeOut===true && i%100 === 0) { //useCJKTimeOut===false is the "Engineering mode".
                 t_last=performance.now()-t_stop;
                 t_stop=performance.now();
                 t_overall=performance.now()-t_init;
@@ -649,9 +653,8 @@
     var timerReFix= null;
     var timerSpaces = null;
     var waitAfterScolling=300;
-    var isScolling = false;
     window.addEventListener("scroll",function (e){
-        isScolling = true;
+        isScrolling = true;
         if(timerReFix !== null) {
             clearTimeout(timerReFix);
         }
@@ -661,7 +664,7 @@
         if (scrollToFixAll === true) {
             FixPunct=RawFixPunct;
             timerReFix=setTimeout(function (e) {
-                isScolling=false;
+                isScrolling=false;
                 ReFixCJK(e);
                 addSpaces(true,300);
             },waitAfterScolling,e);
@@ -671,11 +674,8 @@
         else {
             //setTimeout(function() {fireReFix=true;},t_interval/ItvScl/2); //Permit ReFixCJK after sometime of last scrolling.
             timerReFix=setTimeout(function() {
-                isScolling = false;
-            //    if (fireReFix===true) {
-                    ReFixCJKFast();
-            //    }
-                //setTimeout(function(){ fontsCheck(); }, 30);
+                isScrolling = false;
+                ReFixCJKFast();
                 if (forceAutoSpaces === true) {
                     addSpaces(true,30);
                 }
@@ -767,6 +767,7 @@
         node.setAttribute("data-preMath","");
     }
     function addSpaces(useSpacingTimeout,spacingTimeOut) {
+        if (isScrolling == true) {console.log('Trying to add space but in scrolling...'); return false;}
         if (respacing === true)
             return false;
         var t_spaces=performance.now();
@@ -943,6 +944,7 @@
         }
     }
     function ReFixCJKFast () {
+        //if (isScrolling == true) {alert('trying to label CJK, but in scrolling....');return;}
         if (refixingFonts===true) {
             console.log("Refixing, skipping this refix...");
             window.setTimeout(function () {refixingFonts=false;},t_interval/ItvScl/2);
@@ -1195,6 +1197,7 @@
         //First fix all SimSun parts in Round 1&2. Original: var allSuns=document.querySelectorAll("[data-SimSun2Fix]");
         var allSuns=document.querySelectorAll("[data-SimSun2Fix]:not([data-SimSunFixedCJK])");
         for (var isun=0;isun< allSuns.length;isun++) {
+            //if (isScrolling == true) {alert('trying to fix fonts, but in scrolling....');break;}
             if (allSuns[isun].hasAttribute("data-SimSunFixedCJK")) {
                 //was if (allSuns[isun].classList.contains(FontsFixedCJK) || allSuns[isun].hasAttribute("data-SimSunFixedCJK"))
                 continue;
@@ -1213,6 +1216,7 @@
         //Large fonts: allSuns=document.querySelectorAll("[data-LargeSimSun2Fix]");
         allSuns=document.querySelectorAll("[data-LargeSimSun2Fix]:not([data-SimSunFixedCJK])");
         for (isun=0;isun< allSuns.length;isun++) {
+            //if (isScrolling == true) {alert('trying to fix fonts, but in scrolling....');break;}
             if (allSuns[isun].hasAttribute("data-SimSunFixedCJK")) {
                 continue;
             }
@@ -1226,6 +1230,7 @@
         all=document.querySelectorAll("[data-CJK2Fix]:not([data-FontsFixedCJK])");
         if (ifRound1===true) {
             for (i = 0; i < all.length; i++) {
+                //if (isScrolling == true) {alert('trying to fix fonts, but in scrolling....');break;}
                 if (i % 500===0) { //Check every 500 elements.
                     if ( useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound1=false;
@@ -1298,6 +1303,7 @@
         if (ifRound2===true) {
             //Now fix the rest.
             for (i = 0; i < all.length; i++) {
+                //if (isScrolling == true) {alert('trying to fix fonts, but in scrolling....');break;}
                 if (i % 500===0) { //Check every 500 elements.
                     if (useOverallTimeOut===true && (performance.now()-t_stop)*invForLimit > timeOut) {
                         ifRound2=false;
@@ -1484,6 +1490,7 @@
         }
         var allrecur=document.querySelectorAll("[data-PunctSpace2Fix]:not([data-MarksFixedE135])");
         for (var ir=0; ir<allrecur.length; ir++) {
+            //if (isScrolling == true) {alert('trying to fix punct, but in scrolling....');break;}
             //Seems no need to add !(allrecur[ir].parentNode.hasAttribute("data-CJK2Fix")). It might be faster to fix the deepest element first through looping.
             recursion_start=performance.now();
             if (allrecur[ir].nodeName.match(/CJKTEXT/i)) {
@@ -1500,6 +1507,7 @@
     }
     /////=====The Recursive Implementation=====/////
     function FixPunctRecursion(node) {
+        //if (isScrolling == true) {alert('trying to fix punct recursively, but in scrolling....');return false;}
         if (node.hasAttribute("data-MarksFixedE135")) {
             return true;
         }
