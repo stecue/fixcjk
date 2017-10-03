@@ -1,3 +1,8 @@
+## 1.3.9 (2017-05-19)
+Features/Bugfixes:
+  - Slightly increase speed by labeling the newest elements first.
+  - Other bugfixes.
+
 ## 1.3.7 (2017-05-11)
 Features/Bugfixes:
   - Use font-face to disable YaHei for ASCII characters.
