@@ -16,7 +16,7 @@
 
 ## 用法
 ### 脚本安装
-较新的浏览器都需要附加组件来安装和管理用户脚本。如果您是 Firefox 用户，请先安装 [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。其他浏览器用户请参考相应的文档安装适当的附加组件或者插件。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。如果您喜欢超前体验胜过稳定，或者有意帮忙测试，也可以到[GitHub 上的项目主页](https://github.com/stecue/fixcjk/)获取最新[开发分支版本](https://github.com/stecue/fixcjk/tree/master)。
+较新的浏览器都需要附加组件来安装和管理用户脚本。如果您是 Firefox 用户，请先安装 ~~[Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/)~~[Tampermonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)（Greasemonkey 4暂时与本脚本不兼容）；Chrome&#8203;/&#8203;Chromium 用户，请先安装 [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)；Opera 用户也请安装 [Tampermonkey](https://addons.opera.com/en/extensions/details/tampermonkey-beta/)。其他浏览器用户请参考相应的文档安装适当的附加组件或者插件。之后，请到 [Greasy Fork](https://greasyfork.org/zh-CN/scripts/19812-fixcjk) 或者 [OpenUserJS](https://openuserjs.org/scripts/stecuegmail.com/FixCJK!) 网站安装本脚本的最新稳定版。如果您喜欢超前体验胜过稳定，或者有意帮忙测试，也可以到[GitHub 上的项目主页](https://github.com/stecue/fixcjk/)获取最新[开发分支版本](https://github.com/stecue/fixcjk/tree/master)。
 
 
 ### 相关设置
