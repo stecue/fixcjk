@@ -1,6 +1,11 @@
+## 1.3.11 (2018-01-10)
+Bugfixes:
+  - Fix issue #129.
+
 ## 1.3.10 (2017-11-24)
 Features/Bugfixes:
   - Add "Source Han Serif Regular" according to issue #127.
+
 ## 1.3.9 (2017-05-19)
 Features/Bugfixes:
   - Slightly increase speed by labeling the newest elements first.

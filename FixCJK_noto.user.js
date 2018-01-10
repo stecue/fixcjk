@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.10
+// @version           1.3.11
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -126,6 +126,8 @@
     //noWrappingClasses=noWrappingClasses+',PollXChoice-choice--text'; //PollXChoice-choice--text from twitter, see issue #113.
     if ( document.URL.match(/(bgm\.tv|bangumi.tv)/) )
         noWrappingClasses=noWrappingClasses+',userInfo,userName';
+    if ( document.URL.match(/(www\.bilibili\.com|bilibili\.com)/) )
+        noWrappingClasses=noWrappingClasses+',update on,update ,update'; //Issue #129.
     console.log('The following classes won\'t be treated:\n'+noWrappingClasses);
     //Just define a "dumb" noWrappingHRefs.
     var noWrappingHRefs=/^\uE000\uE000\uE000/;
