@@ -1,3 +1,7 @@
+## 1.3.12 (2018-06-09)
+Bugfixes:
+  - Disable FixCJK on some windows live websites.
+
 ## 1.3.11 (2018-01-10)
 Bugfixes:
   - Fix issue #129.
