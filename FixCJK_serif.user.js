@@ -13,8 +13,7 @@
 // @exclude           http://*stackexchange.com/*
 // @exclude           https://*stackexchange.com/*
 // @exclude           http://*mathoverflow.net/*
-// @exclude           https://*outlook.live.com/*
-// @exclude           https://*office.live.com/*
+// @exclude           https://*.live.com/*
 // @grant             GM_addStyle
 // ==/UserScript==
 (function () {
