@@ -1,3 +1,7 @@
+## 1.3.13 (2018-12-03)
+Bugfixes:
+  - Disable FixCJK on bilibili players.
+
 ## 1.3.12 (2018-06-09)
 Bugfixes:
   - Disable FixCJK on some windows live websites.
