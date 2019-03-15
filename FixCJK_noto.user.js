@@ -14,6 +14,7 @@
 // @exclude           https://*stackexchange.com/*
 // @exclude           http://*mathoverflow.net/*
 // @exclude           https://*.live.com/*
+// @exclude           https://*.wolframcloud.com/*
 // @grant             GM_addStyle
 // ==/UserScript==
 (function () {

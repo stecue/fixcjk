@@ -1,3 +1,7 @@
+## 1.3.14 (2019-03-14)
+Bugfixes:
+  - Disable FixCJK on *.wolframcloud.com
+
 ## 1.3.13 (2018-12-03)
 Bugfixes:
   - Disable FixCJK on bilibili players.
