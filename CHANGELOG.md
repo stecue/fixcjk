@@ -1,26 +1,30 @@
+## 1.3.15 (2019-07-10)
+Bugfixes:
+  - Fixed the incompatibility issue with Greasemonkey 4 (using a workaround for now).
+
 ## 1.3.14 (2019-03-14)
 Bugfixes:
-  - Disable FixCJK on *.wolframcloud.com
+  - Disabled FixCJK on *.wolframcloud.com
 
 ## 1.3.13 (2018-12-03)
 Bugfixes:
-  - Disable FixCJK on bilibili players.
+  - Disabled FixCJK on bilibili players.
 
 ## 1.3.12 (2018-06-09)
 Bugfixes:
-  - Disable FixCJK on some windows live websites.
+  - Disabled FixCJK on some windows live websites.
 
 ## 1.3.11 (2018-01-10)
 Bugfixes:
-  - Fix issue #129.
+  - Fixed issue #129.
 
 ## 1.3.10 (2017-11-24)
 Features/Bugfixes:
-  - Add "Source Han Serif Regular" according to issue #127.
+  - Added "Source Han Serif Regular" according to issue #127.
 
 ## 1.3.9 (2017-05-19)
 Features/Bugfixes:
-  - Slightly increase speed by labeling the newest elements first.
+  - Speed slightly increased by labeling the newest elements first.
   - Other bugfixes.
 
 ## 1.3.7 (2017-05-11)
@@ -31,7 +35,7 @@ Features/Bugfixes:
 
 ## 1.3.5 (2017-04-19)
 Bugfixes:
-  - Change the implementation of "SkippedLangs" so that the inital lang=en pages
+  - Changed the implementation of "SkippedLangs" so that the inital lang=en pages
     can still be checked by long click or double click.
 
 ## 1.3.4 (2017-04-18)

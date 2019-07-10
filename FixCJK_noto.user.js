@@ -15,6 +15,7 @@
 // @exclude           http://*mathoverflow.net/*
 // @exclude           https://*.live.com/*
 // @exclude           https://*.wolframcloud.com/*
+// @require           https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @grant             GM_addStyle
 // ==/UserScript==
 (function () {
