@@ -1,3 +1,8 @@
+## 1.3.17 (2020-03-21)
+Bugfixes:
+  - Revert to the "FixedPMSans !important" in FixMarksInCurrHTML function.
+  - FixedPMSans is a virtual font name. Print "punctStyle" @font-face value to further debug.
+
 ## 1.3.16 (2020-03-21)
 Bugfixes:
   - Removed the "FixedPMSans !important" in FixMarksInCurrHTML function. Don't know why they were there. This might fix some bugs but might also cause more problems?
