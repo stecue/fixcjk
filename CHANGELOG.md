@@ -1,3 +1,7 @@
+## 1.3.16 (2020-03-21)
+Bugfixes:
+  - Removed the "FixedPMSans !important" in FixMarksInCurrHTML function. Don't know why they were there. This might fix some bugs but might also cause more problems?
+
 ## 1.3.15 (2019-07-10)
 Bugfixes:
   - Fixed the incompatibility issue with Greasemonkey 4 (using a workaround for now).
