@@ -1,3 +1,8 @@
+## 1.3.18 (2020-03-21)
+Bugfixes:
+  - Chrome/Chromium has a bug that prevents loading local fonts correctly in @font-face rules on Linux platform since at least v80.
+  - Explicitly added CJKPunct before FixedPMSans in FixMarksInCurrHTML as a workaround. Not sure if more bugs will appear due to this change.
+
 ## 1.3.17 (2020-03-21)
 Bugfixes:
   - Revert to the "FixedPMSans !important" in FixMarksInCurrHTML function.
