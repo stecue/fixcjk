@@ -2,7 +2,7 @@
 // @name              FixCJK!
 // @name:zh-CN        “搞定”CJK！
 // @namespace         https://github.com/stecue/fixcjk
-// @version           1.3.18
+// @version           1.3.19
 // @description       1) Use real bold to replace synthetic SimSun bold; 2) Regular SimSun/中易宋体 can also be substituted; 3) Reassign font fallback list (Latin AND CJK). Browser serif/sans settings are overridden; 4) Use Latin fonts for Latin part in Latin/CJK mixed texts; 5) Fix fonts and letter-spacing for CJK punctuation marks.
 // @description:zh-cn 中文字体和标点设定及修正脚本
 // @author            stecue@gmail.com
@@ -27,11 +27,11 @@
     var CJKserif = '"Microsoft YaHei","Source Han Serif SC","Source Han Sans SC Regular","Source Han Serif CN","WenQuanYi Micro Hei"'; //Default serif fonts for CJK. Although It is intended for regular weight but some element with bold weight still use the font here. Therefore "SimSun" itself is not a good choice because it does not have a real bold font.
     var CJKsans = '"Microsoft YaHei","Source Han Sans SC","Source Han Sans SC Regular","Source Han Sans CN","Noto Sans CJK SC","Noto Sans CJK SC Regular"'; //Sans-serif fonts for CJK. Regular weight.
     var CJKBold = '"Microsoft YaHei","Noto Sans CJK SC Bold","Noto Sans CJK SC","Source Han Sans SC Bold","Source Han Sans SC Bold","WenQuanYi Micro Hei"'; //The "good CJK font" to replace SimSun bold. Note that some elements still use font in CJKserif defined above such as the menus on JD.com.
-    var CJKPunct = 'Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans SC,Source Han Serif SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
+    var CJKPunct = 'Noto Sans SC,Noto Sans CJK SC,Noto Serif CJK SC,Source Han Sans SC,Source Han Serif SC,Source Han Sans CN,Source Han Serif CN,SimHei,SimSun'; //The font to use for CJK quotation marks.
     var KanaSerif = 'Source Han Serif SC,Noto Serif CJK SC'; //The serif fonts for kana (假名) if no lang=ja is set.
     var KanaSans = 'Source Han Sans SC,Noto Sans CJK SC'; //The sans fonts for kana (假名) if no lang=ja is set.
-    var JaSerif = 'Noto Serif CJK JP,Source Han Serif,Source Han Serif JP,Noto Serif CJK SC,Source Han Serif SC,MS Mincho'; //Used in lang=ja elements only. KanaSans will be overrided.
-    var JaSans = 'Noto Sans CJK JP,Source Han Sans,Source Han Sans JP,Noto Sans CJK SC,Source Han Sans SC,Meiryo,MS Gothic'; //Used in lang=ja elements only. KanaSerif will be overrided.
+    var JaSerif = 'Noto Serif JP,Noto Serif CJK JP,Source Han Serif,Source Han Serif JP,Noto Serif CJK SC,Source Han Serif SC,MS Mincho'; //Used in lang=ja elements only. KanaSans will be overrided.
+    var JaSans = 'Noto Sans JP,Noto Sans CJK JP,Source Han Sans,Source Han Sans JP,Noto Sans CJK SC,Source Han Sans SC,Meiryo,MS Gothic'; //Used in lang=ja elements only. KanaSerif will be overrided.
     var JaDefault = JaSans; //Default fonts if no "sans" or "sans-serif" is set for lang=ja elements.
     ///---Latin Fonts. Note: *DO NOT* use CJK fonts for the following Latin* settings, otherwise the above CJK settings might be overwritten!---///
     var LatinInSimSun = 'Ubuntu Mono'; //The Latin font in a paragraph whose font was specified to "SimSun" only.
