@@ -1,3 +1,7 @@
+## 1.3.19 (2025-02-21)
+Bugfixes:
+  - "Noto Sans" added because of the name change of Noto Fonts.
+
 ## 1.3.18 (2020-03-21)
 Bugfixes:
   - Chrome/Chromium has a bug that prevents loading local fonts correctly in @font-face rules on Linux platform since at least v80.
